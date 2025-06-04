@@ -1,0 +1,4 @@
+<Image
+  source={{uri: 'https://via.placeholder.com/200x120'}}
+  style={styles.tipImage}
+/>

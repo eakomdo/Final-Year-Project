@@ -1,0 +1,61 @@
+import { useEffect } from "react";
+//import DeviceConnectionManager from "path-to-device-connection-manager";
+
+export default {
+  expo: {
+    name: "JEGHealth",
+    slug: "jeg-health",
+    version: "1.0.0",
+    orientation: "portrait",
+    icon: "./assets/app-icon.png",
+    userInterfaceStyle: "light",
+    splash: {
+      image: "./assets/splash.png",
+      resizeMode: "contain",
+      backgroundColor: "#ffffff",
+    },
+    assetBundlePatterns: ["**/*"],
+    ios: {
+      supportsTablet: true,
+      bundleIdentifier: "com.jeghealth.app",
+      infoPlist: {
+        NSBluetoothAlwaysUsageDescription:
+          "This app uses Bluetooth to connect to health monitoring devices",
+      },
+    },
+    android: {
+      adaptiveIcon: {
+        foregroundImage: "./assets/adaptive-icon.png",
+        backgroundColor: "#ffffff",
+      },
+      package: "com.jeghealth.app",
+      permissions: [
+        "android.permission.BLUETOOTH",
+        "android.permission.BLUETOOTH_ADMIN",
+        "android.permission.BLUETOOTH_CONNECT",
+        "android.permission.BLUETOOTH_SCAN",
+        "android.permission.ACCESS_FINE_LOCATION",
+      ],
+    },
+    plugins: [
+      [
+        "expo-build-properties",
+        {
+          android: {},
+          ios: {},
+        },
+      ],
+    ],
+    extra: {
+      eas: {
+        projectId: "your-project-id", // Will be updated by EAS
+      },
+    },
+  },
+};
+
+// For development without real IoT devices
+useEffect(() => {
+  DeviceConnectionManager.enableMockMode();
+}, []);
+

@@ -1,0 +1,10 @@
+// Instead of
+<Image
+  source={require("../../assets/hydration.jpg")}
+  style={styles.tipImage}
+/>
+
+// Use this
+<View 
+  style={[styles.tipImage, {backgroundColor: '#90CAF9'}]} 
+/>

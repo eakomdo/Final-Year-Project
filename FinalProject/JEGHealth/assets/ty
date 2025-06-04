@@ -1,0 +1,10 @@
+// Instead of profile image
+<Image
+  source={require("../../assets/default-profile.png")}
+  style={styles.profileImage}
+/>
+
+// Use this
+<View style={[styles.profileImage, {backgroundColor: '#DDD', justifyContent: 'center', alignItems: 'center'}]}>
+  <Ionicons name="person" size={24} color="#888" />
+</View>
