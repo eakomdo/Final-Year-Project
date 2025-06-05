@@ -14,11 +14,14 @@ import { LineChart } from "react-native-chart-kit";
 import DeviceConnectionManager from "../../src/services/DeviceConnectionManager";
 import HealthDataService from "../../src/services/HealthDataService";
 import DiseaseDetectionService from "../../src/services/DiseaseDetectionService";
-import * as Application from "expo-application";
 import Constants from "expo-constants";
+import SafeScreen from "../../component/SafeScreen";
+import { useTheme } from "../../context/ThemeContext";
 
-export default function HealthScreen() {
-  // Properly define all states
+const HealthScreen = () => {
+  const { theme } = useTheme();
+
+  // State definitions
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [connected, setConnected] = useState(false);
@@ -355,312 +358,355 @@ export default function HealthScreen() {
     );
   };
 
+  // Apply dynamic styles based on theme
+  const dynamicStyles = {
+    container: {
+      flex: 1,
+      backgroundColor: theme.background,
+    },
+    header: {
+      backgroundColor: theme.card,
+      borderBottomColor: theme.border,
+    },
+    title: {
+      color: theme.text,
+    },
+    card: {
+      backgroundColor: theme.card,
+      shadowColor: theme.text,
+    },
+    text: {
+      color: theme.text,
+    },
+    subText: {
+      color: theme.subText,
+    },
+    statCard: {
+      backgroundColor: theme.card,
+    },
+    statValue: {
+      color: theme.primary,
+    },
+    statLabel: {
+      color: theme.subText,
+    },
+  };
+
   return (
-    <ScrollView
-      style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={loading} onRefresh={loadHealthData} />
-      }
-    >
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Health Monitoring</Text>
-        {connected && (
-          <View style={styles.connectionIndicator}>
-            <Ionicons name="bluetooth" size={16} color="#4CAF50" />
-            <Text style={styles.connectionText}>Device Connected</Text>
+    <SafeScreen>
+      <View style={[styles.header, dynamicStyles.header]}>
+        <Text style={[styles.title, dynamicStyles.title]}>Health Dashboard</Text>
+      </View>
+      <ScrollView
+        style={[styles.container, dynamicStyles.container]}
+        refreshControl={
+          <RefreshControl refreshing={loading} onRefresh={loadHealthData} />
+        }
+      >
+        <Text style={styles.sectionTitle}>Your Health Metrics</Text>
+
+        {error && (
+          <View style={styles.errorContainer}>
+            <Ionicons name="alert-circle" size={24} color="#F44336" />
+            <Text style={styles.errorText}>{error}</Text>
           </View>
         )}
-      </View>
 
-      {error && (
-        <View style={styles.errorContainer}>
-          <Ionicons name="alert-circle" size={24} color="#F44336" />
-          <Text style={styles.errorText}>{error}</Text>
-        </View>
-      )}
-
-      {loading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#007BFF" />
-          <Text style={styles.loadingText}>Loading health data...</Text>
-        </View>
-      ) : (
-        <>
-          {/* Risk assessment section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
-              Cardiovascular Risk Assessment
-            </Text>
-
-            {riskAssessment ? (
-              <>
-                <View style={styles.riskContainer}>
-                  <Text style={styles.riskLabel}>Overall Risk:</Text>
-                  {renderRiskLevel(riskAssessment.overallRisk)}
-                </View>
-
-                {riskAssessment.possibleDiseases.length > 0 && (
-                  <>
-                    <Text style={styles.warningTitle}>Potential Concerns:</Text>
-                    {riskAssessment.possibleDiseases.map((disease, index) => (
-                      <View key={index} style={styles.diseaseItem}>
-                        <Ionicons
-                          name="alert-circle"
-                          size={18}
-                          color="#FF9800"
-                        />
-                        <Text style={styles.diseaseText}>{disease}</Text>
-                      </View>
-                    ))}
-                    <Text style={styles.disclaimer}>
-                      This assessment is based on your readings and is not a
-                      medical diagnosis. Consult a healthcare professional for
-                      proper evaluation.
-                    </Text>
-                  </>
-                )}
-              </>
-            ) : (
-              <Text style={styles.noDataText}>
-                Not enough data for risk assessment. Please connect your device
-                to collect readings.
-              </Text>
-            )}
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#007BFF" />
+            <Text style={styles.loadingText}>Loading health data...</Text>
           </View>
+        ) : (
+          <>
+            {/* Risk assessment section */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>
+                Cardiovascular Risk Assessment
+              </Text>
 
-          {/* Heart Rate section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Heart Rate</Text>
+              {riskAssessment ? (
+                <>
+                  <View style={styles.riskContainer}>
+                    <Text style={styles.riskLabel}>Overall Risk:</Text>
+                    {renderRiskLevel(riskAssessment.overallRisk)}
+                  </View>
 
-            {healthData.heartRate.current ? (
-              <>
-                <View style={styles.currentReading}>
-                  <Ionicons name="heart" size={32} color="#F44336" />
-                  <Text style={styles.readingValue}>
-                    {healthData.heartRate.current.value}{" "}
-                    <Text style={styles.readingUnit}>bpm</Text>
-                  </Text>
-                </View>
+                  {riskAssessment.possibleDiseases.length > 0 && (
+                    <>
+                      <Text style={styles.warningTitle}>
+                        Potential Concerns:
+                      </Text>
+                      {riskAssessment.possibleDiseases.map((disease, index) => (
+                        <View key={index} style={styles.diseaseItem}>
+                          <Ionicons
+                            name="alert-circle"
+                            size={18}
+                            color="#FF9800"
+                          />
+                          <Text style={styles.diseaseText}>{disease}</Text>
+                        </View>
+                      ))}
+                      <Text style={styles.disclaimer}>
+                        This assessment is based on your readings and is not a
+                        medical diagnosis. Consult a healthcare professional for
+                        proper evaluation.
+                      </Text>
+                    </>
+                  )}
+                </>
+              ) : (
+                <Text style={styles.noDataText}>
+                  Not enough data for risk assessment. Please connect your
+                  device to collect readings.
+                </Text>
+              )}
+            </View>
 
-                {healthData.heartRate.history.length > 1 && (
-                  <View style={styles.chartContainer}>
-                    <LineChart
-                      data={{
-                        labels: healthData.heartRate.history
-                          .slice(-7)
-                          .map((r) =>
+            {/* Heart Rate section */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Heart Rate</Text>
+
+              {healthData.heartRate.current ? (
+                <>
+                  <View style={styles.currentReading}>
+                    <Ionicons name="heart" size={32} color="#F44336" />
+                    <Text style={styles.readingValue}>
+                      {healthData.heartRate.current.value}{" "}
+                      <Text style={styles.readingUnit}>bpm</Text>
+                    </Text>
+                  </View>
+
+                  {healthData.heartRate.history.length > 1 && (
+                    <View style={styles.chartContainer}>
+                      <LineChart
+                        data={{
+                          labels: healthData.heartRate.history
+                            .slice(-7)
+                            .map((r) =>
+                              new Date(r.timestamp).toLocaleDateString(
+                                "en-US",
+                                {
+                                  month: "short",
+                                  day: "numeric",
+                                }
+                              )
+                            ),
+                          datasets: [
+                            {
+                              data: healthData.heartRate.history
+                                .slice(-7)
+                                .map((r) => r.value),
+                            },
+                          ],
+                        }}
+                        width={320}
+                        height={180}
+                        chartConfig={{
+                          backgroundColor: "#f5f5f5",
+                          backgroundGradientFrom: "#f5f5f5",
+                          backgroundGradientTo: "#f5f5f5",
+                          decimalPlaces: 0,
+                          color: () => "#F44336",
+                          labelColor: () => "#333",
+                          style: {
+                            borderRadius: 16,
+                          },
+                          propsForDots: {
+                            r: "5",
+                            strokeWidth: "2",
+                            stroke: "#F44336",
+                          },
+                        }}
+                        bezier
+                        style={styles.chart}
+                      />
+                    </View>
+                  )}
+                </>
+              ) : (
+                <Text style={styles.noDataText}>
+                  No heart rate data available. Connect your device to start
+                  monitoring.
+                </Text>
+              )}
+            </View>
+
+            {/* Blood Oxygen section */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Blood Oxygen (SpO2)</Text>
+
+              {healthData.spo2.current ? (
+                <>
+                  <View style={styles.currentReading}>
+                    <Ionicons name="water" size={32} color="#2196F3" />
+                    <Text style={styles.readingValue}>
+                      {healthData.spo2.current.value}
+                      <Text style={styles.readingUnit}>%</Text>
+                    </Text>
+                  </View>
+
+                  {healthData.spo2.history.length > 1 && (
+                    <View style={styles.chartContainer}>
+                      <LineChart
+                        data={{
+                          labels: healthData.spo2.history.slice(-7).map((r) =>
                             new Date(r.timestamp).toLocaleDateString("en-US", {
                               month: "short",
                               day: "numeric",
                             })
                           ),
-                        datasets: [
-                          {
-                            data: healthData.heartRate.history
-                              .slice(-7)
-                              .map((r) => r.value),
+                          datasets: [
+                            {
+                              data: healthData.spo2.history
+                                .slice(-7)
+                                .map((r) => r.value),
+                            },
+                          ],
+                        }}
+                        width={320}
+                        height={180}
+                        chartConfig={{
+                          backgroundColor: "#f5f5f5",
+                          backgroundGradientFrom: "#f5f5f5",
+                          backgroundGradientTo: "#f5f5f5",
+                          decimalPlaces: 0,
+                          color: () => "#2196F3",
+                          labelColor: () => "#333",
+                          style: {
+                            borderRadius: 16,
                           },
-                        ],
-                      }}
-                      width={320}
-                      height={180}
-                      chartConfig={{
-                        backgroundColor: "#f5f5f5",
-                        backgroundGradientFrom: "#f5f5f5",
-                        backgroundGradientTo: "#f5f5f5",
-                        decimalPlaces: 0,
-                        color: () => "#F44336",
-                        labelColor: () => "#333",
-                        style: {
-                          borderRadius: 16,
-                        },
-                        propsForDots: {
-                          r: "5",
-                          strokeWidth: "2",
-                          stroke: "#F44336",
-                        },
-                      }}
-                      bezier
-                      style={styles.chart}
-                    />
-                  </View>
-                )}
-              </>
-            ) : (
-              <Text style={styles.noDataText}>
-                No heart rate data available. Connect your device to start
-                monitoring.
-              </Text>
-            )}
-          </View>
-
-          {/* Blood Oxygen section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Blood Oxygen (SpO2)</Text>
-
-            {healthData.spo2.current ? (
-              <>
-                <View style={styles.currentReading}>
-                  <Ionicons name="water" size={32} color="#2196F3" />
-                  <Text style={styles.readingValue}>
-                    {healthData.spo2.current.value}
-                    <Text style={styles.readingUnit}>%</Text>
-                  </Text>
-                </View>
-
-                {healthData.spo2.history.length > 1 && (
-                  <View style={styles.chartContainer}>
-                    <LineChart
-                      data={{
-                        labels: healthData.spo2.history.slice(-7).map((r) =>
-                          new Date(r.timestamp).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                          })
-                        ),
-                        datasets: [
-                          {
-                            data: healthData.spo2.history
-                              .slice(-7)
-                              .map((r) => r.value),
+                          propsForDots: {
+                            r: "5",
+                            strokeWidth: "2",
+                            stroke: "#2196F3",
                           },
-                        ],
-                      }}
-                      width={320}
-                      height={180}
-                      chartConfig={{
-                        backgroundColor: "#f5f5f5",
-                        backgroundGradientFrom: "#f5f5f5",
-                        backgroundGradientTo: "#f5f5f5",
-                        decimalPlaces: 0,
-                        color: () => "#2196F3",
-                        labelColor: () => "#333",
-                        style: {
-                          borderRadius: 16,
-                        },
-                        propsForDots: {
-                          r: "5",
-                          strokeWidth: "2",
-                          stroke: "#2196F3",
-                        },
-                      }}
-                      bezier
-                      style={styles.chart}
-                    />
-                  </View>
-                )}
-              </>
-            ) : (
-              <Text style={styles.noDataText}>
-                No SpO2 data available. Connect your device to start monitoring.
-              </Text>
-            )}
-          </View>
-
-          {/* Connect Device section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>IoT Devices</Text>
-
-            <TouchableOpacity
-              style={styles.scanButton}
-              onPress={scanForDevices}
-              disabled={scanningDevices}
-            >
-              {scanningDevices ? (
-                <View style={styles.buttonContent}>
-                  <ActivityIndicator size="small" color="#fff" />
-                  <Text style={styles.scanButtonText}>Scanning...</Text>
-                </View>
-              ) : (
-                <View style={styles.buttonContent}>
-                  <Ionicons name="bluetooth" size={18} color="#fff" />
-                  <Text style={styles.scanButtonText}>Scan for Devices</Text>
-                </View>
-              )}
-            </TouchableOpacity>
-
-            {devices.length > 0 ? (
-              devices.map((device) => (
-                <TouchableOpacity
-                  key={device.id}
-                  style={[
-                    styles.deviceItem,
-                    device.connected && styles.connectedDevice,
-                  ]}
-                  onPress={() =>
-                    !device.connected &&
-                    !device.connecting &&
-                    connectToDevice(device.id)
-                  }
-                  disabled={device.connected || device.connecting}
-                >
-                  <View style={styles.deviceInfo}>
-                    <Ionicons
-                      name={
-                        device.type === "ecg"
-                          ? "pulse"
-                          : device.type === "oximeter"
-                          ? "water"
-                          : device.type === "gps"
-                          ? "location"
-                          : "bluetooth"
-                      }
-                      size={24}
-                      color={device.connected ? "#4CAF50" : "#007BFF"}
-                    />
-                    <View style={styles.deviceTextContainer}>
-                      <Text style={styles.deviceName}>{device.name}</Text>
-                      <Text style={styles.deviceType}>
-                        {device.type.charAt(0).toUpperCase() +
-                          device.type.slice(1)}{" "}
-                        Device
-                      </Text>
+                        }}
+                        bezier
+                        style={styles.chart}
+                      />
                     </View>
-                  </View>
-                  {device.connecting ? (
-                    <ActivityIndicator size="small" color="#007BFF" />
-                  ) : device.connected ? (
-                    <Text style={styles.connectedText}>Connected</Text>
-                  ) : (
-                    <Ionicons name="chevron-forward" size={24} color="#888" />
                   )}
-                </TouchableOpacity>
-              ))
-            ) : (
-              <Text style={styles.noDevicesText}>
-                {error
-                  ? "Check device status and try again."
-                  : 'No devices found. Tap "Scan for Devices" to find your health monitoring devices.'}
-              </Text>
-            )}
-          </View>
+                </>
+              ) : (
+                <Text style={styles.noDataText}>
+                  No SpO2 data available. Connect your device to start
+                  monitoring.
+                </Text>
+              )}
+            </View>
 
-          <Text style={styles.footnote}>
-            This app can detect potential cardiovascular conditions through IoT
-            device readings. Regular monitoring provides better insights into
-            your heart health.
-          </Text>
-        </>
-      )}
-    </ScrollView>
+            {/* Connect Device section */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>IoT Devices</Text>
+
+              <TouchableOpacity
+                style={styles.scanButton}
+                onPress={scanForDevices}
+                disabled={scanningDevices}
+              >
+                {scanningDevices ? (
+                  <View style={styles.buttonContent}>
+                    <ActivityIndicator size="small" color="#fff" />
+                    <Text style={styles.scanButtonText}>Scanning...</Text>
+                  </View>
+                ) : (
+                  <View style={styles.buttonContent}>
+                    <Ionicons name="bluetooth" size={18} color="#fff" />
+                    <Text style={styles.scanButtonText}>Scan for Devices</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+
+              {devices.length > 0 ? (
+                devices.map((device) => (
+                  <TouchableOpacity
+                    key={device.id}
+                    style={[
+                      styles.deviceItem,
+                      device.connected && styles.connectedDevice,
+                    ]}
+                    onPress={() =>
+                      !device.connected &&
+                      !device.connecting &&
+                      connectToDevice(device.id)
+                    }
+                    disabled={device.connected || device.connecting}
+                  >
+                    <View style={styles.deviceInfo}>
+                      <Ionicons
+                        name={
+                          device.type === "ecg"
+                            ? "pulse"
+                            : device.type === "oximeter"
+                            ? "water"
+                            : device.type === "gps"
+                            ? "location"
+                            : "bluetooth"
+                        }
+                        size={24}
+                        color={device.connected ? "#4CAF50" : "#007BFF"}
+                      />
+                      <View style={styles.deviceTextContainer}>
+                        <Text style={styles.deviceName}>{device.name}</Text>
+                        <Text style={styles.deviceType}>
+                          {device.type.charAt(0).toUpperCase() +
+                            device.type.slice(1)}{" "}
+                          Device
+                        </Text>
+                      </View>
+                    </View>
+                    {device.connecting ? (
+                      <ActivityIndicator size="small" color="#007BFF" />
+                    ) : device.connected ? (
+                      <Text style={styles.connectedText}>Connected</Text>
+                    ) : (
+                      <Ionicons name="chevron-forward" size={24} color="#888" />
+                    )}
+                  </TouchableOpacity>
+                ))
+              ) : (
+                <Text style={styles.noDevicesText}>
+                  {error
+                    ? "Check device status and try again."
+                    : 'No devices found. Tap "Scan for Devices" to find your health monitoring devices.'}
+                </Text>
+              )}
+            </View>
+
+            <Text style={styles.footnote}>
+              This app can detect potential cardiovascular conditions through
+              IoT device readings. Regular monitoring provides better insights
+              into your heart health.
+            </Text>
+          </>
+        )}
+      </ScrollView>
+    </SafeScreen>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    padding: 16,
     backgroundColor: "#f8f8f8",
   },
   header: {
-    padding: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
     backgroundColor: "#fff",
     borderBottomWidth: 1,
     borderBottomColor: "#eee",
   },
-  headerTitle: {
+  title: {
     fontSize: 22,
     fontWeight: "bold",
-    color: "#333",
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginVertical: 16,
   },
   connectionIndicator: {
     flexDirection: "row",
@@ -705,12 +751,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#333",
-    marginBottom: 16,
   },
   currentReading: {
     flexDirection: "row",
@@ -846,6 +886,5 @@ const styles = StyleSheet.create({
   },
 });
 
-export const extraFunctions = {
-  // Add any extra functions here
-};
+// Default export
+export default HealthScreen;

@@ -17,17 +17,29 @@ class DataStorage {
     this._initialize();
   }
   
+  // Remove any stray 'c' character if it exists
+
+  // Modify _initialize method to handle crypto failures
   async _initialize() {
-    // Get or create encryption key
     try {
       let key = await SecureStore.getItemAsync('encryption_key');
       if (!key) {
-        key = CryptoJS.lib.WordArray.random(16).toString();
+        try {
+          key = CryptoJS.lib.WordArray.random(16).toString();
+        } catch (cryptoError) {
+          console.log('Crypto random generation failed, using fallback', cryptoError);
+          // Fallback to Math.random if crypto fails
+          key = Array(16).fill(0).map(() => 
+            Math.floor(Math.random() * 256).toString(16).padStart(2, '0')
+          ).join('');
+        }
         await SecureStore.setItemAsync('encryption_key', key);
       }
       this.encryptionKey = key;
     } catch (error) {
       console.error('Error initializing DataStorage:', error);
+      // Set a fallback key for development only
+      this.encryptionKey = 'fallback-encryption-key-dev-only';
     }
   }
   

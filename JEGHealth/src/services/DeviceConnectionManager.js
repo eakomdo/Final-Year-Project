@@ -1,18 +1,47 @@
 import Constants from "expo-constants";
 import { Platform } from "react-native";
 import { Buffer } from "buffer";
-import EventEmitter from 'eventemitter3';
+import EventEmitter from "eventemitter3";
 
-// Import BleManager properly
+// Import BleManager properly with better error handling
 let BleManager;
+let nativeBleAvailable = false;
+
 try {
-  const { BleManager: NativeBleManager } = require("react-native-ble-plx");
-  BleManager = NativeBleManager;
+  // Try to import the native BLE manager
+  if (Platform.OS !== 'web') {
+    const bleModule = require("react-native-ble-plx");
+    BleManager = bleModule.BleManager || bleModule.default;
+    console.log("BLE native module loaded successfully");
+    
+    // Test if we can actually instantiate it
+    try {
+      const testManager = new BleManager();
+      testManager.destroy(); // Clean up test instance
+      nativeBleAvailable = true;
+      console.log("BLE native module verified working");
+    } catch (testError) {
+      console.log("BLE native module loaded but cannot instantiate:", testError.message);
+      nativeBleAvailable = false;
+    }
+  }
+  
+  // If BleManager is still undefined or test failed, use mock
+  if (!BleManager || !nativeBleAvailable) {
+    throw new Error("BLE module not available or not working");
+  }
 } catch (error) {
-  console.log("BLE native module not available, using mock");
-  // Mock implementation if native module not available
-  BleManager = class MockBleManager {
-    constructor() {}
+  console.log("BLE native module not available, using mock:", error.message);
+  nativeBleAvailable = false;
+  
+}
+
+// Always define MockBleManager as fallback
+class MockBleManager {
+    constructor() {
+      console.log("MockBleManager instantiated");
+    }
+    
     // Mock methods
     startDeviceScan(_, __, callback) {
       console.log("Mock scan started");
@@ -50,6 +79,7 @@ try {
                 remove: () => console.log("Listener removed"),
               };
             },
+            cancelConnection: () => Promise.resolve(),
           });
         }, 1000);
       });
@@ -59,16 +89,35 @@ try {
       return Promise.resolve();
     }
   };
-}
 
 class DeviceConnectionManager extends EventEmitter {
   constructor() {
     super();
-    this.bleManager = new BleManager();
+    
+    // Initialize BLE manager with better error handling
+    this.mockMode = !nativeBleAvailable; // Set mock mode based on availability
+    
+    if (nativeBleAvailable && BleManager) {
+      try {
+        this.bleManager = new BleManager();
+        console.log("Native BleManager initialized successfully");
+      } catch (error) {
+        console.error("Failed to initialize native BleManager:", error);
+        console.log("Falling back to mock mode");
+        this.bleManager = new MockBleManager();
+        this.mockMode = true;
+      }
+    } else {
+      console.log("Using MockBleManager (native BLE not available)");
+      this.bleManager = new MockBleManager();
+      this.mockMode = true;
+    }
+    
     this.connectedDevices = {};
     this.deviceListeners = {};
-    this.mockMode = false;
     this.mockDataIntervals = {};
+    
+    console.log(`DeviceConnectionManager initialized, mock mode: ${this.mockMode}`);
   }
 
   // Enable mock mode for testing without real devices
@@ -77,8 +126,51 @@ class DeviceConnectionManager extends EventEmitter {
     console.log("DeviceConnectionManager: Mock mode enabled");
   }
 
+  // Check BLE state and permissions
+  async checkBLEState() {
+    if (this.mockMode) {
+      return { state: "PoweredOn", available: true };
+    }
+
+    try {
+      const state = await this.bleManager.state();
+      console.log("BLE State:", state);
+      return { state, available: state === "PoweredOn" };
+    } catch (error) {
+      console.error("Error checking BLE state:", error);
+      return { state: "Unknown", available: false, error: error.message };
+    }
+  }
+
+  // Initialize BLE (call this before scanning)
+  async initialize() {
+    if (this.mockMode) {
+      console.log("DeviceConnectionManager: Mock mode - no initialization needed");
+      return true;
+    }
+
+    try {
+      const state = await this.checkBLEState();
+      if (!state.available) {
+        console.warn("BLE not available, falling back to mock mode");
+        this.mockMode = true;
+        this.bleManager = new MockBleManager();
+        return false;
+      }
+      return true;
+    } catch (error) {
+      console.error("Failed to initialize BLE:", error);
+      this.mockMode = true;
+      this.bleManager = new MockBleManager();
+      return false;
+    }
+  }
+
   // Start scanning for devices
-  startScan() {
+  async startScan() {
+    // Initialize BLE first
+    await this.initialize();
+
     if (this.mockMode) {
       this._mockScan();
       return;
@@ -146,7 +238,7 @@ class DeviceConnectionManager extends EventEmitter {
   // Stop scanning
   stopScan() {
     try {
-      if (!this.mockMode) {
+      if (!this.mockMode && this.bleManager) {
         this.bleManager.stopDeviceScan();
       }
     } catch (error) {
@@ -530,7 +622,7 @@ class DeviceConnectionManager extends EventEmitter {
         delete this.mockDataIntervals[deviceId];
       }
 
-      if (!this.mockMode) {
+      if (!this.mockMode && device.cancelConnection) {
         await device.cancelConnection();
       }
 
@@ -556,6 +648,15 @@ class DeviceConnectionManager extends EventEmitter {
     Object.keys(this.connectedDevices).forEach((deviceId) => {
       this.disconnectDevice(deviceId);
     });
+
+    // Clean up native BLE manager if available
+    if (!this.mockMode && this.bleManager && this.bleManager.destroy) {
+      try {
+        this.bleManager.destroy();
+      } catch (error) {
+        console.error("Error destroying BLE manager:", error);
+      }
+    }
 
     // Remove all listeners
     this.removeAllListeners();

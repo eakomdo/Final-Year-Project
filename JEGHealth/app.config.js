@@ -1,6 +1,7 @@
 // app.config.js - Expo configuration file
 export default {
   expo: {
+    scheme: "jeghealth",
     name: "JEGHealth",
     slug: "jeg-health",
     version: "1.0.0",
@@ -10,22 +11,21 @@ export default {
     splash: {
       image: "./assets/splash.png",
       resizeMode: "contain",
-      backgroundColor: "#ffffff"
+      backgroundColor: "#ffffff",
     },
-    assetBundlePatterns: [
-      "**/*"
-    ],
+    assetBundlePatterns: ["**/*"],
     ios: {
       supportsTablet: true,
       bundleIdentifier: "com.jeghealth.app",
       infoPlist: {
-        NSBluetoothAlwaysUsageDescription: "This app uses Bluetooth to connect to health monitoring devices"
-      }
+        NSBluetoothAlwaysUsageDescription:
+          "This app uses Bluetooth to connect to health monitoring devices",
+      },
     },
     android: {
       adaptiveIcon: {
-        foregroundImage: "./assets/adaptive-icon.png",
-        backgroundColor: "#ffffff"
+        foregroundImage: "./assets/app-icon.png",
+        backgroundColor: "#ffffff",
       },
       package: "com.jeghealth.app",
       permissions: [
@@ -33,23 +33,23 @@ export default {
         "android.permission.BLUETOOTH_ADMIN",
         "android.permission.BLUETOOTH_CONNECT",
         "android.permission.BLUETOOTH_SCAN",
-        "android.permission.ACCESS_FINE_LOCATION"
-      ]
+        "android.permission.ACCESS_FINE_LOCATION",
+      ],
     },
     plugins: [
       [
         "expo-build-properties",
         {
           android: {},
-          ios: {}
-        }
-      ]
+          ios: {},
+        },
+      ],
     ],
     extra: {
       enableMockDevices: true,
       eas: {
-        projectId: "your-project-id"
-      }
-    }
-  }
+        projectId: "your-project-id",
+      },
+    },
+  },
 };
