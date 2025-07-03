@@ -1,7 +1,7 @@
-import React from "react";
-import { Tabs } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
-import { Colors } from "../../src/constants/colors";
+import React from 'react';
+import { Tabs } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { Colors } from '../../src/constants/colors';
 
 export default function TabLayout() {
   return (
@@ -22,64 +22,64 @@ export default function TabLayout() {
         },
         headerTintColor: Colors.textOnPrimary,
         headerTitleStyle: {
-          fontWeight: "bold",
+          fontWeight: 'bold',
           fontSize: 18,
         },
         tabBarLabelStyle: {
           fontSize: 12,
-          fontWeight: "600",
+          fontWeight: '600',
         },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
+          title: 'Home',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home-outline" size={size} color={color} />
           ),
-          headerTitle: "JEGHealth Dashboard",
+          headerTitle: 'JEGHealth Dashboard',
         }}
       />
       <Tabs.Screen
         name="health"
         options={{
-          title: "Health",
+          title: 'Health',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="fitness-outline" size={size} color={color} />
           ),
-          headerTitle: "Health Monitoring",
+          headerTitle: 'Health Monitoring',
         }}
       />
       <Tabs.Screen
         name="ai-chat"
         options={{
-          title: "Dr. JEG",
+          title: 'Dr. JEG',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="medical-outline" size={size} color={color} />
           ),
-          headerTitle: "Dr. JEG - AI Assistant",
-          headerShown: false, // We'll use custom header in the screen
+          headerTitle: 'Dr. JEG - AI Assistant',
+          headerShown: false,
         }}
       />
       <Tabs.Screen
         name="devices"
         options={{
-          title: "Devices",
+          title: 'Devices',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="bluetooth-outline" size={size} color={color} />
           ),
-          headerTitle: "Connected Devices",
+          headerTitle: 'Connected Devices',
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          title: "Profile",
+          title: 'Profile',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person-outline" size={size} color={color} />
           ),
-          headerTitle: "User Profile",
+          headerTitle: 'User Profile',
         }}
       />
     </Tabs>
