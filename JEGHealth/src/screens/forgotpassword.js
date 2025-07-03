@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { Colors } from '../constants/colors';
 
 const ForgotPasswordScreen = () => {
   const [email, setEmail] = useState('');
@@ -40,10 +41,7 @@ const ForgotPasswordScreen = () => {
     setIsLoading(true);
 
     try {
-      // Simulate API call for password reset
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Simulate successful response
       console.log('Password reset requested for:', email);
       
       setEmailSent(true);
@@ -72,17 +70,16 @@ const ForgotPasswordScreen = () => {
     router.push('/login');
   };
 
-  // Success screen component
   if (emailSent) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.successContainer}>
           <View style={styles.successIcon}>
-            <Ionicons name="checkmark-circle" size={80} color="#4CAF50" />
+            <Ionicons name="checkmark-circle" size={80} color={Colors.success} />
           </View>
           <Text style={styles.successTitle}>Email Sent!</Text>
           <Text style={styles.successMessage}>
-            We&#39;ve sent a password reset link to {email}. Please check your inbox and follow the instructions.
+            We've sent a password reset link to {email}. Please check your inbox and follow the instructions.
           </Text>
           <TouchableOpacity style={styles.backButton} onPress={handleBackToLogin}>
             <Text style={styles.backButtonText}>Back to Login</Text>
@@ -105,26 +102,32 @@ const ForgotPasswordScreen = () => {
               style={styles.backIconContainer}
               onPress={handleBackToLogin}
             >
-              <Ionicons name="arrow-back" size={24} color="#333" />
+              <Ionicons name="arrow-back" size={24} color={Colors.textPrimary} />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>Forgot Password</Text>
+            <Text style={styles.headerTitle}>Reset Password</Text>
             <View style={styles.placeholder} />
           </View>
 
           <View style={styles.content}>
+            <View style={styles.brandContainer}>
+              <Text style={styles.brandText}>JEGHealth</Text>
+            </View>
+
             <View style={styles.iconContainer}>
-              <Ionicons name="lock-closed-outline" size={60} color="#007AFF" />
+              <View style={styles.iconBackground}>
+                <Ionicons name="lock-closed-outline" size={40} color={Colors.primary} />
+              </View>
             </View>
 
             <Text style={styles.title}>Reset Your Password</Text>
             <Text style={styles.subtitle}>
-              Enter your email address and we&#39;ll send you a link to reset your password.
+              Enter your email address and we'll send you a link to reset your password.
             </Text>
 
             {/* Email Input */}
             <View style={styles.inputContainer}>
               <View style={styles.inputWrapper}>
-                <Ionicons name="mail-outline" size={20} color="#666" style={styles.inputIcon} />
+                <Ionicons name="mail-outline" size={20} color={Colors.textTertiary} style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
                   placeholder="Enter your email address"
@@ -134,7 +137,7 @@ const ForgotPasswordScreen = () => {
                   autoCapitalize="none"
                   autoCorrect={false}
                   editable={!isLoading}
-                  placeholderTextColor="#999"
+                  placeholderTextColor={Colors.placeholder}
                 />
               </View>
             </View>
@@ -146,9 +149,12 @@ const ForgotPasswordScreen = () => {
               disabled={isLoading}
             >
               {isLoading ? (
-                <ActivityIndicator color="#fff" />
+                <ActivityIndicator color={Colors.textOnPrimary} />
               ) : (
-                <Text style={styles.resetButtonText}>Send Reset Link</Text>
+                <>
+                  <Text style={styles.resetButtonText}>Send Reset Link</Text>
+                  <Ionicons name="send" size={16} color={Colors.textOnPrimary} style={styles.buttonIcon} />
+                </>
               )}
             </TouchableOpacity>
 
@@ -157,7 +163,7 @@ const ForgotPasswordScreen = () => {
               <Text style={styles.helpText}>
                 Remember your password?{' '}
                 <Text style={styles.loginLink} onPress={handleBackToLogin}>
-                  Sign In at
+                  Sign In
                 </Text>
               </Text>
             </View>
@@ -165,7 +171,7 @@ const ForgotPasswordScreen = () => {
             {/* Support Section */}
             <View style={styles.supportContainer}>
               <Text style={styles.supportText}>
-                Need help? Contact our support team  at 
+                Need help? Contact our support team
               </Text>
               <TouchableOpacity>
                 <Text style={styles.supportLink}>support@jeghealth.com</Text>
@@ -181,7 +187,7 @@ const ForgotPasswordScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: Colors.background,
   },
   keyboardAvoidingView: {
     flex: 1,
@@ -195,9 +201,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 15,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.background,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: Colors.border,
   },
   backIconContainer: {
     padding: 5,
@@ -205,7 +211,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#333',
+    color: Colors.textPrimary,
   },
   placeholder: {
     width: 34,
@@ -213,22 +219,40 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 30,
-    paddingTop: 40,
+    paddingTop: 20,
+  },
+  brandContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  brandText: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: Colors.primary,
+    letterSpacing: 0.5,
   },
   iconContainer: {
     alignItems: 'center',
     marginBottom: 30,
   },
+  iconBackground: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: Colors.featureIconBg,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#333',
+    color: Colors.textPrimary,
     textAlign: 'center',
     marginBottom: 15,
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: Colors.textSecondary,
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: 40,
@@ -239,12 +263,12 @@ const styles = StyleSheet.create({
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: Colors.inputBackground,
     borderRadius: 12,
     paddingHorizontal: 15,
-    paddingVertical: 15,
+    paddingVertical: 4,
     borderWidth: 1,
-    borderColor: '#e0e0e0',
+    borderColor: Colors.inputBorder,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -260,32 +284,37 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 16,
-    color: '#333',
+    color: Colors.textPrimary,
+    padding: 12,
   },
   resetButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: Colors.primary,
     borderRadius: 12,
     paddingVertical: 16,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 30,
-    shadowColor: '#007AFF',
+    shadowColor: Colors.primary,
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 4,
     },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   disabledButton: {
-    backgroundColor: '#ccc',
-    shadowOpacity: 0,
-    elevation: 0,
+    opacity: 0.6,
   },
   resetButtonText: {
-    color: '#fff',
+    color: Colors.textOnPrimary,
     fontSize: 16,
     fontWeight: '600',
+    marginRight: 8,
+  },
+  buttonIcon: {
+    marginLeft: 4,
   },
   helpContainer: {
     alignItems: 'center',
@@ -293,10 +322,10 @@ const styles = StyleSheet.create({
   },
   helpText: {
     fontSize: 14,
-    color: '#666',
+    color: Colors.textSecondary,
   },
   loginLink: {
-    color: '#007AFF',
+    color: Colors.primary,
     fontWeight: '600',
   },
   supportContainer: {
@@ -305,13 +334,13 @@ const styles = StyleSheet.create({
   },
   supportText: {
     fontSize: 12,
-    color: '#999',
+    color: Colors.textTertiary,
     marginBottom: 5,
   },
   supportLink: {
     fontSize: 12,
-    color: '#007AFF',
-    textDecorationLine: 'underline',
+    color: Colors.primary,
+    fontWeight: '600',
   },
   // Success screen styles
   successContainer: {
@@ -326,25 +355,25 @@ const styles = StyleSheet.create({
   successTitle: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#333',
+    color: Colors.textPrimary,
     marginBottom: 20,
   },
   successMessage: {
     fontSize: 16,
-    color: '#666',
+    color: Colors.textSecondary,
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: 40,
   },
   backButton: {
-    backgroundColor: '#007AFF',
+    backgroundColor: Colors.primary,
     borderRadius: 12,
     paddingVertical: 16,
     paddingHorizontal: 40,
     alignItems: 'center',
   },
   backButtonText: {
-    color: '#fff',
+    color: Colors.textOnPrimary,
     fontSize: 16,
     fontWeight: '600',
   },
