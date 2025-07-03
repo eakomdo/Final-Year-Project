@@ -52,6 +52,17 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="ai-chat"
+        options={{
+          title: "Dr. JEG",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="medical-outline" size={size} color={color} />
+          ),
+          headerTitle: "Dr. JEG - AI Assistant",
+          headerShown: false, // We'll use custom header in the screen
+        }}
+      />
+      <Tabs.Screen
         name="devices"
         options={{
           title: "Devices",

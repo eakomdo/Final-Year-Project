@@ -34,4 +34,10 @@ export const Colors = {
   inputBorder: 'hsl(0, 0%, 90%)', // Light gray input borders
   inputFocus: 'hsl(142, 76%, 36%)', // Green focus ring
   placeholder: 'hsl(215, 13%, 54%)', // Gray placeholder text
+  
+  // Logo Colors
+  logoIconBg: 'hsl(142, 76%, 36%)', // Green background for heart icon
+  logoIconColor: 'hsl(0, 0%, 100%)', // White heart icon
+  logoTextPrimary: 'hsl(210, 11%, 15%)', // Dark text for "JEG"
+  logoTextSecondary: 'hsl(142, 76%, 36%)', // Green text for "Health"
 };

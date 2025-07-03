@@ -15,6 +15,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Colors } from '../constants/colors';
+import JEGHealthLogo from '../components/JEGHealthLogo';
 
 const ForgotPasswordScreen = () => {
   const [email, setEmail] = useState('');
@@ -110,7 +111,7 @@ const ForgotPasswordScreen = () => {
 
           <View style={styles.content}>
             <View style={styles.brandContainer}>
-              <Text style={styles.brandText}>JEGHealth</Text>
+              <JEGHealthLogo size="large" />
             </View>
 
             <View style={styles.iconContainer}>
@@ -224,12 +225,6 @@ const styles = StyleSheet.create({
   brandContainer: {
     alignItems: 'center',
     marginBottom: 20,
-  },
-  brandText: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: Colors.primary,
-    letterSpacing: 0.5,
   },
   iconContainer: {
     alignItems: 'center',

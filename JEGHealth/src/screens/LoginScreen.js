@@ -15,6 +15,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from 'expo-router';
 import { Colors } from '../constants/colors';
+import JEGHealthLogo from '../components/JEGHealthLogo';
 
 const LoginScreen = () => {
   const [email, setEmail] = useState("");
@@ -59,7 +60,7 @@ const LoginScreen = () => {
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           {/* Header with JEGHealth branding */}
           <View style={styles.headerContainer}>
-            <Text style={styles.brandText}>JEGHealth</Text>
+            <JEGHealthLogo size="hero" style={styles.logo} />
             <Text style={styles.title}>Welcome Back</Text>
             <Text style={styles.subtitle}>Sign in to access your health dashboard</Text>
           </View>
@@ -149,12 +150,8 @@ const styles = StyleSheet.create({
     marginBottom: 40,
     marginTop: 40,
   },
-  brandText: {
-    fontSize: 36,
-    fontWeight: "bold",
-    color: Colors.primary,
-    marginBottom: 16,
-    letterSpacing: 0.5,
+  logo: {
+    marginBottom: 24,
   },
   title: {
     fontSize: 28,
