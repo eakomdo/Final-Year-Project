@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 import CryptoJS from 'crypto-js';
+import CryptoService from './CryptoService';
 
 // Simple UUID generator function (alternative to react-native-uuid)
 function generateUUID() {
@@ -28,10 +29,10 @@ class DataStorage {
           key = CryptoJS.lib.WordArray.random(16).toString();
         } catch (cryptoError) {
           console.log('Crypto random generation failed, using fallback', cryptoError);
-          // Fallback to Math.random if crypto fails
-          key = Array(16).fill(0).map(() => 
-            Math.floor(Math.random() * 256).toString(16).padStart(2, '0')
-          ).join('');
+          // Use CryptoService fallback
+          CryptoService.showSecurityWarning();
+          const randomBytes = CryptoService.generateSecureRandom(16);
+          key = Array.from(randomBytes).map(b => b.toString(16).padStart(2, '0')).join('');
         }
         await SecureStore.setItemAsync('encryption_key', key);
       }

@@ -3,11 +3,12 @@ export default {
   expo: {
     scheme: "jeghealth",
     name: "JEGHealth",
-    slug: "jeg-health",
+    slug: "JEGHealth",
     version: "1.0.0",
     orientation: "portrait",
-    icon: "./assets/app-icon.png",
-    userInterfaceStyle: "light",
+    icon: "./assets/images/icon.png",
+    userInterfaceStyle: "automatic",
+    newArchEnabled: true,
     splash: {
       image: "./assets/splash.png",
       resizeMode: "contain",
@@ -24,7 +25,7 @@ export default {
     },
     android: {
       adaptiveIcon: {
-        foregroundImage: "./assets/app-icon.png",
+        foregroundImage: "./assets/images/adaptive-icon.png",
         backgroundColor: "#ffffff",
       },
       package: "com.jeghealth.app",
@@ -35,8 +36,25 @@ export default {
         "android.permission.BLUETOOTH_SCAN",
         "android.permission.ACCESS_FINE_LOCATION",
       ],
+      edgeToEdgeEnabled: true,
+    },
+    web: {
+      bundler: "metro",
+      output: "static",
+      favicon: "./assets/images/favicon.png",
     },
     plugins: [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          image: "./assets/images/splash-icon.png",
+          imageWidth: 200,
+          resizeMode: "contain",
+          backgroundColor: "#ffffff",
+        },
+      ],
+      "expo-web-browser",
       [
         "expo-build-properties",
         {
@@ -45,6 +63,9 @@ export default {
         },
       ],
     ],
+    experiments: {
+      typedRoutes: true,
+    },
     extra: {
       enableMockDevices: true,
       eas: {

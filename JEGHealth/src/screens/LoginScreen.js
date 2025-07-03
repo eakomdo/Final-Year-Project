@@ -8,11 +8,13 @@ import {
   Alert,
   ActivityIndicator,
 } from "react-native";
+import { useRouter } from 'expo-router';
 
-const LoginScreen = ({ navigation }) => {
+const LoginScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleLogin = async () => {
     // Form validation
@@ -31,13 +33,22 @@ const LoginScreen = ({ navigation }) => {
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
       // For demo purposes - successful login
-      navigation.replace("/(tabs)");
+      router.replace("/(tabs)");
     } catch (error) {
       console.error("Login error:", error);
       Alert.alert("Error", "Failed to login. Please try again.");
     } finally {
       setLoading(false);
     }
+  };
+
+  // This is the key function that navigates to forgot password
+  const handleForgotPassword = () => {
+    router.push("/forgotpassword");
+  };
+
+  const handleSignUp = () => {
+    router.push("/signup");
   };
 
   return (
@@ -68,8 +79,9 @@ const LoginScreen = ({ navigation }) => {
         />
       </View>
 
-      <TouchableOpacity style={styles.forgotPassword}>
-        <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+      {/* Make sure this TouchableOpacity has the onPress handler */}
+      <TouchableOpacity style={styles.forgotPassword} onPress={handleForgotPassword}>
+        <Text style={styles.forgotPasswordText}>Forgot Password? </Text>
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -85,8 +97,8 @@ const LoginScreen = ({ navigation }) => {
       </TouchableOpacity>
 
       <View style={styles.signupContainer}>
-        <Text style={styles.signupText}>Don&apos;t have an account? </Text>
-        <TouchableOpacity onPress={() => navigation.navigate("SignUp")}>
+        <Text style={styles.signupText}>Don&apos;t have an account?   </Text>
+        <TouchableOpacity onPress={handleSignUp}>
           <Text style={styles.signupLink}>Sign Up</Text>
         </TouchableOpacity>
       </View>

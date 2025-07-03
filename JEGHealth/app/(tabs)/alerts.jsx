@@ -8,24 +8,14 @@ import {
   Switch,
   FlatList,
   Modal,
-  Platform,
   Alert,
   TextInput,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../../context/ThemeContext";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import * as Notifications from "expo-notifications";
+import NotificationService from "../../src/services/NotificationService";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
-// Configure notifications
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-  }),
-});
 
 export default function AlertsScreen() {
   const { theme } = useTheme();
@@ -42,7 +32,6 @@ export default function AlertsScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [modalType, setModalType] = useState("");
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [selectedTime, setSelectedTime] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [alertTitle, setAlertTitle] = useState("");
@@ -71,26 +60,9 @@ export default function AlertsScreen() {
 
   // Register for push notifications
   const registerForPushNotifications = async () => {
-    try {
-      const { status: existingStatus } =
-        await Notifications.getPermissionsAsync();
-      let finalStatus = existingStatus;
-
-      if (existingStatus !== "granted") {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
-      }
-
-      if (finalStatus !== "granted") {
-        Alert.alert(
-          "Notification Permission",
-          "Please enable notifications to receive health reminders",
-          [{ text: "OK" }]
-        );
-        return;
-      }
-    } catch (error) {
-      console.log("Error getting notification permission:", error);
+    const status = await NotificationService.requestPermissions();
+    if (status === 'limited') {
+      NotificationService.showLimitationWarning();
     }
   };
 
@@ -118,14 +90,7 @@ export default function AlertsScreen() {
   // Schedule a notification
   const scheduleNotification = async (title, body, trigger) => {
     try {
-      const notificationId = await Notifications.scheduleNotificationAsync({
-        content: {
-          title,
-          body,
-          sound: true,
-        },
-        trigger,
-      });
+      const notificationId = await NotificationService.scheduleNotification(title, body, trigger);
       return notificationId;
     } catch (error) {
       console.log("Error scheduling notification:", error);
@@ -180,7 +145,6 @@ export default function AlertsScreen() {
 
     // Create notification schedule based on frequency
     let notificationIds = [];
-    let successCount = 0;
 
     // Function to schedule a notification for a specific time
     const scheduleForTime = async (time) => {
@@ -301,7 +265,6 @@ export default function AlertsScreen() {
       const ids = await scheduleForTime(time);
       if (ids && ids.length > 0) {
         notificationIds = [...notificationIds, ...ids];
-        successCount++;
       }
     }
 
@@ -374,7 +337,7 @@ export default function AlertsScreen() {
     if (alertToDelete && alertToDelete.notificationIds) {
       // Cancel all the scheduled notifications for this alert
       for (const notificationId of alertToDelete.notificationIds) {
-        await Notifications.cancelScheduledNotificationAsync(notificationId);
+        await NotificationService.cancelScheduledNotification(notificationId);
       }
     }
 
@@ -389,7 +352,7 @@ export default function AlertsScreen() {
   // Clear all alerts
   const clearAllAlerts = async () => {
     // Cancel all scheduled notifications
-    await Notifications.cancelAllScheduledNotificationsAsync();
+    await NotificationService.cancelAllScheduledNotifications();
 
     // Clear the alerts list
     setAlerts([]);
@@ -453,8 +416,6 @@ export default function AlertsScreen() {
     setAlertTitle("");
     setAlertMessage("");
     setSelectedDate(new Date());
-    setSelectedTime(new Date());
-    setMedicationName("");
     setWaterAmount("250");
     setActivityType("Walking");
     setSleepHours("8");

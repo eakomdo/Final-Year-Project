@@ -1,6 +1,7 @@
 import React from 'react';
 import { Stack } from 'expo-router';
 import { ThemeProvider } from '../context/ThemeContext';
+import DevelopmentModeIndicator from '../components/DevelopmentModeIndicator';
 
 export default function RootLayout() {
   return (
@@ -18,6 +19,7 @@ export default function RootLayout() {
           }}
         />
       </Stack>
+      <DevelopmentModeIndicator />
     </ThemeProvider>
   );
 }
