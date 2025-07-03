@@ -1,374 +1,286 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   View,
   Text,
   StyleSheet,
+  SafeAreaView,
   ScrollView,
   TouchableOpacity,
 } from "react-native";
-import { Link, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { useTheme } from "../../context/ThemeContext";
+import { useRouter } from "expo-router";
+import { Colors } from "../../src/constants/colors";
+import JEGHealthLogo from "../../src/components/JEGHealthLogo";
+import CaretakerQuickAccess from "../../src/components/CaretakerQuickAccess";
 
-export default function HomeScreen() {
+const HomeScreen = () => {
   const router = useRouter();
-  const { theme } = useTheme();
 
-  // Health tip data array that can be repeated for "infinite" scrolling
-  const healthTips = [
-    {
-      id: 1,
-      title: "Stay Hydrated",
-      text: "Drink at least 8 glasses of water daily",
-      icon: "water",
-      color: "#90CAF9",
-    },
-    {
-      id: 2,
-      title: "Daily Exercise",
-      text: "30 minutes of exercise improves health",
-      icon: "fitness",
-      color: "#4CAF50",
-    },
-    {
-      id: 3,
-      title: "Quality Sleep",
-      text: "Aim for 7-8 hours of sleep nightly",
-      icon: "moon",
-      color: "#2196F3",
-    },
-    {
-      id: 4,
-      title: "Balanced Diet",
-      text: "Eat a variety of fruits, vegetables, and proteins",
-      icon: "nutrition",
-      color: "#FF9800",
-    },
-    {
-      id: 5,
-      title: "Reduce Stress",
-      text: "Practice meditation or deep breathing exercises",
-      icon: "flower",
-      color: "#9C27B0",
-    },
-    {
-      id: 6,
-      title: "Limit Screen Time",
-      text: "Take regular breaks from screens to reduce eye strain",
-      icon: "phone-portrait",
-      color: "#607D8B",
-    },
+  const healthStats = [
+    { icon: "heart", label: "Heart Rate", value: "72 BPM", color: Colors.error },
+    { icon: "fitness", label: "Steps Today", value: "8,420", color: Colors.primary },
+    { icon: "water", label: "Water Intake", value: "1.8L", color: Colors.info },
+    { icon: "moon", label: "Sleep", value: "7h 30m", color: Colors.warning },
   ];
 
-  // Create a repeating array to simulate infinite scrolling
-  const repeatedTips = [...healthTips, ...healthTips, ...healthTips];
+  const quickActions = [
+    { icon: "add-circle", label: "Log Health Data", route: "/log-health" },
+    { icon: "calendar", label: "Appointments", route: "/appointments" },
+    { icon: "medical", label: "Medications", route: "/medications" },
+    { icon: "analytics", label: "Reports", route: "/reports" },
+  ];
 
-  const healthData = {
-    steps: "5,234",
-    heartRate: "72 bpm",
-    calories: "420 kcal",
-    sleep: "7h 20m",
-  };
+  const renderStatCard = (stat, index) => (
+    <View key={index} style={styles.statCard}>
+      <View style={[styles.statIcon, { backgroundColor: `${stat.color}15` }]}>
+        <Ionicons name={stat.icon} size={24} color={stat.color} />
+      </View>
+      <Text style={styles.statValue}>{stat.value}</Text>
+      <Text style={styles.statLabel}>{stat.label}</Text>
+    </View>
+  );
 
-  // Handle tip card tap
-  const handleTipPress = (tip) => {
-    router.push({
-      pathname: "/tip-detail",
-      params: {
-        id: tip.id,
-        title: tip.title,
-        color: tip.color,
-        icon: tip.icon,
-      },
-    });
-  };
-
-  // Apply dynamic styles based on theme
-  const dynamicStyles = {
-    container: {
-      flex: 1,
-      backgroundColor: theme.background,
-    },
-    header: {
-      backgroundColor: theme.card,
-      borderBottomColor: theme.border,
-    },
-    title: {
-      color: theme.text,
-    },
-    card: {
-      backgroundColor: theme.card,
-      shadowColor: theme.text,
-    },
-    text: {
-      color: theme.text,
-    },
-    subText: {
-      color: theme.subText,
-    },
-    section: {
-      backgroundColor: theme.card,
-    },
-    tipCard: {
-      backgroundColor: theme.card,
-    },
-    tipTitle: {
-      color: theme.text,
-    },
-    tipText: {
-      color: theme.subText,
-    },
-    healthCard: {
-      backgroundColor: theme.background,
-    },
-    healthValue: {
-      color: theme.text,
-    },
-    healthLabel: {
-      color: theme.subText,
-    },
-  };
+  const renderActionCard = (action, index) => (
+    <TouchableOpacity
+      key={index}
+      style={styles.actionCard}
+      onPress={() => router.push(action.route)}
+    >
+      <View style={styles.actionIcon}>
+        <Ionicons name={action.icon} size={24} color={Colors.primary} />
+      </View>
+      <Text style={styles.actionLabel}>{action.label}</Text>
+    </TouchableOpacity>
+  );
 
   return (
-    <ScrollView style={[styles.container, dynamicStyles.container]}>
-      <View style={[styles.header, dynamicStyles.header]}>
-        <Text style={[styles.title, dynamicStyles.title]}>Home</Text>
-      </View>
-
-      <View style={[styles.card, dynamicStyles.card]}>
-        <Text style={[styles.cardTitle, dynamicStyles.text]}>
-          Welcome to JEGHealth
-        </Text>
-        <Text style={[styles.cardText, dynamicStyles.subText]}>
-          Your health monitoring companion
-        </Text>
-      </View>
-
-      <View style={styles.summaryContainer}>
-        <Text style={styles.sectionTitle}>Today&#39;s Summary</Text>
-        <View style={styles.healthGrid}>
-          <View style={styles.healthCard}>
-            <Ionicons name="footsteps" size={24} color="#4CAF50" />
-            <Text style={styles.healthValue}>{healthData.steps}</Text>
-            <Text style={styles.healthLabel}>Steps </Text>
-          </View>
-
-          <View style={styles.healthCard}>
-            <Ionicons name="heart" size={24} color="#F44336" />
-            <Text style={styles.healthValue}>{healthData.heartRate}</Text>
-            <Text style={styles.healthLabel}>Heart Rate </Text>
-          </View>
-
-          <View style={styles.healthCard}>
-            <Ionicons name="flame" size={24} color="#FF9800" />
-            <Text style={styles.healthValue}>{healthData.calories}</Text>
-            <Text style={styles.healthLabel}>Calories </Text>
-          </View>
-
-          <View style={styles.healthCard}>
-            <Ionicons name="bed" size={24} color="#2196F3" />
-            <Text style={styles.healthValue}>{healthData.sleep}</Text>
-            <Text style={styles.healthLabel}>Sleep </Text>
-          </View>
-        </View>
-      </View>
-
-      <View style={[styles.section, dynamicStyles.section]}>
-        <View style={styles.sectionHeader}>
-          <Text style={[styles.sectionTitle, dynamicStyles.text]}>
-            Health Tips
-          </Text>
-          <TouchableOpacity onPress={() => router.push("/health-tips")}>
-            <Text style={styles.seeAllText}>See All </Text>
+    <SafeAreaView style={styles.container}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Header */}
+        <View style={styles.header}>
+          <JEGHealthLogo size="normal" />
+          <TouchableOpacity style={styles.notificationButton}>
+            <Ionicons name="notifications-outline" size={24} color={Colors.textPrimary} />
           </TouchableOpacity>
         </View>
 
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          snapToInterval={212} // Card width (200) + margin (12)
-          decelerationRate="fast"
-          contentContainerStyle={{ paddingRight: 16 }}
-        >
-          {repeatedTips.map((tip, index) => (
-            <TouchableOpacity
-              key={`${tip.id}-${index}`}
-              style={[styles.tipCard, dynamicStyles.tipCard]}
-              onPress={() => handleTipPress(tip)}
-              activeOpacity={0.7}
-            >
-              <View
-                style={[
-                  styles.tipImage,
-                  {
-                    backgroundColor: tip.color,
-                    alignItems: "center",
-                    justifyContent: "center",
-                  },
-                ]}
-              >
-                <Ionicons name={tip.icon} size={36} color="#fff" />
-              </View>
-              <View style={styles.tipContent}>
-                <Text style={[styles.tipTitle, dynamicStyles.tipTitle]}>
-                  {tip.title}
-                </Text>
-                <Text style={[styles.tipText, dynamicStyles.tipText]}>
-                  {tip.text}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
+        {/* Welcome Section */}
+        <View style={styles.welcomeSection}>
+          <Text style={styles.welcomeText}>Welcome back!</Text>
+          <Text style={styles.welcomeSubtext}>Here's your health overview for today</Text>
+        </View>
 
-      <TouchableOpacity
-        style={styles.trackButton}
-        onPress={() => router.push("/(tabs)/health")}
-      >
-        <Text style={styles.trackButtonText}>
-          Track{"\u00A0"}Your{"\u00A0"}Health
-        </Text>
-        <Ionicons name="arrow-forward" size={20} color="#fff" />
-      </TouchableOpacity>
-    </ScrollView>
+        {/* Health Stats Grid */}
+        <View style={styles.statsContainer}>
+          <Text style={styles.sectionTitle}>Health Overview</Text>
+          <View style={styles.statsGrid}>
+            {healthStats.map(renderStatCard)}
+          </View>
+        </View>
+
+        {/* Caretaker Management */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Emergency Contacts</Text>
+          <CaretakerQuickAccess />
+        </View>
+
+        {/* Quick Actions */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Quick Actions</Text>
+          <View style={styles.actionsGrid}>
+            {quickActions.map(renderActionCard)}
+          </View>
+        </View>
+
+        {/* Recent Activity */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Recent Activity</Text>
+          <View style={styles.activityCard}>
+            <View style={styles.activityItem}>
+              <View style={styles.activityIcon}>
+                <Ionicons name="heart" size={16} color={Colors.error} />
+              </View>
+              <View style={styles.activityContent}>
+                <Text style={styles.activityTitle}>Heart rate logged</Text>
+                <Text style={styles.activityTime}>2 hours ago</Text>
+              </View>
+            </View>
+            <View style={[styles.activityItem, styles.lastActivityItem]}>
+              <View style={styles.activityIcon}>
+                <Ionicons name="fitness" size={16} color={Colors.primary} />
+              </View>
+              <View style={styles.activityContent}>
+                <Text style={styles.activityTitle}>Daily steps goal reached</Text>
+                <Text style={styles.activityTime}>4 hours ago</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {/* Bottom Spacing */}
+        <View style={styles.bottomSpacing} />
+      </ScrollView>
+    </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: Colors.background,
   },
   header: {
-    padding: 16,
-    borderBottomWidth: 1,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: "bold",
-  },
-  summaryContainer: {
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 16,
-    margin: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  section: {
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 16,
-    margin: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  sectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#333",
+  notificationButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: Colors.backgroundLight,
   },
-  seeAllText: {
-    color: "#007BFF",
-    fontSize: 14,
+  welcomeSection: {
+    paddingHorizontal: 20,
+    marginBottom: 24,
   },
-  healthGrid: {
+  welcomeText: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: Colors.textPrimary,
+    marginBottom: 4,
+  },
+  welcomeSubtext: {
+    fontSize: 16,
+    color: Colors.textSecondary,
+  },
+  statsContainer: {
+    paddingHorizontal: 20,
+    marginBottom: 24,
+  },
+  statsGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    justifyContent: "space-between",
-    marginTop: 8,
+    gap: 12,
   },
-  healthCard: {
-    width: "48%",
-    backgroundColor: "#f5f5f5",
-    borderRadius: 8,
+  statCard: {
+    flex: 1,
+    minWidth: "45%",
+    backgroundColor: Colors.background,
+    borderRadius: 16,
     padding: 16,
-    marginBottom: 12,
     alignItems: "center",
+    borderWidth: 1,
+    borderColor: Colors.border,
+    boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.05)",
+    elevation: 2,
   },
-  healthValue: {
+  statIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 12,
+  },
+  statValue: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#333",
-    marginTop: 8,
+    color: Colors.textPrimary,
     marginBottom: 4,
   },
-  healthLabel: {
+  statLabel: {
     fontSize: 14,
-    color: "#666",
+    color: Colors.textSecondary,
+    textAlign: "center",
   },
-  tipCard: {
-    width: 200,
-    backgroundColor: "#f5f5f5",
-    borderRadius: 8,
-    marginRight: 12,
-    overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+  section: {
+    paddingHorizontal: 20,
+    marginBottom: 24,
   },
-  tipImage: {
-    width: "100%",
-    height: 120,
-  },
-  tipContent: {
-    padding: 12,
-  },
-  tipTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#333",
-    marginBottom: 4,
-  },
-  tipText: {
-    fontSize: 14,
-    color: "#666",
-  },
-  trackButton: {
-    flexDirection: "row",
-    backgroundColor: "#007BFF",
-    borderRadius: 8,
-    padding: 16,
-    margin: 16,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 40,
-  },
-  trackButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-    marginRight: 8,
-  },
-  card: {
-    margin: 16,
-    padding: 16,
-    borderRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  cardTitle: {
-    fontSize: 18,
+  sectionTitle: {
+    fontSize: 20,
     fontWeight: "bold",
+    color: Colors.textPrimary,
+    marginBottom: 16,
+  },
+  actionsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+  },
+  actionCard: {
+    flex: 1,
+    minWidth: "45%",
+    backgroundColor: Colors.background,
+    borderRadius: 12,
+    padding: 16,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: Colors.border,
+    boxShadow: "0px 1px 2px rgba(0, 0, 0, 0.05)",
+    elevation: 1,
+  },
+  actionIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.featureIconBg,
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 8,
   },
-  cardText: {
+  actionLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: Colors.textPrimary,
+    textAlign: "center",
+  },
+  activityCard: {
+    backgroundColor: Colors.background,
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    boxShadow: "0px 1px 2px rgba(0, 0, 0, 0.05)",
+    elevation: 1,
+  },
+  activityItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  lastActivityItem: {
+    borderBottomWidth: 0,
+  },
+  activityIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: Colors.backgroundLight,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+  },
+  activityContent: {
+    flex: 1,
+  },
+  activityTitle: {
     fontSize: 16,
+    fontWeight: "600",
+    color: Colors.textPrimary,
+    marginBottom: 2,
+  },
+  activityTime: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+  },
+  bottomSpacing: {
+    height: 20,
   },
 });
+
+export default HomeScreen;
