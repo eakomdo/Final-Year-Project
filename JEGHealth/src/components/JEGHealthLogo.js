@@ -123,16 +123,11 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.logoIconBg,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 10, // Reduced padding
     borderWidth: 3,
-    borderColor: Colors.textOnPrimary, // White border around circle
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    borderColor: Colors.textOnPrimary,
+    // Replace shadow props with boxShadow
+    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+    // Keep elevation for Android
     elevation: 3,
   },
   heroIcon: {

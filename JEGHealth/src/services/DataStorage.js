@@ -1,7 +1,17 @@
+import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as SecureStore from 'expo-secure-store';
 import CryptoJS from 'crypto-js';
 import CryptoService from './CryptoService';
+
+let SecureStore;
+try {
+  // Only import SecureStore on native platforms
+  if (Platform.OS !== 'web') {
+    SecureStore = require('expo-secure-store');
+  }
+} catch (error) {
+  console.log('SecureStore not available:', error.message);
+}
 
 // Simple UUID generator function (alternative to react-native-uuid)
 function generateUUID() {
@@ -14,36 +24,116 @@ function generateUUID() {
 
 class DataStorage {
   constructor() {
+    this.isInitialized = false;
+    this.useSecureStore = Platform.OS !== 'web' && SecureStore;
     this.encryptionKey = null;
     this._initialize();
   }
-  
+
   // Remove any stray 'c' character if it exists
 
   // Modify _initialize method to handle crypto failures
   async _initialize() {
     try {
-      let key = await SecureStore.getItemAsync('encryption_key');
-      if (!key) {
-        try {
-          key = CryptoJS.lib.WordArray.random(16).toString();
-        } catch (cryptoError) {
-          console.log('Crypto random generation failed, using fallback', cryptoError);
-          // Use CryptoService fallback
-          CryptoService.showSecurityWarning();
-          const randomBytes = CryptoService.generateSecureRandom(16);
-          key = Array.from(randomBytes).map(b => b.toString(16).padStart(2, '0')).join('');
+      if (this.useSecureStore) {
+        // Use SecureStore for native platforms
+        console.log('DataStorage initialized with SecureStore');
+        let key = await SecureStore.getItemAsync('encryption_key');
+        if (!key) {
+          try {
+            key = CryptoJS.lib.WordArray.random(16).toString();
+          } catch (cryptoError) {
+            console.log('Crypto random generation failed, using fallback', cryptoError);
+            // Use CryptoService fallback
+            CryptoService.showSecurityWarning();
+            const randomBytes = CryptoService.generateSecureRandom(16);
+            key = Array.from(randomBytes).map(b => b.toString(16).padStart(2, '0')).join('');
+          }
+          await SecureStore.setItemAsync('encryption_key', key);
         }
-        await SecureStore.setItemAsync('encryption_key', key);
+        this.encryptionKey = key;
+      } else {
+        // Use AsyncStorage for web or fallback
+        console.log('DataStorage initialized with AsyncStorage (web/fallback)');
       }
-      this.encryptionKey = key;
+      this.isInitialized = true;
     } catch (error) {
       console.error('Error initializing DataStorage:', error);
-      // Set a fallback key for development only
-      this.encryptionKey = 'fallback-encryption-key-dev-only';
+      // Fallback to AsyncStorage
+      this.useSecureStore = false;
+      this.isInitialized = true;
     }
   }
-  
+
+  async getItem(key) {
+    if (!this.isInitialized) {
+      await this._initialize();
+    }
+
+    try {
+      if (this.useSecureStore) {
+        return await SecureStore.getItemAsync(key);
+      } else {
+        return await AsyncStorage.getItem(key);
+      }
+    } catch (error) {
+      console.error('Error getting item:', error);
+      return null;
+    }
+  }
+
+  async setItem(key, value) {
+    if (!this.isInitialized) {
+      await this._initialize();
+    }
+
+    try {
+      if (this.useSecureStore) {
+        await SecureStore.setItemAsync(key, value);
+      } else {
+        await AsyncStorage.setItem(key, value);
+      }
+    } catch (error) {
+      console.error('Error setting item:', error);
+      throw error;
+    }
+  }
+
+  async removeItem(key) {
+    if (!this.isInitialized) {
+      await this._initialize();
+    }
+
+    try {
+      if (this.useSecureStore) {
+        await SecureStore.deleteItemAsync(key);
+      } else {
+        await AsyncStorage.removeItem(key);
+      }
+    } catch (error) {
+      console.error('Error removing item:', error);
+      throw error;
+    }
+  }
+
+  async clear() {
+    if (!this.isInitialized) {
+      await this._initialize();
+    }
+
+    try {
+      if (this.useSecureStore) {
+        // SecureStore doesn't have a clear method, so we'll need to track keys
+        console.warn('SecureStore clear not implemented - remove items individually');
+      } else {
+        await AsyncStorage.clear();
+      }
+    } catch (error) {
+      console.error('Error clearing storage:', error);
+      throw error;
+    }
+  }
+
   // Store health reading
   async storeReading(type, data) {
     try {
@@ -189,4 +279,5 @@ class DataStorage {
   }
 }
 
+// Export singleton instance
 export default new DataStorage();
