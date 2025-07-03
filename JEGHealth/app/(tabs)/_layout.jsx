@@ -82,6 +82,17 @@ export default function TabLayout() {
           headerTitle: "User Profile",
         }}
       />
+      <Tabs.Screen
+        name="caretakers"
+        options={{
+          title: "Caretakers",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="people-outline" size={size} color={color} />
+          ),
+          headerTitle: "My Caretakers",
+          headerShown: false, // Using custom header
+        }}
+      />
     </Tabs>
   );
 }
