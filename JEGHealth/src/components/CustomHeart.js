@@ -1,5 +1,4 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 const CustomHeart = ({ size = 20, color = '#ffffff' }) => {

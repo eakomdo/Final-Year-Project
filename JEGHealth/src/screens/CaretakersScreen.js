@@ -56,7 +56,7 @@ const CaretakersScreen = () => {
               await CaretakerService.removeCaretaker(caretaker.id);
               await loadCaretakers();
               Alert.alert('Success', 'Caretaker removed successfully');
-            } catch (error) {
+            } catch (_error) {
               Alert.alert('Error', 'Failed to remove caretaker');
             }
           },

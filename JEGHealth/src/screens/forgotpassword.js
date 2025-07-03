@@ -80,7 +80,7 @@ const ForgotPasswordScreen = () => {
           </View>
           <Text style={styles.successTitle}>Email Sent!</Text>
           <Text style={styles.successMessage}>
-            We've sent a password reset link to {email}. Please check your inbox and follow the instructions.
+            We&apos;ve sent a password reset link to {email}. Please check your inbox and follow the instructions.
           </Text>
           <TouchableOpacity style={styles.backButton} onPress={handleBackToLogin}>
             <Text style={styles.backButtonText}>Back to Login</Text>
@@ -122,7 +122,7 @@ const ForgotPasswordScreen = () => {
 
             <Text style={styles.title}>Reset Your Password</Text>
             <Text style={styles.subtitle}>
-              Enter your email address and we'll send you a link to reset your password.
+              Enter your email address and we&apos;ll send you a link to reset your password.
             </Text>
 
             {/* Email Input */}

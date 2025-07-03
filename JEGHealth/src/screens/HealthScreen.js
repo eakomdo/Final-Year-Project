@@ -1,5 +1,7 @@
 // ...existing imports...
 import { Colors } from '../constants/colors';
+import React from 'react';
+import { StyleSheet, View, Text } from 'react-native';
 
 // Update the styles in your HealthScreen:
 const styles = StyleSheet.create({
@@ -107,3 +109,28 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
+// Example usage of styles in a functional component
+
+const HealthScreen = () => (
+  <View style={styles.container}>
+    <View style={styles.header}>
+      <Text style={styles.headerTitle}>Health Screen</Text>
+      <Text style={styles.subtitle}>Your health stats and devices</Text>
+    </View>
+    <View style={styles.content}>
+      {/* Add your content here */}
+      <View style={styles.brandContainer}>
+        <Text style={styles.brandText}>JEGHealth</Text>
+      </View>
+      <View style={styles.statsContainer}>
+        <Text>Stats will go here</Text>
+      </View>
+      <View style={styles.deviceCard}>
+        <Text style={styles.deviceName}>Device Name</Text>
+        <Text style={styles.deviceStatus}>Status: <Text style={styles.connectedStatus}>Connected</Text></Text>
+      </View>
+    </View>
+  </View>
+);
+
+export default HealthScreen;

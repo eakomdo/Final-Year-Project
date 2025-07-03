@@ -17,26 +17,100 @@ const HomeScreen = () => {
   const router = useRouter();
 
   const healthStats = [
-    { icon: "heart", label: "Heart Rate", value: "72 BPM", color: Colors.error },
-    { icon: "fitness", label: "Steps Today", value: "8,420", color: Colors.primary },
-    { icon: "water", label: "Water Intake", value: "1.8L", color: Colors.info },
-    { icon: "moon", label: "Sleep", value: "7h 30m", color: Colors.warning },
+    {
+      icon: "heart-outline",
+      label: "Heart Rate",
+      value: "72 BPM",
+      color: Colors.error,
+      status: "Normal",
+    },
+    {
+      icon: "walk-outline",
+      label: "Steps Today",
+      value: "8,420",
+      color: Colors.primary,
+      status: "Goal: 10,000",
+    },
+    {
+      icon: "water-outline",
+      label: "Water Intake",
+      value: "1.8L",
+      color: Colors.info,
+      status: "Goal: 2.5L",
+    },
+    {
+      icon: "moon-outline",
+      label: "Sleep",
+      value: "7h 30m",
+      color: Colors.warning,
+      status: "Good quality",
+    },
+  ];
+
+  const healthTips = [
+    {
+      id: "1",
+      title: "Stay Hydrated",
+      description:
+        "Drink at least 8 glasses of water daily to maintain optimal health.",
+      icon: "water-outline",
+      color: Colors.info,
+      priority: "medium",
+    },
+    {
+      id: "2",
+      title: "Regular Exercise",
+      description:
+        "Aim for 30 minutes of moderate exercise daily to keep your heart healthy.",
+      icon: "fitness-outline",
+      color: Colors.primary,
+      priority: "high",
+    },
+    {
+      id: "3",
+      title: "Quality Sleep",
+      description:
+        "Get 7-9 hours of quality sleep to help your body recover and recharge.",
+      icon: "moon-outline",
+      color: Colors.warning,
+      priority: "high",
+    },
   ];
 
   const quickActions = [
-    { icon: "add-circle", label: "Log Health Data", route: "/log-health" },
-    { icon: "calendar", label: "Appointments", route: "/appointments" },
-    { icon: "medical", label: "Medications", route: "/medications" },
-    { icon: "analytics", label: "Reports", route: "/reports" },
+    { icon: "add-circle-outline", label: "Log Health Data", route: "/log-health" },
+    { icon: "calendar-outline", label: "Appointments", route: "/appointments" },
+    { icon: "medical-outline", label: "Medications", route: "/medications" },
+    { icon: "analytics-outline", label: "Reports", route: "/reports" },
   ];
 
   const renderStatCard = (stat, index) => (
-    <View key={index} style={styles.statCard}>
-      <View style={[styles.statIcon, { backgroundColor: `${stat.color}15` }]}>
+    <TouchableOpacity key={index} style={styles.statCard}>
+      <View style={styles.statHeader}>
         <Ionicons name={stat.icon} size={24} color={stat.color} />
+        <Text style={styles.statValue}>{stat.value}</Text>
       </View>
-      <Text style={styles.statValue}>{stat.value}</Text>
       <Text style={styles.statLabel}>{stat.label}</Text>
+      <Text style={[styles.statStatus, { color: stat.color }]}>{stat.status}</Text>
+    </TouchableOpacity>
+  );
+
+  const renderHealthTip = (tip, index) => (
+    <View key={tip.id} style={styles.tipCard}>
+      <View style={styles.tipHeader}>
+        <View style={[styles.tipIcon, { backgroundColor: `${tip.color}15` }]}>
+          <Ionicons name={tip.icon} size={20} color={tip.color} />
+        </View>
+        <View style={styles.tipContent}>
+          <Text style={styles.tipTitle}>{tip.title}</Text>
+          <Text style={styles.tipDescription}>{tip.description}</Text>
+        </View>
+        {tip.priority === "high" && (
+          <View style={styles.priorityBadge}>
+            <Text style={styles.priorityText}>!</Text>
+          </View>
+        )}
+      </View>
     </View>
   );
 
@@ -59,23 +133,44 @@ const HomeScreen = () => {
         {/* Header */}
         <View style={styles.header}>
           <JEGHealthLogo size="normal" />
-          <TouchableOpacity style={styles.notificationButton}>
-            <Ionicons name="notifications-outline" size={24} color={Colors.textPrimary} />
+          <TouchableOpacity
+            style={styles.notificationButton}
+            onPress={() => router.push("/notifications")}
+          >
+            <Ionicons
+              name="notifications-outline"
+              size={24}
+              color={Colors.textPrimary}
+            />
+            <View style={styles.notificationBadge}>
+              <Text style={styles.notificationCount}>3</Text>
+            </View>
           </TouchableOpacity>
         </View>
 
         {/* Welcome Section */}
         <View style={styles.welcomeSection}>
           <Text style={styles.welcomeText}>Welcome back!</Text>
-          <Text style={styles.welcomeSubtext}>Here's your health overview for today</Text>
+          <Text style={styles.welcomeSubtext}>
+            Here&#39;s your health overview for today
+          </Text>
         </View>
 
         {/* Health Stats Grid */}
         <View style={styles.statsContainer}>
           <Text style={styles.sectionTitle}>Health Overview</Text>
-          <View style={styles.statsGrid}>
-            {healthStats.map(renderStatCard)}
+          <View style={styles.statsGrid}>{healthStats.map(renderStatCard)}</View>
+        </View>
+
+        {/* Health Tips Section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Health Tips</Text>
+            <TouchableOpacity onPress={() => router.push("/health-tips")}>
+              <Text style={styles.seeAllText}>See All</Text>
+            </TouchableOpacity>
           </View>
+          <View style={styles.tipsContainer}>{healthTips.map(renderHealthTip)}</View>
         </View>
 
         {/* Caretaker Management */}
@@ -98,7 +193,7 @@ const HomeScreen = () => {
           <View style={styles.activityCard}>
             <View style={styles.activityItem}>
               <View style={styles.activityIcon}>
-                <Ionicons name="heart" size={16} color={Colors.error} />
+                <Ionicons name="heart-outline" size={16} color={Colors.error} />
               </View>
               <View style={styles.activityContent}>
                 <Text style={styles.activityTitle}>Heart rate logged</Text>
@@ -107,7 +202,7 @@ const HomeScreen = () => {
             </View>
             <View style={[styles.activityItem, styles.lastActivityItem]}>
               <View style={styles.activityIcon}>
-                <Ionicons name="fitness" size={16} color={Colors.primary} />
+                <Ionicons name="walk-outline" size={16} color={Colors.primary} />
               </View>
               <View style={styles.activityContent}>
                 <Text style={styles.activityTitle}>Daily steps goal reached</Text>
@@ -140,6 +235,23 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 20,
     backgroundColor: Colors.backgroundLight,
+    position: "relative",
+  },
+  notificationBadge: {
+    position: "absolute",
+    top: 4,
+    right: 4,
+    backgroundColor: Colors.error,
+    borderRadius: 10,
+    width: 20,
+    height: 20,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  notificationCount: {
+    color: Colors.textOnPrimary,
+    fontSize: 12,
+    fontWeight: "bold",
   },
   welcomeSection: {
     paddingHorizontal: 20,
@@ -170,40 +282,101 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
     borderRadius: 16,
     padding: 16,
-    alignItems: "center",
     borderWidth: 1,
     borderColor: Colors.border,
     boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.05)",
     elevation: 2,
   },
-  statIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+  statHeader: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 12,
+    justifyContent: "space-between",
+    marginBottom: 8,
   },
   statValue: {
     fontSize: 20,
     fontWeight: "bold",
     color: Colors.textPrimary,
-    marginBottom: 4,
   },
   statLabel: {
     fontSize: 14,
     color: Colors.textSecondary,
-    textAlign: "center",
+    marginBottom: 4,
+  },
+  statStatus: {
+    fontSize: 12,
+    fontWeight: "600",
   },
   section: {
     paddingHorizontal: 20,
     marginBottom: 24,
   },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
   sectionTitle: {
     fontSize: 20,
     fontWeight: "bold",
     color: Colors.textPrimary,
-    marginBottom: 16,
+  },
+  seeAllText: {
+    fontSize: 14,
+    color: Colors.primary,
+    fontWeight: "600",
+  },
+  tipsContainer: {
+    gap: 12,
+  },
+  tipCard: {
+    backgroundColor: Colors.background,
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    boxShadow: "0px 1px 2px rgba(0, 0, 0, 0.05)",
+    elevation: 1,
+  },
+  tipHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+  },
+  tipIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+  },
+  tipContent: {
+    flex: 1,
+  },
+  tipTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: Colors.textPrimary,
+    marginBottom: 4,
+  },
+  tipDescription: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    lineHeight: 20,
+  },
+  priorityBadge: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: Colors.error,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  priorityText: {
+    color: Colors.textOnPrimary,
+    fontSize: 12,
+    fontWeight: "bold",
   },
   actionsGrid: {
     flexDirection: "row",
