@@ -1,66 +1,74 @@
 import React from "react";
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { useTheme } from "../../context/ThemeContext";
+import { Colors } from "../../src/constants/colors";
 
 export default function TabLayout() {
-  const { theme } = useTheme();
-
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: theme.primary,
-        tabBarInactiveTintColor: theme.subText,
+        tabBarActiveTintColor: Colors.primary,
+        tabBarInactiveTintColor: Colors.textTertiary,
         tabBarStyle: {
-          backgroundColor: theme.card,
+          backgroundColor: Colors.background,
+          borderTopColor: Colors.border,
           borderTopWidth: 1,
-          borderTopColor: theme.border,
+          paddingBottom: 5,
+          paddingTop: 5,
+          height: 60,
         },
-        // Hide the header completely from the tab navigator
-        headerShown: false,
-        // This will prevent the folder name being displayed
-        title: "",
+        headerStyle: {
+          backgroundColor: Colors.primary,
+        },
+        headerTintColor: Colors.textOnPrimary,
+        headerTitleStyle: {
+          fontWeight: "bold",
+          fontSize: 18,
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: "600",
+        },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
           title: "Home",
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="home" size={24} color={color} />
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home-outline" size={size} color={color} />
           ),
-          // Ensure no header is shown for this screen
-          headerShown: false,
+          headerTitle: "JEGHealth Dashboard",
         }}
       />
       <Tabs.Screen
         name="health"
         options={{
           title: "Health",
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="heart" size={24} color={color} />
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="fitness-outline" size={size} color={color} />
           ),
-          headerShown: false,
+          headerTitle: "Health Monitoring",
         }}
       />
       <Tabs.Screen
-        name="alerts"
+        name="devices"
         options={{
-          title: "Alerts",
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="notifications" size={24} color={color} />
+          title: "Devices",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="bluetooth-outline" size={size} color={color} />
           ),
-          headerShown: false,
+          headerTitle: "Connected Devices",
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: "Profile",
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="person" size={24} color={color} />
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="person-outline" size={size} color={color} />
           ),
-          headerShown: false,
+          headerTitle: "User Profile",
         }}
       />
     </Tabs>

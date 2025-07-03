@@ -7,15 +7,22 @@ import {
   StyleSheet,
   Alert,
   ActivityIndicator,
+  SafeAreaView,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from 'expo-router';
+import { Colors } from '../constants/colors';
 
-const SignUpScreen = ({ navigation }) => {
+const SignUpScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleSignUp = async () => {
     // Validation checks
@@ -45,7 +52,7 @@ const SignUpScreen = ({ navigation }) => {
 
       // For demo purposes - successful signup
       Alert.alert("Success", "Account created successfully!");
-      navigation.replace("/(tabs)");
+      router.replace("/(tabs)");
     } catch (error) {
       console.error("Sign up error:", error);
       Alert.alert("Error", "Failed to create account. Please try again.");
@@ -65,7 +72,7 @@ const SignUpScreen = ({ navigation }) => {
 
       // For demo purposes
       Alert.alert("Success", "Google account connected successfully!");
-      navigation.replace("/(tabs)");
+      router.replace("/(tabs)");
     } catch (error) {
       console.error("Google sign up error:", error);
       Alert.alert("Error", "Failed to sign up with Google. Please try again.");
@@ -74,183 +81,300 @@ const SignUpScreen = ({ navigation }) => {
     }
   };
 
+  const handleLoginPress = () => {
+    router.push("/login");
+  };
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Create Account</Text>
-      <Text style={styles.subtitle}>Sign up to get started</Text>
-
-      <View style={styles.inputContainer}>
-        <Text style={styles.inputLabel}>Full Name</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter your full name"
-          value={fullName}
-          onChangeText={setFullName}
-        />
-      </View>
-
-      <View style={styles.inputContainer}>
-        <Text style={styles.inputLabel}>Email</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter your email"
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-      </View>
-
-      <View style={styles.inputContainer}>
-        <Text style={styles.inputLabel}>Password</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter your password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
-      </View>
-
-      <View style={styles.inputContainer}>
-        <Text style={styles.inputLabel}>Confirm Password</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Confirm your password"
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-          secureTextEntry
-        />
-      </View>
-
-      <TouchableOpacity
-        style={styles.signUpButton}
-        onPress={handleSignUp}
-        disabled={loading}
+    <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.keyboardAvoidingView}
       >
-        {loading ? (
-          <ActivityIndicator size="small" color="#fff" />
-        ) : (
-          <Text style={styles.signUpButtonText}>Create Account</Text>
-        )}
-      </TouchableOpacity>
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+          {/* Header with JEGHealth branding */}
+          <View style={styles.headerContainer}>
+            <Text style={styles.brandText}>JEGHealth</Text>
+            <Text style={styles.title}>Create Account</Text>
+            <Text style={styles.subtitle}>Sign up to access your health dashboard</Text>
+          </View>
 
-      <View style={styles.orContainer}>
-        <View style={styles.divider} />
-        <Text style={styles.orText}>OR</Text>
-        <View style={styles.divider} />
-      </View>
+          {/* Form Fields */}
+          <View style={styles.formContainer}>
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>Full Name</Text>
+              <View style={styles.inputWrapper}>
+                <Ionicons name="person-outline" size={20} color={Colors.textTertiary} style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter your full name"
+                  placeholderTextColor={Colors.placeholder}
+                  value={fullName}
+                  onChangeText={setFullName}
+                  editable={!loading}
+                />
+              </View>
+            </View>
 
-      <TouchableOpacity
-        style={styles.googleButton}
-        onPress={handleGoogleSignUp}
-        disabled={loading}
-      >
-        <View style={styles.googleIconContainer}>
-          <Ionicons name="logo-google" size={20} color="#EA4335" />
-        </View>
-        <Text style={styles.googleButtonText}>Sign up with Google</Text>
-      </TouchableOpacity>
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>Email</Text>
+              <View style={styles.inputWrapper}>
+                <Ionicons name="mail-outline" size={20} color={Colors.textTertiary} style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter your email"
+                  placeholderTextColor={Colors.placeholder}
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  editable={!loading}
+                />
+              </View>
+            </View>
 
-      <View style={styles.loginContainer}>
-        <Text style={styles.loginText}>Already have an account?  </Text>
-        <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-          <Text style={styles.loginLink}>  Login </Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>Password</Text>
+              <View style={styles.inputWrapper}>
+                <Ionicons name="lock-closed-outline" size={20} color={Colors.textTertiary} style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter your password"
+                  placeholderTextColor={Colors.placeholder}
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry
+                  editable={!loading}
+                />
+              </View>
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>Confirm Password</Text>
+              <View style={styles.inputWrapper}>
+                <Ionicons name="lock-closed-outline" size={20} color={Colors.textTertiary} style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Confirm your password"
+                  placeholderTextColor={Colors.placeholder}
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                  secureTextEntry
+                  editable={!loading}
+                />
+              </View>
+            </View>
+
+            {/* Primary Sign Up Button */}
+            <TouchableOpacity
+              style={[styles.signUpButton, loading && styles.disabledButton]}
+              onPress={handleSignUp}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator size="small" color={Colors.textOnPrimary} />
+              ) : (
+                <>
+                  <Text style={styles.signUpButtonText}>Create Account</Text>
+                  <Ionicons name="arrow-forward" size={18} color={Colors.textOnPrimary} style={styles.buttonIcon} />
+                </>
+              )}
+            </TouchableOpacity>
+
+            {/* Divider */}
+            <View style={styles.orContainer}>
+              <View style={styles.divider} />
+              <Text style={styles.orText}>OR</Text>
+              <View style={styles.divider} />
+            </View>
+
+            {/* Google Sign Up Button */}
+            <TouchableOpacity
+              style={[styles.googleButton, loading && styles.disabledButton]}
+              onPress={handleGoogleSignUp}
+              disabled={loading}
+            >
+              <View style={styles.googleIconContainer}>
+                <Ionicons name="logo-google" size={20} color="#EA4335" />
+              </View>
+              <Text style={styles.googleButtonText}>Continue with Google</Text>
+            </TouchableOpacity>
+
+            {/* Login Link */}
+            <View style={styles.loginContainer}>
+              <Text style={styles.loginText}>Already have an account? </Text>
+              <TouchableOpacity onPress={handleLoginPress} disabled={loading}>
+                <Text style={styles.loginLink}>Sign In</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: "#ffffff",
-    justifyContent: "center",
+    backgroundColor: Colors.background,
+  },
+  keyboardAvoidingView: {
+    flex: 1,
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    paddingHorizontal: 24,
+    paddingVertical: 20,
+  },
+  headerContainer: {
+    alignItems: "center",
+    marginBottom: 40,
+    marginTop: 20,
+  },
+  brandText: {
+    fontSize: 32,
+    fontWeight: "bold",
+    color: Colors.primary, // Primary green for JEGHealth logo
+    marginBottom: 16,
+    letterSpacing: 0.5,
   },
   title: {
     fontSize: 28,
     fontWeight: "bold",
+    color: Colors.textPrimary, // Dark gray for main headings
     marginBottom: 8,
-    color: "#333",
+    textAlign: "center",
   },
   subtitle: {
     fontSize: 16,
-    color: "#666",
-    marginBottom: 30,
+    color: Colors.textSecondary, // Medium gray for descriptions
+    textAlign: "center",
+    lineHeight: 24,
+  },
+  formContainer: {
+    flex: 1,
   },
   inputContainer: {
     marginBottom: 20,
   },
   inputLabel: {
     fontSize: 14,
-    color: "#333",
+    fontWeight: "600",
+    color: Colors.textPrimary, // Dark gray for labels
     marginBottom: 8,
   },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.inputBackground, // White input backgrounds
+    borderWidth: 1,
+    borderColor: Colors.inputBorder, // Light gray input borders
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  inputIcon: {
+    marginRight: 12,
+  },
   input: {
-    backgroundColor: "#f5f5f5",
-    borderRadius: 8,
-    padding: 15,
+    flex: 1,
+    padding: 16,
     fontSize: 16,
+    color: Colors.textPrimary, // Dark gray text
   },
   signUpButton: {
-    backgroundColor: "#007BFF",
-    borderRadius: 8,
-    padding: 15,
+    backgroundColor: Colors.primary, // Primary green for CTA buttons
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: "row",
     alignItems: "center",
-    marginBottom: 20,
+    justifyContent: "center",
+    marginBottom: 24,
+    shadowColor: Colors.primary,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  disabledButton: {
+    opacity: 0.6,
   },
   signUpButtonText: {
-    color: "#ffffff",
+    color: Colors.textOnPrimary, // White text on green background
     fontSize: 16,
     fontWeight: "bold",
+    marginRight: 8,
+  },
+  buttonIcon: {
+    marginLeft: 4,
   },
   orContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 24,
   },
   divider: {
     flex: 1,
     height: 1,
-    backgroundColor: "#e0e0e0",
+    backgroundColor: Colors.border, // Light gray borders
   },
   orText: {
-    color: "#888",
-    paddingHorizontal: 10,
+    color: Colors.textSecondary, // Medium gray
+    paddingHorizontal: 16,
     fontSize: 14,
+    fontWeight: "500",
   },
   googleButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#fff",
+    backgroundColor: Colors.background, // White background
     borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    padding: 14,
-    marginBottom: 30,
+    borderColor: Colors.border, // Light gray borders
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 32,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   googleIconContainer: {
-    marginRight: 10,
+    marginRight: 12,
   },
   googleButtonText: {
-    color: "#333",
+    color: Colors.textPrimary, // Dark gray text
     fontSize: 16,
-    fontWeight: "500",
+    fontWeight: "600",
   },
   loginContainer: {
     flexDirection: "row",
     justifyContent: "center",
+    alignItems: "center",
+    marginTop: 8,
   },
   loginText: {
     fontSize: 14,
-    color: "#666",
+    color: Colors.textSecondary, // Medium gray for body text
   },
   loginLink: {
     fontSize: 14,
-    color: "#007BFF",
+    color: Colors.primary, // Primary green for links
     fontWeight: "bold",
   },
 });
