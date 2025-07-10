@@ -7,6 +7,7 @@ const DevelopmentModeIndicator = ({ visible = true }) => {
     return null;
   }
 
+  /** Displays an alert with information about the app's development mode features. */
   const showDevModeInfo = () => {
     Alert.alert(
       'Development Mode Active',
