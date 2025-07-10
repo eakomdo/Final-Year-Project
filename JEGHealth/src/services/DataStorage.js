@@ -23,6 +23,7 @@ function generateUUID() {
 }
 
 class DataStorage {
+  //Initializes the DataStorage service with secure storage and encryption settings.
   constructor() {
     this.isInitialized = false;
     this.useSecureStore = Platform.OS !== 'web' && SecureStore;
