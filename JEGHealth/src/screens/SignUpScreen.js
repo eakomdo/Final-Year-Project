@@ -17,6 +17,9 @@ import { useRouter } from 'expo-router';
 import { Colors } from '../constants/colors';
 import JEGHealthLogo from '../components/JEGHealthLogo';
 
+/**
+ * SignUpScreen component for user registration with email/password and Google sign-up options.
+ */
 const SignUpScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
