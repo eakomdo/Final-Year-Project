@@ -82,6 +82,7 @@ class DataStorage {
     }
   }
 
+  // Sets a key-value pair in secure or async storage, initializing if necessary.
   async setItem(key, value) {
     if (!this.isInitialized) {
       await this._initialize();
