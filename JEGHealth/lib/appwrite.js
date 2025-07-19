@@ -1,5 +1,5 @@
 import { Platform } from "react-native";
-import { Client, Account, Databases, Storage, Functions } from 'appwrite';
+import { Client, Account, Databases, Storage, Functions, ID, Query } from 'appwrite';
 
 export const appwriteConfig = {
     endpoint: 'https://fra.cloud.appwrite.io/v1',
@@ -38,4 +38,5 @@ export const databases = new Databases(client);
 export const storage = new Storage(client);
 export const functions = new Functions(client);
 
+export { ID, Query };
 export default client;
