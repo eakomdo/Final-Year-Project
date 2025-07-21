@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   ActivityIndicator,
   SafeAreaView,
   KeyboardAvoidingView,
@@ -16,6 +15,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from 'expo-router';
 import { Colors } from '../constants/colors';
 import JEGHealthLogo from '../components/JEGHealthLogo';
+import { showError } from '../utils/NotificationHelper';
 
 const LoginScreen = () => {
   const [email, setEmail] = useState("");
@@ -25,7 +25,7 @@ const LoginScreen = () => {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert("Error", "Please fill in all fields");
+      showError("Error", "Please fill in all fields");
       return;
     }
 
@@ -37,7 +37,7 @@ const LoginScreen = () => {
       router.replace("/(tabs)");
     } catch (error) {
       console.error("Login error:", error);
-      Alert.alert("Error", "Failed to login. Please try again.");
+      showError("Error", "Failed to login. Please try again.");
     } finally {
       setLoading(false);
     }

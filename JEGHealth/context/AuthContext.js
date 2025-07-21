@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import AuthService from '../lib/auth';
-import { initializeDefaultRoles } from '../lib/initializeApp';
+import DatabaseService from '../lib/database';
 
 const AuthContext = createContext({});
 
@@ -25,8 +25,9 @@ export const AuthProvider = ({ children }) => {
             try {
                 setIsLoading(true);
                 
-                // Initialize default roles
-                await initializeDefaultRoles();
+                // Skip role initialization in development/when not authenticated
+                // This prevents authorization errors in Expo Go
+                // Role initialization should be done by admin users only
                 
                 // Check if user is already authenticated
                 const isAuth = await AuthService.isAuthenticated();
@@ -53,7 +54,7 @@ export const AuthProvider = ({ children }) => {
     const login = async (email, password) => {
         try {
             setIsLoading(true);
-            const { session, authUser } = await AuthService.loginUser(email, password);
+            await AuthService.loginUser(email, password);
             
             // Get full user data
             const userData = await AuthService.getCurrentUser();

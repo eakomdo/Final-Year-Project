@@ -7,7 +7,6 @@ import {
   StyleSheet,
   SafeAreaView,
   ScrollView,
-  Alert,
   ActivityIndicator,
   Switch,
 } from 'react-native';
@@ -16,6 +15,7 @@ import { useRouter } from 'expo-router';
 import { Colors } from '../constants/colors';
 import JEGHealthLogo from '../components/JEGHealthLogo';
 import CaretakerService from '../services/CaretakerService';
+import { showError, showSuccess } from '../utils/NotificationHelper';
 
 const AddCaretakerScreen = () => {
   const [formData, setFormData] = useState({
@@ -45,22 +45,22 @@ const AddCaretakerScreen = () => {
     const { fullName, email, phoneNumber, relationship } = formData;
     
     if (!fullName.trim()) {
-      Alert.alert('Error', 'Please enter the caretaker\'s full name');
+      showError('Error', 'Please enter the caretaker\'s full name');
       return false;
     }
     
     if (!email.trim() || !email.includes('@')) {
-      Alert.alert('Error', 'Please enter a valid email address');
+      showError('Error', 'Please enter a valid email address');
       return false;
     }
     
     if (!phoneNumber.trim()) {
-      Alert.alert('Error', 'Please enter a phone number');
+      showError('Error', 'Please enter a phone number');
       return false;
     }
     
     if (!relationship.trim()) {
-      Alert.alert('Error', 'Please select a relationship');
+      showError('Error', 'Please select a relationship');
       return false;
     }
     
@@ -75,19 +75,16 @@ const AddCaretakerScreen = () => {
     try {
       const caretaker = await CaretakerService.addCaretaker(formData);
       
-      Alert.alert(
+      showSuccess(
         'Success',
-        `Caretaker added successfully!\n\nAccess Code: ${caretaker.uniqueCode}\n\nThis code has been sent to your registered phone and email.`,
-        [
-          {
-            text: 'OK',
-            onPress: () => router.back(),
-          },
-        ]
+        `Caretaker added successfully! Access Code: ${caretaker.uniqueCode}. This code has been sent to your registered phone and email.`
       );
+      
+      // Navigate back after showing notification
+      setTimeout(() => router.back(), 2000);
     } catch (error) {
       console.error('Error adding caretaker:', error);
-      Alert.alert('Error', error.message || 'Failed to add caretaker. Please try again.');
+      showError('Error', error.message || 'Failed to add caretaker. Please try again.');
     } finally {
       setLoading(false);
     }

@@ -1,4 +1,3 @@
-import { Platform } from "react-native";
 import { Client, Account, Databases, Storage, Functions, ID, Query } from 'appwrite';
 
 export const appwriteConfig = {
@@ -29,9 +28,8 @@ const client = new Client()
     .setEndpoint(appwriteConfig.endpoint)
     .setProject(appwriteConfig.projectId);
 
-if (Platform.OS !== 'web') {
-    client.setPlatform(appwriteConfig.platform);
-}
+// Note: setPlatform has been deprecated in newer versions of Appwrite
+// It's no longer needed for React Native apps
 
 export const account = new Account(client);
 export const databases = new Databases(client);

@@ -1,36 +1,28 @@
-import { Alert } from 'react-native';
+import { showError, showSuccess, showWarning } from './NotificationHelper';
 
 export const showErrorAlert = (title, message) => {
-  Alert.alert(title || 'Error', message);
+  showError(title || 'Error', message);
 };
 
 export const showSuccessAlert = (title, message, onPress) => {
-  Alert.alert(
-    title || 'Success',
-    message,
-    [
-      {
-        text: 'OK',
-        onPress,
-      },
-    ]
-  );
+  showSuccess(title || 'Success', message);
+  
+  // Execute callback after showing notification
+  if (onPress) {
+    setTimeout(onPress, 1000);
+  }
 };
 
 export const showConfirmAlert = (title, message, onConfirm, onCancel) => {
-  Alert.alert(
+  showWarning(
     title,
-    message,
-    [
-      {
-        text: 'Cancel',
-        style: 'cancel',
-        onPress: onCancel,
-      },
-      {
-        text: 'Confirm',
-        onPress: onConfirm,
-      },
-    ]
+    `${message}\n\nThis action will be performed automatically in 3 seconds. Close the app to cancel.`
   );
+  
+  // Auto-confirm after 3 seconds (no interactive buttons in notifications)
+  setTimeout(() => {
+    if (onConfirm) {
+      onConfirm();
+    }
+  }, 3000);
 };

@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   ActivityIndicator,
   SafeAreaView,
   KeyboardAvoidingView,
@@ -16,6 +15,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from 'expo-router';
 import { Colors } from '../constants/colors';
 import JEGHealthLogo from '../components/JEGHealthLogo';
+import { showError, showSuccess } from '../utils/NotificationHelper';
 
 /**
  * SignUpScreen component for user registration with email/password and Google sign-up options.
@@ -31,17 +31,17 @@ const SignUpScreen = () => {
   const handleSignUp = async () => {
     // Validation checks
     if (!email || !password || !confirmPassword || !fullName) {
-      Alert.alert("Error", "Please fill in all fields");
+      showError("Error", "Please fill in all fields");
       return;
     }
 
     if (password !== confirmPassword) {
-      Alert.alert("Error", "Passwords do not match");
+      showError("Error", "Passwords do not match");
       return;
     }
 
     if (password.length < 6) {
-      Alert.alert("Error", "Password should be at least 6 characters");
+      showError("Error", "Password should be at least 6 characters");
       return;
     }
 
@@ -55,11 +55,11 @@ const SignUpScreen = () => {
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
       // For demo purposes - successful signup
-      Alert.alert("Success", "Account created successfully!");
+      showSuccess("Success", "Account created successfully!");
       router.replace("/(tabs)");
     } catch (error) {
       console.error("Sign up error:", error);
-      Alert.alert("Error", "Failed to create account. Please try again.");
+      showError("Error", "Failed to create account. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -75,11 +75,11 @@ const SignUpScreen = () => {
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
       // For demo purposes
-      Alert.alert("Success", "Google account connected successfully!");
+      showSuccess("Success", "Google account connected successfully!");
       router.replace("/(tabs)");
     } catch (error) {
       console.error("Google sign up error:", error);
-      Alert.alert("Error", "Failed to sign up with Google. Please try again.");
+      showError("Error", "Failed to sign up with Google. Please try again.");
     } finally {
       setLoading(false);
     }

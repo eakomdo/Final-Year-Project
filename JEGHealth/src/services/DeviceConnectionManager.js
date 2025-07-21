@@ -18,9 +18,9 @@ try {
       const testManager = new BleManager();
       testManager.destroy(); // Clean up test instance
       nativeBleAvailable = true;
-      console.log("BLE native module verified working");
+      console.log("🔵 BLE: Native module verified and working");
     } catch (testError) {
-      console.log("BLE native module loaded but cannot instantiate:", testError.message);
+      console.log("🔵 BLE: Native module loaded but cannot instantiate in Expo Go:", testError.message);
       nativeBleAvailable = false;
     }
   }
@@ -29,8 +29,8 @@ try {
   if (!BleManager || !nativeBleAvailable) {
     throw new Error("BLE module not available or not working");
   }
-} catch (error) {
-  console.log("BLE native module not available, using mock:", error.message);
+} catch (_error) {
+  console.log("🔵 BLE: Using mock mode (expected in Expo Go development)");
   nativeBleAvailable = false;
   
 }
@@ -107,7 +107,7 @@ class DeviceConnectionManager extends EventEmitter {
         this.mockMode = true;
       }
     } else {
-      console.log("Using MockBleManager (native BLE not available)");
+      console.log("🔄 BLE: MockBleManager active (development mode)");
       this.bleManager = new MockBleManager();
       this.mockMode = true;
     }
@@ -116,7 +116,7 @@ class DeviceConnectionManager extends EventEmitter {
     this.deviceListeners = {};
     this.mockDataIntervals = {};
     
-    console.log(`DeviceConnectionManager initialized, mock mode: ${this.mockMode}`);
+    console.log(`🔧 DeviceConnectionManager: ${this.mockMode ? 'Mock mode (development)' : 'Native mode (production)'} ready`);
   }
 
   // Enable mock mode for testing without real devices

@@ -4,7 +4,6 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Alert,
   StyleSheet,
   SafeAreaView,
   KeyboardAvoidingView,
@@ -16,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Colors } from '../constants/colors';
 import JEGHealthLogo from '../components/JEGHealthLogo';
+import { showError, showSuccess } from '../utils/NotificationHelper';
 
 const ForgotPasswordScreen = () => {
   const [email, setEmail] = useState('');
@@ -30,12 +30,12 @@ const ForgotPasswordScreen = () => {
 
   const handleResetPassword = async () => {
     if (!email.trim()) {
-      Alert.alert('Error', 'Please enter your email address');
+      showError('Error', 'Please enter your email address');
       return;
     }
 
     if (!validateEmail(email)) {
-      Alert.alert('Error', 'Please enter a valid email address');
+      showError('Error', 'Please enter a valid email address');
       return;
     }
 
@@ -46,19 +46,15 @@ const ForgotPasswordScreen = () => {
       console.log('Password reset requested for:', email);
       
       setEmailSent(true);
-      Alert.alert(
+      showSuccess(
         'Reset Link Sent',
-        'We\'ve sent a password reset link to your email address. Please check your inbox and follow the instructions to reset your password.',
-        [
-          {
-            text: 'OK',
-            onPress: () => router.push('/login'),
-          },
-        ]
+        'We\'ve sent a password reset link to your email address. Please check your inbox and follow the instructions to reset your password.'
       );
+      // Navigate back to login after a short delay to allow user to see the notification
+      setTimeout(() => router.push('/login'), 2000);
     } catch (error) {
       console.error('Password reset error:', error);
-      Alert.alert(
+      showError(
         'Error',
         'Failed to send reset email. Please try again or contact support if the problem persists.'
       );

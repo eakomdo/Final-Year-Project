@@ -9,12 +9,12 @@ import {
   SafeAreaView,
   KeyboardAvoidingView,
   Platform,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Colors } from '../constants/colors';
+import { showError } from '../utils/NotificationHelper';
 
 const AIChatScreen = () => {
   const [messages, setMessages] = useState([
@@ -81,7 +81,7 @@ const AIChatScreen = () => {
       setMessages(prev => [...prev, aiMessage]);
     } catch (error) {
       console.error('Error getting AI response:', error);
-      Alert.alert('Error', 'Sorry, I encountered an issue. Please try again.');
+      showError('Error', 'Sorry, I encountered an issue. Please try again.');
     } finally {
       setIsTyping(false);
     }

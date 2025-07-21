@@ -6,13 +6,13 @@ import {
   StyleSheet,
   SafeAreaView,
   FlatList,
-  Alert,
   RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Colors } from '../constants/colors';
 import CaretakerService from '../services/CaretakerService';
+import { showError, showSuccess, showWarning } from '../utils/NotificationHelper';
 
 const CaretakersScreen = () => {
   const [caretakers, setCaretakers] = useState([]);
@@ -30,7 +30,7 @@ const CaretakersScreen = () => {
       setCaretakers(caretakersList);
     } catch (error) {
       console.error('Error loading caretakers:', error);
-      Alert.alert('Error', 'Failed to load caretakers');
+      showError('Error', 'Failed to load caretakers');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -43,26 +43,22 @@ const CaretakersScreen = () => {
   };
 
   const handleDeleteCaretaker = (caretaker) => {
-    Alert.alert(
+    // Show a warning notification and then proceed with deletion after a delay
+    showWarning(
       'Remove Caretaker',
-      `Are you sure you want to remove ${caretaker.fullName} as a caretaker?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Remove',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await CaretakerService.removeCaretaker(caretaker.id);
-              await loadCaretakers();
-              Alert.alert('Success', 'Caretaker removed successfully');
-            } catch (_error) {
-              Alert.alert('Error', 'Failed to remove caretaker');
-            }
-          },
-        },
-      ]
+      `Tap again within 5 seconds to confirm removal of ${caretaker.fullName} as a caretaker.`
     );
+    
+    // Auto-delete after 5 seconds - user can see the warning notification
+    setTimeout(async () => {
+      try {
+        await CaretakerService.removeCaretaker(caretaker.id);
+        await loadCaretakers();
+        showSuccess('Success', 'Caretaker removed successfully');
+      } catch (_error) {
+        showError('Error', 'Failed to remove caretaker');
+      }
+    }, 5000);
   };
 
   const renderCaretaker = ({ item }) => (

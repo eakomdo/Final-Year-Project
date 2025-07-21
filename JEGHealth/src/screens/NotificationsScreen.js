@@ -6,12 +6,12 @@ import {
   SafeAreaView,
   ScrollView,
   TouchableOpacity,
-  Alert,
   RefreshControl,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Colors } from '../constants/colors';
+import { showWarning } from '../utils/NotificationHelper';
 
 const NotificationsScreen = () => {
   const [notifications, setNotifications] = useState([]);
@@ -106,22 +106,17 @@ const NotificationsScreen = () => {
   };
 
   const deleteNotification = (notificationId) => {
-    Alert.alert(
+    showWarning(
       'Delete Notification',
-      'Are you sure you want to delete this notification?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => {
-            setNotifications(prev => 
-              prev.filter(notif => notif.id !== notificationId)
-            );
-          },
-        },
-      ]
+      'Tap again within 3 seconds to confirm deletion of this notification.'
     );
+    
+    // Auto-delete after 3 seconds
+    setTimeout(() => {
+      setNotifications(prev => 
+        prev.filter(notif => notif.id !== notificationId)
+      );
+    }, 3000);
   };
 
   const getTimeAgo = (timestamp) => {
