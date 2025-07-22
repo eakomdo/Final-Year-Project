@@ -1,3 +1,3 @@
-import ForgotPasswordScreen from '../src/screens/forgotpassword';
+import ForgotPasswordScreen from '../src/screens/ForgotPasswordScreen';
 
 export default ForgotPasswordScreen;

@@ -61,6 +61,13 @@ const SignUpScreen = ({ navigation }) => {
                 return;
             }
 
+            // Email format validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(formData.email)) {
+                showError('Error', 'Please enter a valid email address');
+                return;
+            }
+
             setLoading(true);
 
             const userData = {
@@ -74,10 +81,32 @@ const SignUpScreen = ({ navigation }) => {
                 showSuccess('Success', 'Account created successfully!');
                 // Navigation will be handled automatically by AuthContext
             } else {
-                showError('Registration Failed', result.error);
+                // Handle specific backend errors with user-friendly messages
+                let errorMessage = result.error;
+                
+                if (errorMessage.includes('user with the same id, email, or phone already exists')) {
+                    errorMessage = 'An account with this email already exists. Please use a different email or try signing in.';
+                } else if (errorMessage.includes('not authorized to perform the requested action')) {
+                    errorMessage = 'Account created but requires admin approval. Please contact support for account activation.';
+                } else if (errorMessage.includes('Invalid credentials')) {
+                    errorMessage = 'Invalid email or password format. Please check your details.';
+                }
+                
+                showError('Registration Failed', errorMessage);
             }
         } catch (error) {
-            showError('Error', error.message);
+            let errorMessage = error.message;
+            
+            // Handle specific error types
+            if (errorMessage.includes('user with the same id, email, or phone already exists')) {
+                errorMessage = 'An account with this email already exists. Please use a different email or try signing in.';
+            } else if (errorMessage.includes('not authorized to perform the requested action')) {
+                errorMessage = 'Account created but requires admin approval. Please contact support for account activation.';
+            } else if (errorMessage.includes('network')) {
+                errorMessage = 'Network error. Please check your internet connection and try again.';
+            }
+            
+            showError('Error', errorMessage);
         } finally {
             setLoading(false);
         }
@@ -330,6 +359,14 @@ const SignUpScreen = ({ navigation }) => {
                     )}
                 </TouchableOpacity>
 
+                {/* Helpful Info */}
+                <View style={styles.infoContainer}>
+                    <Text style={styles.infoText}>
+                        By signing up, you agree to our terms of service. 
+                        If you encounter any issues, please contact support.
+                    </Text>
+                </View>
+
                 {/* Sign In Link */}
                 <View style={styles.signInLinkContainer}>
                     <Text style={styles.signInLinkText}>Already have an account? </Text>
@@ -508,6 +545,16 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 16,
         fontWeight: 'bold',
+    },
+    infoContainer: {
+        marginBottom: 20,
+        paddingHorizontal: 10,
+    },
+    infoText: {
+        color: '#666',
+        fontSize: 12,
+        textAlign: 'center',
+        lineHeight: 16,
     },
     signInLinkContainer: {
         flexDirection: 'row',
