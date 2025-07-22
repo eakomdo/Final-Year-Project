@@ -1,382 +1,528 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
-  SafeAreaView,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from 'expo-router';
-import { Colors } from '../constants/colors';
-import JEGHealthLogo from '../components/JEGHealthLogo';
+    View,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    StyleSheet,
+    ScrollView,
+    ActivityIndicator
+} from 'react-native';
+import { Picker } from '@react-native-picker/picker';
+import { useAuth } from '../../context/AuthContext';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Feather } from '@expo/vector-icons';
 import { showError, showSuccess } from '../utils/NotificationHelper';
 
-/**
- * SignUpScreen component for user registration with email/password and Google sign-up options.
- */
-const SignUpScreen = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [fullName, setFullName] = useState("");
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
+const SignUpScreen = ({ navigation }) => {
+    const { register } = useAuth();
+    const [loading, setLoading] = useState(false);
+    const [formData, setFormData] = useState({
+        fullName: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+        phoneNumber: '',
+        roleName: 'patient'
+    });
 
-  const handleSignUp = async () => {
-    // Validation checks
-    if (!email || !password || !confirmPassword || !fullName) {
-      showError("Error", "Please fill in all fields");
-      return;
-    }
+    // Additional profile data based on role
+    const [profileData, setProfileData] = useState({
+        // Patient fields
+        dateOfBirth: '',
+        gender: '',
+        emergencyContactName: '',
+        emergencyContactPhone: '',
+        
+        // Doctor fields
+        licenseNumber: '',
+        specialty: '',
+        clinicName: '',
+        
+        // Caretaker fields
+        relationship: ''
+    });
 
-    if (password !== confirmPassword) {
-      showError("Error", "Passwords do not match");
-      return;
-    }
+    const handleSignUp = async () => {
+        try {
+            // Validation
+            if (!formData.fullName || !formData.email || !formData.password) {
+                showError('Error', 'Please fill in all required fields');
+                return;
+            }
 
-    if (password.length < 6) {
-      showError("Error", "Password should be at least 6 characters");
-      return;
-    }
+            if (formData.password !== formData.confirmPassword) {
+                showError('Error', 'Passwords do not match');
+                return;
+            }
 
-    setLoading(true);
+            if (formData.password.length < 8) {
+                showError('Error', 'Password must be at least 8 characters long');
+                return;
+            }
 
-    try {
-      // Here you would typically call your backend API for user registration
-      console.log("Sign up attempt with:", { email, fullName });
+            setLoading(true);
 
-      // Simulate API call with a delay
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+            const userData = {
+                ...formData,
+                profileData
+            };
 
-      // For demo purposes - successful signup
-      showSuccess("Success", "Account created successfully!");
-      router.replace("/(tabs)");
-    } catch (error) {
-      console.error("Sign up error:", error);
-      showError("Error", "Failed to create account. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+            const result = await register(userData);
 
-  const handleGoogleSignUp = async () => {
-    setLoading(true);
-    try {
-      // Here you would implement Google Sign-In
-      console.log("Google Sign up attempt");
+            if (result.success) {
+                showSuccess('Success', 'Account created successfully!');
+                // Navigation will be handled automatically by AuthContext
+            } else {
+                showError('Registration Failed', result.error);
+            }
+        } catch (error) {
+            showError('Error', error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-      // Simulate API call with a delay
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+    const updateFormData = (key, value) => {
+        setFormData(prev => ({ ...prev, [key]: value }));
+    };
 
-      // For demo purposes
-      showSuccess("Success", "Google account connected successfully!");
-      router.replace("/(tabs)");
-    } catch (error) {
-      console.error("Google sign up error:", error);
-      showError("Error", "Failed to sign up with Google. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    const updateProfileData = (key, value) => {
+        setProfileData(prev => ({ ...prev, [key]: value }));
+    };
 
-  const handleLoginPress = () => {
-    router.push("/login");
-  };
+    const renderRoleSpecificFields = () => {
+        switch (formData.roleName) {
+            case 'patient':
+                return (
+                    <>
+                        <View style={styles.inputContainer}>
+                    <Feather name="calendar" size={20} color="#7FCCCC" style={styles.inputIcon} />
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Date of Birth (YYYY-MM-DD)"
+                                placeholderTextColor="#B0B0B0"
+                                value={profileData.dateOfBirth}
+                                onChangeText={(value) => updateProfileData('dateOfBirth', value)}
+                            />
+                        </View>
+                        <View style={styles.pickerContainer}>
+                            <Feather name="users" size={20} color="#7FCCCC" style={styles.inputIcon} />
+                            <Picker
+                                selectedValue={profileData.gender}
+                                onValueChange={(value) => updateProfileData('gender', value)}
+                                style={styles.picker}
+                            >
+                                <Picker.Item label="Select Gender" value="" />
+                                <Picker.Item label="Male" value="male" />
+                                <Picker.Item label="Female" value="female" />
+                                <Picker.Item label="Other" value="other" />
+                            </Picker>
+                        </View>
+                        <View style={styles.inputContainer}>
+                            <Feather name="user-plus" size={20} color="#7FCCCC" style={styles.inputIcon} />
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Emergency Contact Name"
+                                placeholderTextColor="#B0B0B0"
+                                value={profileData.emergencyContactName}
+                                onChangeText={(value) => updateProfileData('emergencyContactName', value)}
+                            />
+                        </View>
+                        <View style={styles.inputContainer}>
+                            <Feather name="phone" size={20} color="#7FCCCC" style={styles.inputIcon} />
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Emergency Contact Phone"
+                                placeholderTextColor="#B0B0B0"
+                                value={profileData.emergencyContactPhone}
+                                onChangeText={(value) => updateProfileData('emergencyContactPhone', value)}
+                                keyboardType="phone-pad"
+                            />
+                        </View>
+                    </>
+                );
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardAvoidingView}
-      >
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
-          {/* Header with JEGHealth branding */}
-          <View style={styles.headerContainer}>
-            <JEGHealthLogo size="hero" style={styles.logo} />
-            <Text style={styles.title}>Create Account</Text>
-            <Text style={styles.subtitle}>Sign up to access your health dashboard</Text>
-          </View>
+            case 'doctor':
+                return (
+                    <>
+                        <View style={styles.inputContainer}>
+                            <Feather name="award" size={20} color="#7FCCCC" style={styles.inputIcon} />
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Medical License Number *"
+                                placeholderTextColor="#B0B0B0"
+                                value={profileData.licenseNumber}
+                                onChangeText={(value) => updateProfileData('licenseNumber', value)}
+                            />
+                        </View>
+                        <View style={styles.inputContainer}>
+                            <Feather name="activity" size={20} color="#7FCCCC" style={styles.inputIcon} />
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Specialty *"
+                                placeholderTextColor="#B0B0B0"
+                                value={profileData.specialty}
+                                onChangeText={(value) => updateProfileData('specialty', value)}
+                            />
+                        </View>
+                        <View style={styles.inputContainer}>
+                            <Feather name="home" size={20} color="#7FCCCC" style={styles.inputIcon} />
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Clinic/Hospital Name"
+                                placeholderTextColor="#B0B0B0"
+                                value={profileData.clinicName}
+                                onChangeText={(value) => updateProfileData('clinicName', value)}
+                            />
+                        </View>
+                    </>
+                );
 
-          {/* Form Fields */}
-          <View style={styles.formContainer}>
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Full Name</Text>
-              <View style={styles.inputWrapper}>
-                <Ionicons name="person-outline" size={20} color={Colors.textTertiary} style={styles.inputIcon} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter your full name"
-                  placeholderTextColor={Colors.placeholder}
-                  value={fullName}
-                  onChangeText={setFullName}
-                  editable={!loading}
-                />
-              </View>
+            case 'caretaker':
+                return (
+                    <View style={styles.inputContainer}>
+                        <Feather name="heart" size={20} color="#7FCCCC" style={styles.inputIcon} />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Relationship to Patient"
+                            placeholderTextColor="#B0B0B0"
+                            value={profileData.relationship}
+                            onChangeText={(value) => updateProfileData('relationship', value)}
+                        />
+                    </View>
+                );
+
+            default:
+                return null;
+        }
+    };
+
+    return (
+        <View style={styles.container}>
+            {/* Background Gradient */}
+            <LinearGradient
+                colors={['#4ECDC4', '#2D8B85', '#1A5F5A']}
+                style={styles.backgroundGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+            />
+            
+            {/* Decorative Elements */}
+            <View style={styles.decorativeCircle1} />
+            <View style={styles.decorativeCircle2} />
+            <View style={styles.decorativeLeaf1} />
+            <View style={styles.decorativeLeaf2} />
+
+            {/* Header */}
+            <View style={styles.header}>
+                <TouchableOpacity 
+                    style={styles.backButton}
+                    onPress={() => navigation.navigate('SignIn')}
+                >
+                    <Feather name="arrow-left" size={24} color="white" />
+                    <Text style={styles.backButtonText}>Back to login</Text>
+                </TouchableOpacity>
             </View>
 
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Email</Text>
-              <View style={styles.inputWrapper}>
-                <Ionicons name="mail-outline" size={20} color={Colors.textTertiary} style={styles.inputIcon} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter your email"
-                  placeholderTextColor={Colors.placeholder}
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  editable={!loading}
-                />
-              </View>
+            {/* Welcome Section */}
+            <View style={styles.welcomeSection}>
+                <Text style={styles.welcomeTitle}>Hello!</Text>
+                <Text style={styles.welcomeSubtitle}>Welcome to JEGHealth</Text>
             </View>
 
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Password</Text>
-              <View style={styles.inputWrapper}>
-                <Ionicons name="lock-closed-outline" size={20} color={Colors.textTertiary} style={styles.inputIcon} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter your password"
-                  placeholderTextColor={Colors.placeholder}
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry
-                  editable={!loading}
-                />
-              </View>
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Confirm Password</Text>
-              <View style={styles.inputWrapper}>
-                <Ionicons name="lock-closed-outline" size={20} color={Colors.textTertiary} style={styles.inputIcon} />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Confirm your password"
-                  placeholderTextColor={Colors.placeholder}
-                  value={confirmPassword}
-                  onChangeText={setConfirmPassword}
-                  secureTextEntry
-                  editable={!loading}
-                />
-              </View>
-            </View>
-
-            {/* Primary Sign Up Button */}
-            <TouchableOpacity
-              style={[styles.signUpButton, loading && styles.disabledButton]}
-              onPress={handleSignUp}
-              disabled={loading}
+            {/* Form Card */}
+            <ScrollView 
+                style={styles.formContainer}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.formContent}
             >
-              {loading ? (
-                <ActivityIndicator size="small" color={Colors.textOnPrimary} />
-              ) : (
-                <>
-                  <Text style={styles.signUpButtonText}>Create Account</Text>
-                  <Ionicons name="arrow-forward" size={18} color={Colors.textOnPrimary} style={styles.buttonIcon} />
-                </>
-              )}
-            </TouchableOpacity>
+                <Text style={styles.formTitle}>Sign Up</Text>
 
-            {/* Divider */}
-            <View style={styles.orContainer}>
-              <View style={styles.divider} />
-              <Text style={styles.orText}>OR</Text>
-              <View style={styles.divider} />
-            </View>
+                {/* Basic Information */}
+                <View style={styles.inputContainer}>
+                    <Feather name="user" size={20} color="#7FCCCC" style={styles.inputIcon} />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Full Name"
+                        placeholderTextColor="#B0B0B0"
+                        value={formData.fullName}
+                        onChangeText={(value) => updateFormData('fullName', value)}
+                    />
+                </View>
 
-            {/* Google Sign Up Button */}
-            <TouchableOpacity
-              style={[styles.googleButton, loading && styles.disabledButton]}
-              onPress={handleGoogleSignUp}
-              disabled={loading}
-            >
-              <View style={styles.googleIconContainer}>
-                <Ionicons name="logo-google" size={20} color="#EA4335" />
-              </View>
-              <Text style={styles.googleButtonText}>Continue with Google</Text>
-            </TouchableOpacity>
+                <View style={styles.inputContainer}>
+                    <Feather name="mail" size={20} color="#7FCCCC" style={styles.inputIcon} />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Email"
+                        placeholderTextColor="#B0B0B0"
+                        value={formData.email}
+                        onChangeText={(value) => updateFormData('email', value)}
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                    />
+                </View>
 
-            {/* Login Link */}
-            <View style={styles.loginContainer}>
-              <Text style={styles.loginText}>Already have an account? </Text>
-              <TouchableOpacity onPress={handleLoginPress} disabled={loading}>
-                <Text style={styles.loginLink}>Sign In</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
-  );
+                <View style={styles.inputContainer}>
+                    <Feather name="lock" size={20} color="#7FCCCC" style={styles.inputIcon} />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Password"
+                        placeholderTextColor="#B0B0B0"
+                        value={formData.password}
+                        onChangeText={(value) => updateFormData('password', value)}
+                        secureTextEntry
+                    />
+                </View>
+
+                <View style={styles.inputContainer}>
+                    <Feather name="lock" size={20} color="#7FCCCC" style={styles.inputIcon} />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Confirm Password"
+                        placeholderTextColor="#B0B0B0"
+                        value={formData.confirmPassword}
+                        onChangeText={(value) => updateFormData('confirmPassword', value)}
+                        secureTextEntry
+                    />
+                </View>
+
+                <View style={styles.inputContainer}>
+                    <Feather name="phone" size={20} color="#7FCCCC" style={styles.inputIcon} />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Phone Number"
+                        placeholderTextColor="#B0B0B0"
+                        value={formData.phoneNumber}
+                        onChangeText={(value) => updateFormData('phoneNumber', value)}
+                        keyboardType="phone-pad"
+                    />
+                </View>
+
+                {/* Role Selection */}
+                <View style={styles.pickerContainer}>
+                    <Feather name="briefcase" size={20} color="#7FCCCC" style={styles.inputIcon} />
+                    <Picker
+                        selectedValue={formData.roleName}
+                        onValueChange={(value) => updateFormData('roleName', value)}
+                        style={styles.picker}
+                    >
+                        <Picker.Item label="Patient" value="patient" />
+                        <Picker.Item label="Doctor" value="doctor" />
+                        <Picker.Item label="Caretaker" value="caretaker" />
+                    </Picker>
+                </View>
+
+                {/* Role-specific fields */}
+                {renderRoleSpecificFields()}
+
+                {/* Sign Up Button */}
+                <TouchableOpacity
+                    style={[styles.signUpButton, loading && styles.buttonDisabled]}
+                    onPress={handleSignUp}
+                    disabled={loading}
+                >
+                    {loading ? (
+                        <ActivityIndicator color="white" />
+                    ) : (
+                        <Text style={styles.signUpButtonText}>Create Account</Text>
+                    )}
+                </TouchableOpacity>
+
+                {/* Sign In Link */}
+                <View style={styles.signInLinkContainer}>
+                    <Text style={styles.signInLinkText}>Already have an account? </Text>
+                    <TouchableOpacity onPress={() => navigation.navigate('SignIn')}>
+                        <Text style={styles.signInLink}>Sign In</Text>
+                    </TouchableOpacity>
+                </View>
+            </ScrollView>
+        </View>
+    );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.background,
-  },
-  keyboardAvoidingView: {
-    flex: 1,
-  },
-  scrollContainer: {
-    flexGrow: 1,
-    paddingHorizontal: 24,
-    paddingVertical: 20,
-  },
-  headerContainer: {
-    alignItems: "center",
-    marginBottom: 40,
-    marginTop: 20,
-  },
-  logo: {
-    marginBottom: 24,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: Colors.textPrimary, // Dark gray for main headings
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  subtitle: {
-    fontSize: 16,
-    color: Colors.textSecondary, // Medium gray for descriptions
-    textAlign: "center",
-    lineHeight: 24,
-  },
-  formContainer: {
-    flex: 1,
-  },
-  inputContainer: {
-    marginBottom: 20,
-  },
-  inputLabel: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: Colors.textPrimary, // Dark gray for labels
-    marginBottom: 8,
-  },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.inputBackground, // White input backgrounds
-    borderWidth: 1,
-    borderColor: Colors.inputBorder, // Light gray input borders
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
+    container: {
+        flex: 1,
+        backgroundColor: '#4ECDC4',
     },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  inputIcon: {
-    marginRight: 12,
-  },
-  input: {
-    flex: 1,
-    padding: 16,
-    fontSize: 16,
-    color: Colors.textPrimary, // Dark gray text
-  },
-  signUpButton: {
-    backgroundColor: Colors.primary, // Primary green for CTA buttons
-    borderRadius: 12,
-    padding: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 24,
-    shadowColor: Colors.primary,
-    shadowOffset: {
-      width: 0,
-      height: 4,
+    backgroundGradient: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
     },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  disabledButton: {
-    opacity: 0.6,
-  },
-  signUpButtonText: {
-    color: Colors.textOnPrimary, // White text on green background
-    fontSize: 16,
-    fontWeight: "bold",
-    marginRight: 8,
-  },
-  buttonIcon: {
-    marginLeft: 4,
-  },
-  orContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  divider: {
-    flex: 1,
-    height: 1,
-    backgroundColor: Colors.border, // Light gray borders
-  },
-  orText: {
-    color: Colors.textSecondary, // Medium gray
-    paddingHorizontal: 16,
-    fontSize: 14,
-    fontWeight: "500",
-  },
-  googleButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: Colors.background, // White background
-    borderWidth: 1,
-    borderColor: Colors.border, // Light gray borders
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 32,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
+    decorativeCircle1: {
+        position: 'absolute',
+        top: -50,
+        right: -50,
+        width: 200,
+        height: 200,
+        borderRadius: 100,
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
     },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  googleIconContainer: {
-    marginRight: 12,
-  },
-  googleButtonText: {
-    color: Colors.textPrimary, // Dark gray text
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  loginContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 8,
-  },
-  loginText: {
-    fontSize: 14,
-    color: Colors.textSecondary, // Medium gray for body text
-  },
-  loginLink: {
-    fontSize: 14,
-    color: Colors.primary, // Primary green for links
-    fontWeight: "bold",
-  },
+    decorativeCircle2: {
+        position: 'absolute',
+        top: 50,
+        left: -100,
+        width: 250,
+        height: 250,
+        borderRadius: 125,
+        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    },
+    decorativeLeaf1: {
+        position: 'absolute',
+        top: 100,
+        right: 50,
+        width: 60,
+        height: 80,
+        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+        borderRadius: 30,
+        transform: [{ rotate: '45deg' }],
+    },
+    decorativeLeaf2: {
+        position: 'absolute',
+        top: 150,
+        left: 30,
+        width: 40,
+        height: 60,
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        borderRadius: 20,
+        transform: [{ rotate: '-30deg' }],
+    },
+    header: {
+        paddingTop: 60,
+        paddingHorizontal: 20,
+        paddingBottom: 20,
+    },
+    backButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    backButtonText: {
+        color: 'white',
+        fontSize: 16,
+        marginLeft: 8,
+        fontWeight: '500',
+    },
+    welcomeSection: {
+        paddingHorizontal: 30,
+        paddingBottom: 30,
+    },
+    welcomeTitle: {
+        fontSize: 36,
+        fontWeight: 'bold',
+        color: 'white',
+        marginBottom: 8,
+    },
+    welcomeSubtitle: {
+        fontSize: 18,
+        color: 'rgba(255, 255, 255, 0.9)',
+        fontWeight: '300',
+    },
+    formContainer: {
+        backgroundColor: 'white',
+        borderTopLeftRadius: 30,
+        borderTopRightRadius: 30,
+        flex: 1,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: -4,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+        elevation: 10,
+    },
+    formContent: {
+        padding: 30,
+        paddingTop: 40,
+        paddingBottom: 100,
+    },
+    formTitle: {
+        fontSize: 28,
+        fontWeight: 'bold',
+        color: '#2D8B85',
+        marginBottom: 30,
+        textAlign: 'left',
+    },
+    inputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#F8F9FA',
+        borderRadius: 12,
+        marginBottom: 20,
+        paddingHorizontal: 15,
+        minHeight: 55,
+        borderWidth: 1,
+        borderColor: '#E9ECEF',
+    },
+    inputIcon: {
+        marginRight: 15,
+    },
+    input: {
+        flex: 1,
+        fontSize: 16,
+        color: '#333',
+        paddingVertical: 15,
+    },
+    pickerContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#F8F9FA',
+        borderRadius: 12,
+        marginBottom: 20,
+        paddingHorizontal: 15,
+        minHeight: 55,
+        borderWidth: 1,
+        borderColor: '#E9ECEF',
+    },
+    picker: {
+        flex: 1,
+        color: '#333',
+    },
+    signUpButton: {
+        backgroundColor: '#2D8B85',
+        borderRadius: 12,
+        paddingVertical: 16,
+        alignItems: 'center',
+        marginTop: 20,
+        marginBottom: 25,
+        shadowColor: '#2D8B85',
+        shadowOffset: {
+            width: 0,
+            height: 4,
+        },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 8,
+    },
+    buttonDisabled: {
+        backgroundColor: '#ccc',
+        shadowOpacity: 0,
+        elevation: 0,
+    },
+    signUpButtonText: {
+        color: 'white',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    signInLinkContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    signInLinkText: {
+        color: '#666',
+        fontSize: 16,
+    },
+    signInLink: {
+        color: '#2D8B85',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
 });
 
 export default SignUpScreen;

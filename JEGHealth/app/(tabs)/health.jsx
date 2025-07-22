@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
-  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LineChart } from "react-native-chart-kit";
@@ -17,6 +16,7 @@ import DiseaseDetectionService from "../../src/services/DiseaseDetectionService"
 import Constants from "expo-constants";
 import SafeScreen from "../../component/SafeScreen";
 import { useTheme } from "../../context/ThemeContext";
+import { showError, showSuccess, showInfo } from "../../src/utils/NotificationHelper";
 
 const HealthScreen = () => {
   const { theme } = useTheme();
@@ -222,8 +222,8 @@ const HealthScreen = () => {
         );
       }
 
-      // Alert successful connection
-      Alert.alert(
+      // Show successful connection
+      showSuccess(
         "Device Connected",
         `Successfully connected to ${device.name}. Data will now be collected automatically.`
       );
@@ -238,7 +238,7 @@ const HealthScreen = () => {
       );
 
       // Show error to user
-      Alert.alert(
+      showError(
         "Connection Failed",
         "Failed to connect to device. Please ensure the device is turned on and within range."
       );

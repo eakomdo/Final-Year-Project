@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
-  Alert,
   Platform,
   Modal,
 } from "react-native";
@@ -16,6 +15,7 @@ import { useRouter } from "expo-router";
 import { useTheme } from "../context/ThemeContext";
 import * as ImagePicker from "expo-image-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { showError, showSuccess, showInfo } from "../src/utils/NotificationHelper";
 
 export default function EditProfileScreen() {
   const router = useRouter();
@@ -72,11 +72,11 @@ export default function EditProfileScreen() {
       };
 
       await AsyncStorage.setItem("profileData", JSON.stringify(profileData));
-      Alert.alert("Success", "Profile updated successfully");
+      showSuccess("Success", "Profile updated successfully");
       router.back();
     } catch (error) {
       console.log("Error saving profile data:", error);
-      Alert.alert("Error", "Failed to update profile");
+      showError("Error", "Failed to update profile");
     }
   };
 
@@ -86,7 +86,7 @@ export default function EditProfileScreen() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (status !== "granted") {
-      Alert.alert(
+      showError(
         "Permission Denied",
         "We need camera roll permission to change your profile picture"
       );
@@ -112,7 +112,7 @@ export default function EditProfileScreen() {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
 
     if (status !== "granted") {
-      Alert.alert(
+      showError(
         "Permission Denied",
         "We need camera permission to take a profile picture"
       );
@@ -133,15 +133,9 @@ export default function EditProfileScreen() {
 
   // Show image selection options
   const showImageOptions = () => {
-    Alert.alert(
-      "Change Profile Picture",
-      "Choose an option",
-      [
-        { text: "Take Photo", onPress: takePhoto },
-        { text: "Choose from Gallery", onPress: pickImage },
-        { text: "Cancel", style: "cancel" },
-      ],
-      { cancelable: true }
+    showInfo(
+      "Profile Picture", 
+      "Tap the camera button to take a photo or the gallery button to choose from gallery"
     );
   };
 

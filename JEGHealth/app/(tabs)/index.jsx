@@ -12,7 +12,6 @@ import { useRouter } from "expo-router";
 import { Colors } from "../../src/constants/colors";
 import JEGHealthLogo from "../../src/components/JEGHealthLogo";
 import CaretakerQuickAccess from "../../src/components/CaretakerQuickAccess";
-import NotificationTester from "../../src/components/NotificationTester";
 import HealthRecommendations from "../../src/components/HealthRecommendations";
 
 const HomeScreen = () => {
@@ -218,14 +217,6 @@ const HomeScreen = () => {
             </View>
           </View>
         </View>
-
-        {/* Development Tools - Only show in development */}
-        {__DEV__ && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>🔧 Development Tools</Text>
-            <NotificationTester />
-          </View>
-        )}
 
         {/* Bottom Spacing */}
         <View style={styles.bottomSpacing} />

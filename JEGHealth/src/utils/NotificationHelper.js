@@ -3,7 +3,7 @@
  * This ensures the app behaves like a real user experience without blocking popups
  */
 
-import { NotificationService } from '../services/NotificationService';
+import { showError as toastError, showSuccess as toastSuccess, showWarning as toastWarning, showInfo as toastInfo } from './ToastManager';
 
 /**
  * Show a notification instead of an alert for better UX
@@ -13,33 +13,20 @@ import { NotificationService } from '../services/NotificationService';
  */
 export const showNotification = async (title, message, type = 'info') => {
   try {
-    // Define notification config based on type
-    const notificationConfig = {
-      title,
-      body: message,
-      data: { type },
-    };
-
-    // Customize notification based on type
+    // Use simple toast system that works in Expo Go
     switch (type) {
       case 'error':
-        notificationConfig.categoryIdentifier = 'ERROR';
-        notificationConfig.subtitle = 'Error';
+        toastError(title, message);
         break;
       case 'success':
-        notificationConfig.categoryIdentifier = 'SUCCESS';
-        notificationConfig.subtitle = 'Success';
+        toastSuccess(title, message);
         break;
       case 'warning':
-        notificationConfig.categoryIdentifier = 'WARNING';
-        notificationConfig.subtitle = 'Warning';
+        toastWarning(title, message);
         break;
       default:
-        notificationConfig.categoryIdentifier = 'INFO';
-        notificationConfig.subtitle = 'Information';
+        toastInfo(title, message);
     }
-
-    await NotificationService.scheduleLocalNotification(notificationConfig);
     
     // Also log for development
     console.log(`📱 Notification (${type}): ${title} - ${message}`);
@@ -53,22 +40,34 @@ export const showNotification = async (title, message, type = 'info') => {
 /**
  * Show an error notification
  */
-export const showError = (title, message) => showNotification(title, message, 'error');
+export const showError = (title, message) => {
+  toastError(title, message);
+  console.log(`[ERROR] ${title}: ${message}`);
+};
 
 /**
  * Show a success notification
  */
-export const showSuccess = (title, message) => showNotification(title, message, 'success');
+export const showSuccess = (title, message) => {
+  toastSuccess(title, message);
+  console.log(`[SUCCESS] ${title}: ${message}`);
+};
 
 /**
  * Show a warning notification
  */
-export const showWarning = (title, message) => showNotification(title, message, 'warning');
+export const showWarning = (title, message) => {
+  toastWarning(title, message);
+  console.log(`[WARNING] ${title}: ${message}`);
+};
 
 /**
  * Show an info notification
  */
-export const showInfo = (title, message) => showNotification(title, message, 'info');
+export const showInfo = (title, message) => {
+  toastInfo(title, message);
+  console.log(`[INFO] ${title}: ${message}`);
+};
 
 /**
  * Legacy alert replacement - converts Alert.alert calls to notifications

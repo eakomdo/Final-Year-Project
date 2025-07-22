@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -16,6 +15,7 @@ import SafeScreen from "../component/SafeScreen";
 import DeviceConnectionManager from "../src/services/DeviceConnectionManager";
 import DataStorage from "../src/services/DataStorage";
 import HealthAnalyzer from "../src/services/HealthAnalyzer";
+import { showError, showSuccess, showInfo } from "../src/utils/NotificationHelper";
 
 // Components - make sure these paths match your actual structure
 import ECGChart from "../component/ECGChart";
@@ -92,7 +92,7 @@ export default function ReadingsScreen() {
         setConnecting(false);
       } catch (error) {
         console.error("Error connecting:", error);
-        Alert.alert("Connection Error", "Failed to connect to device.");
+        showError("Connection Error", "Failed to connect to device.");
         setConnecting(false);
         setSelectedDevice(null);
       }
@@ -138,7 +138,7 @@ export default function ReadingsScreen() {
       return removeListener;
     } catch (error) {
       console.error("Error monitoring ECG:", error);
-      Alert.alert("Monitoring Error", "Failed to monitor ECG data.");
+      showError("Monitoring Error", "Failed to monitor ECG data.");
     }
   }, []);
 
@@ -180,7 +180,7 @@ export default function ReadingsScreen() {
       return removeListener;
     } catch (error) {
       console.error("Error monitoring pulse oximeter:", error);
-      Alert.alert("Monitoring Error", "Failed to monitor pulse oximeter data.");
+      showError("Monitoring Error", "Failed to monitor pulse oximeter data.");
     }
   }, []);
 
@@ -188,7 +188,7 @@ export default function ReadingsScreen() {
   const readDeviceData = useCallback(async (device) => {
     try {
       // This would be customized based on the device
-      Alert.alert(
+      showSuccess(
         "Device Connected",
         `Connected to ${device.name}. Configure device settings to start readings.`
       );
@@ -371,9 +371,9 @@ export default function ReadingsScreen() {
           <TouchableOpacity
             style={[styles.actionButton, styles.emergencyButton]}
             onPress={() =>
-              Alert.alert(
+              showInfo(
                 "Emergency",
-                "Would you like to call emergency services?"
+                "Emergency services feature coming soon. Please call 911 or your local emergency number."
               )
             }
           >

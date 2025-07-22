@@ -4,13 +4,13 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Alert,
   ScrollView,
   SafeAreaView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import DeviceList from '../../component/DeviceList';
 import { Colors } from '../../src/constants/colors';
+import { showError, showSuccess, showInfo } from '../../src/utils/NotificationHelper';
 
 export default function DevicesScreen() {
   const [devices, setDevices] = useState([]);
@@ -70,7 +70,7 @@ export default function DevicesScreen() {
     } catch (error) {
       console.error('Error scanning for devices:', error);
       setIsScanning(false);
-      Alert.alert('Error', 'Failed to scan for devices');
+      showError('Error', 'Failed to scan for devices');
     }
   };
 
@@ -87,13 +87,13 @@ export default function DevicesScreen() {
       setTimeout(() => {
         setConnectedDevice(device);
         setIsConnecting(false);
-        Alert.alert('Success', `Connected to ${device.name}`);
+        showSuccess('Success', `Connected to ${device.name}`);
       }, 2000);
 
     } catch (error) {
       console.error('Error connecting to device:', error);
       setIsConnecting(false);
-      Alert.alert('Error', `Failed to connect to ${device.name}`);
+      showError('Error', `Failed to connect to ${device.name}`);
     }
   };
 
@@ -102,10 +102,10 @@ export default function DevicesScreen() {
 
     try {
       setConnectedDevice(null);
-      Alert.alert('Disconnected', 'Device has been disconnected');
+      showInfo('Disconnected', 'Device has been disconnected');
     } catch (error) {
       console.error('Error disconnecting device:', error);
-      Alert.alert('Error', 'Failed to disconnect device');
+      showError('Error', 'Failed to disconnect device');
     }
   };
 

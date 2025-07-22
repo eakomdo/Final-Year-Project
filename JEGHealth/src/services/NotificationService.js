@@ -162,6 +162,12 @@ class NotificationService {
     }
   }
 
+  // Backward compatibility method
+  async scheduleLocalNotification(title, body, trigger, data = {}) {
+    console.log('⚠️  scheduleLocalNotification is deprecated, use scheduleNotification instead');
+    return await this.scheduleNotification(title, body, trigger, data);
+  }
+
   showExpoGoLimitation() {
     if (this.isExpoGo && !this.hasShownLimitation) {
       console.log('ℹ️  Expo Go Limitation: Notifications work locally but won\'t show when app is closed');
