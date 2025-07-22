@@ -352,7 +352,7 @@ export default function HistoryScreen() {
         max = 100;
         break;
       case "systolic":
-        color = "#4CAF50";
+        color = "#4ECDC4";
         min = 100;
         max = 140;
         break;
@@ -377,8 +377,8 @@ export default function HistoryScreen() {
             ? "244,67,54"
             : color === "#2196F3"
             ? "33,150,243"
-            : color === "#4CAF50"
-            ? "76,175,80"
+            : color === "#4ECDC4"
+            ? "78,205,196"
             : "255,152,0"
         }, ${opacity})`,
       labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
@@ -556,7 +556,7 @@ export default function HistoryScreen() {
 
             <View style={styles.insightCard}>
               <View
-                style={[styles.insightIcon, { backgroundColor: "#4CAF50" }]}
+                style={[styles.insightIcon, { backgroundColor: "#4ECDC4" }]}
               >
                 <Ionicons name="checkmark-circle" size={24} color="#fff" />
               </View>

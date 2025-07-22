@@ -10,7 +10,6 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Colors } from '../constants/colors';
 import { showWarning } from '../utils/NotificationHelper';
 
 const NotificationsScreen = () => {
@@ -31,7 +30,7 @@ const NotificationsScreen = () => {
         message: 'Time to take your morning medication',
         type: 'medication',
         icon: 'medical',
-        color: Colors.primary,
+        color: '#4ECDC4',
         timestamp: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
         read: false,
         priority: 'high'
@@ -42,7 +41,7 @@ const NotificationsScreen = () => {
         message: 'Remember to drink water regularly throughout the day',
         type: 'tip',
         icon: 'water',
-        color: Colors.info,
+        color: '#2196F3',
         timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
         read: false,
         priority: 'medium'
@@ -53,7 +52,7 @@ const NotificationsScreen = () => {
         message: 'You have a doctor appointment tomorrow at 2:00 PM',
         type: 'appointment',
         icon: 'calendar',
-        color: Colors.warning,
+        color: '#FFA726',
         timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
         read: true,
         priority: 'high'
@@ -64,7 +63,7 @@ const NotificationsScreen = () => {
         message: 'Dr. Jane Smith has been added as your caretaker with code ABC123',
         type: 'caretaker',
         icon: 'people',
-        color: Colors.primary,
+        color: '#4ECDC4',
         timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
         read: true,
         priority: 'medium'
@@ -75,7 +74,7 @@ const NotificationsScreen = () => {
         message: 'Heart Rate Monitor connected successfully',
         type: 'device',
         icon: 'bluetooth',
-        color: Colors.success,
+        color: '#4ECDC4',
         timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000), // 12 hours ago
         read: true,
         priority: 'low'
@@ -165,7 +164,7 @@ const NotificationsScreen = () => {
           
           {notification.priority === 'high' && (
             <View style={styles.priorityIndicator}>
-              <Ionicons name="warning" size={12} color={Colors.error} />
+              <Ionicons name="warning" size={12} color="#FF5722" />
               <Text style={styles.priorityText}>High Priority</Text>
             </View>
           )}
@@ -175,7 +174,7 @@ const NotificationsScreen = () => {
           style={styles.deleteButton}
           onPress={() => deleteNotification(notification.id)}
         >
-          <Ionicons name="close" size={16} color={Colors.textTertiary} />
+          <Ionicons name="close" size={16} color="#B0B0B0" />
         </TouchableOpacity>
       </View>
       
@@ -193,7 +192,7 @@ const NotificationsScreen = () => {
           style={styles.backButton}
           onPress={() => router.back()}
         >
-          <Ionicons name="arrow-back" size={24} color={Colors.textOnPrimary} />
+          <Ionicons name="arrow-back" size={24} color="#4ECDC4" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Notifications</Text>
         <TouchableOpacity
@@ -226,7 +225,7 @@ const NotificationsScreen = () => {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            tintColor={Colors.primary}
+            tintColor="#4ECDC4"
           />
         }
         showsVerticalScrollIndicator={false}
@@ -237,7 +236,7 @@ const NotificationsScreen = () => {
           </View>
         ) : (
           <View style={styles.emptyState}>
-            <Ionicons name="notifications-off-outline" size={64} color={Colors.textTertiary} />
+            <Ionicons name="notifications-off-outline" size={64} color="rgba(255, 255, 255, 0.6)" />
             <Text style={styles.emptyTitle}>No Notifications</Text>
             <Text style={styles.emptySubtitle}>
               You&#39;re all caught up! Check back later for new updates.
@@ -252,10 +251,10 @@ const NotificationsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: '#4ECDC4', // Turquoise background for block-based screen
   },
   header: {
-    backgroundColor: Colors.primary,
+    backgroundColor: 'white', // White header with turquoise elements
     flexDirection: 'row',
     alignItems: 'center',
     paddingTop: 10,
@@ -269,7 +268,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 18,
     fontWeight: 'bold',
-    color: Colors.textOnPrimary,
+    color: '#4ECDC4', // Turquoise text on white header
     textAlign: 'center',
     marginLeft: -32,
   },
@@ -277,7 +276,7 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   markAllText: {
-    color: Colors.textOnPrimary,
+    color: '#4ECDC4', // Turquoise text on white header
     fontSize: 14,
     fontWeight: '600',
   },
@@ -285,15 +284,15 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   countContainer: {
-    backgroundColor: Colors.backgroundLight,
+    backgroundColor: 'white', // White count container
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    borderBottomColor: '#E9ECEF',
   },
   countText: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: '#666', // Medium gray text on white container
     fontWeight: '600',
   },
   content: {
@@ -303,20 +302,20 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   notificationCard: {
-    backgroundColor: Colors.background,
+    backgroundColor: 'white', // White cards on turquoise background
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: '#E9ECEF',
     boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.05)',
     elevation: 1,
     position: 'relative',
   },
   unreadNotification: {
     borderLeftWidth: 4,
-    borderLeftColor: Colors.primary,
-    backgroundColor: Colors.backgroundLight,
+    borderLeftColor: '#4ECDC4', // Turquoise accent for unread
+    backgroundColor: 'white',
   },
   notificationContent: {
     flexDirection: 'row',
@@ -342,7 +341,7 @@ const styles = StyleSheet.create({
   notificationTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: Colors.textPrimary,
+    color: '#333', // Dark text on white cards
     flex: 1,
     marginRight: 8,
   },
@@ -351,11 +350,11 @@ const styles = StyleSheet.create({
   },
   notificationTime: {
     fontSize: 12,
-    color: Colors.textTertiary,
+    color: '#B0B0B0', // Light gray time text
   },
   notificationMessage: {
     fontSize: 14,
-    color: Colors.textSecondary,
+    color: '#666', // Medium gray message text
     lineHeight: 20,
     marginBottom: 8,
   },
@@ -370,7 +369,7 @@ const styles = StyleSheet.create({
   },
   priorityText: {
     fontSize: 10,
-    color: Colors.error,
+    color: '#FF5722', // Red for error priority
     fontWeight: '600',
     marginLeft: 4,
   },
@@ -384,7 +383,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: Colors.primary,
+    backgroundColor: '#4ECDC4', // Turquoise unread dot
   },
   emptyState: {
     flex: 1,
@@ -396,13 +395,13 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: Colors.textPrimary,
+    color: 'white', // White text on turquoise background
     marginTop: 20,
     marginBottom: 12,
   },
   emptySubtitle: {
     fontSize: 16,
-    color: Colors.textSecondary,
+    color: 'rgba(255, 255, 255, 0.8)', // Semi-transparent white text
     textAlign: 'center',
     lineHeight: 24,
   },

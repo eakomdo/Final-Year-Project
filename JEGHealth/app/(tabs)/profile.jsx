@@ -298,71 +298,82 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f8f8f8",
+    backgroundColor: "#20B2AA", // Turquoise background for block screen
   },
   header: {
     padding: 16,
-    backgroundColor: "#fff",
+    backgroundColor: "#4FD1C7", // Lighter turquoise for header
     borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    borderBottomColor: "rgba(255,255,255,0.2)",
   },
   headerTitle: {
     fontSize: 22,
     fontWeight: "bold",
-    color: "#333",
+    color: "#fff", // White text on turquoise
   },
   profileSection: {
     alignItems: "center",
     padding: 24,
-    backgroundColor: "#fff",
+    backgroundColor: "#4FD1C7", // Card with lighter turquoise
+    margin: 16,
+    borderRadius: 15,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 4,
   },
   profileImageContainer: {
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: "#e0e0e0",
+    backgroundColor: "rgba(255,255,255,0.3)",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 12,
+    borderWidth: 3,
+    borderColor: "#fff",
   },
   profileName: {
     fontSize: 22,
     fontWeight: "bold",
-    color: "#333",
+    color: "#fff", // White text
   },
   profileEmail: {
     fontSize: 16,
-    color: "#666",
+    color: "rgba(255,255,255,0.9)", // Semi-transparent white
     marginTop: 4,
     marginBottom: 16,
   },
   editProfileButton: {
-    borderWidth: 1,
-    borderColor: "#007BFF",
+    borderWidth: 2,
+    borderColor: "#fff",
     borderRadius: 20,
     paddingVertical: 8,
     paddingHorizontal: 16,
+    backgroundColor: "rgba(255,255,255,0.1)",
   },
   editProfileText: {
-    color: "#007BFF",
+    color: "#fff",
     fontSize: 14,
-    fontWeight: "500",
+    fontWeight: "600",
   },
   section: {
-    backgroundColor: "#fff",
-    borderRadius: 10,
+    backgroundColor: "#4FD1C7", // Turquoise cards
+    borderRadius: 15,
     padding: 16,
-    margin: 10,
+    margin: 16,
+    marginTop: 8,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 4,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#333",
+    color: "#fff", // White text on turquoise
     marginBottom: 16,
   },
   infoRow: {
@@ -370,17 +381,17 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    borderBottomColor: "rgba(255,255,255,0.2)",
   },
   infoLabel: {
     fontSize: 16,
-    color: "#333",
+    color: "#fff", // White text
   },
   infoValue: {
     fontSize: 16,
-    color: "#666",
-    paddingHorizontal: 5, // Add horizontal padding
-    marginLeft: 8,        // Add left margin for spacing
+    color: "rgba(255,255,255,0.9)", // Semi-transparent white
+    paddingHorizontal: 5,
+    marginLeft: 8,
   },
   settingRow: {
     flexDirection: "row",
@@ -388,32 +399,37 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    borderBottomColor: "rgba(255,255,255,0.2)",
   },
   settingLabel: {
     fontSize: 16,
-    color: "#333",
+    color: "#fff", // White text
   },
   menuRow: {
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    borderBottomColor: "rgba(255,255,255,0.2)",
   },
   menuText: {
     fontSize: 16,
-    color: "#333",
+    color: "#fff", // White text
     marginLeft: 12,
     flex: 1,
   },
   logoutButton: {
     margin: 16,
-    backgroundColor: "#FF3B30",
-    borderRadius: 8,
+    backgroundColor: "#FF4757", // Bright red for contrast on turquoise
+    borderRadius: 12,
     padding: 14,
     alignItems: "center",
     marginBottom: 40,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
   },
   logoutText: {
     color: "#fff",

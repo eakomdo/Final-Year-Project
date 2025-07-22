@@ -237,7 +237,7 @@ export default function ReadingsScreen() {
           {selectedDevice ? (
             <View style={styles.connectedDevice}>
               <View style={styles.deviceInfo}>
-                <Ionicons name="bluetooth" size={20} color="#4CAF50" />
+                <Ionicons name="bluetooth" size={20} color="#4ECDC4" />
                 <Text style={styles.deviceName}>{selectedDevice.name}</Text>
                 <View style={styles.statusBadge}>
                   <Text style={styles.statusText}>Connected</Text>
@@ -308,7 +308,7 @@ export default function ReadingsScreen() {
               {readings.bloodPressure && (
                 <MeasurementCard
                   icon="fitness"
-                  iconColor="#4CAF50"
+                  iconColor="#4ECDC4"
                   title="Blood Pressure"
                   value={`${readings.bloodPressure.systolic}/${readings.bloodPressure.diastolic}`}
                   unit="mmHg"
@@ -461,7 +461,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   statusBadge: {
-    backgroundColor: "#4CAF50",
+    backgroundColor: "#4ECDC4",
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
@@ -508,7 +508,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   alertNormal: {
-    backgroundColor: "#4CAF50",
+    backgroundColor: "#4ECDC4",
   },
   alertLow: {
     backgroundColor: "#FFC107",

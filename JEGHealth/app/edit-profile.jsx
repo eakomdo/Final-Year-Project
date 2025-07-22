@@ -12,14 +12,12 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useTheme } from "../context/ThemeContext";
 import * as ImagePicker from "expo-image-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { showError, showSuccess, showInfo } from "../src/utils/NotificationHelper";
 
 export default function EditProfileScreen() {
   const router = useRouter();
-  const { theme } = useTheme();
 
   // Profile state
   const [profileImage, setProfileImage] = useState(null);
@@ -148,47 +146,47 @@ export default function EditProfileScreen() {
         }
       : {};
 
-  // Apply dynamic styles based on theme
+  // Apply dynamic styles based on theme - Block/Card-Based Screen (Turquoise Theme)
   const dynamicStyles = {
     container: {
       flex: 1,
-      backgroundColor: theme.background,
+      backgroundColor: '#4ECDC4', // Turquoise background for block-based screen
     },
     header: {
-      backgroundColor: theme.card,
-      borderBottomColor: theme.border,
+      backgroundColor: 'white',
+      borderBottomColor: 'rgba(255, 255, 255, 0.3)',
     },
     title: {
-      color: theme.text,
+      color: '#4ECDC4', // Turquoise text on white header
     },
     inputContainer: {
-      backgroundColor: theme.card,
+      backgroundColor: 'white',
     },
     inputLabel: {
-      color: theme.text,
+      color: '#333', // Dark text on white cards
     },
     input: {
-      color: theme.text,
-      backgroundColor: theme.background,
-      borderColor: theme.border,
+      color: '#333', // Dark text in inputs
+      backgroundColor: '#F8F9FA', // Light gray input background
+      borderColor: '#E9ECEF',
     },
     sectionTitle: {
-      color: theme.text,
+      color: '#333', // Dark text on white cards
     },
     profileImagePlaceholder: {
-      backgroundColor: theme.profileImage,
+      backgroundColor: '#F8F9FA',
     },
     cameraButtonBackground: {
-      backgroundColor: theme.primary,
+      backgroundColor: '#4ECDC4',
     },
     saveButton: {
-      backgroundColor: theme.primary,
+      backgroundColor: '#4ECDC4',
     },
     cancelButton: {
-      borderColor: theme.border,
+      borderColor: '#E9ECEF',
     },
     cancelButtonText: {
-      color: theme.text,
+      color: '#333',
     },
   };
 
@@ -199,7 +197,7 @@ export default function EditProfileScreen() {
           style={styles.backButton}
           onPress={() => router.back()}
         >
-          <Ionicons name="arrow-back" size={24} color={theme.primary} />
+          <Ionicons name="arrow-back" size={24} color="#4ECDC4" />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, dynamicStyles.title]}>
           Edit Profile
@@ -222,7 +220,7 @@ export default function EditProfileScreen() {
                 dynamicStyles.profileImagePlaceholder,
               ]}
             >
-              <Ionicons name="person" size={60} color={theme.iconColor} />
+              <Ionicons name="person" size={60} color="#B0B0B0" />
             </View>
           )}
           <View
@@ -248,7 +246,7 @@ export default function EditProfileScreen() {
             value={name}
             onChangeText={setName}
             placeholder="Enter your full name"
-            placeholderTextColor={theme.subText}
+            placeholderTextColor="#B0B0B0"
           />
         </View>
 
@@ -261,7 +259,7 @@ export default function EditProfileScreen() {
             value={email}
             onChangeText={setEmail}
             placeholder="Enter your email"
-            placeholderTextColor={theme.subText}
+            placeholderTextColor="#B0B0B0"
             keyboardType="email-address"
             autoCapitalize="none"
           />
@@ -283,7 +281,7 @@ export default function EditProfileScreen() {
             value={age}
             onChangeText={setAge}
             placeholder="Enter your age"
-            placeholderTextColor={theme.subText}
+            placeholderTextColor="#B0B0B0"
             keyboardType="number-pad"
           />
         </View>
@@ -297,7 +295,7 @@ export default function EditProfileScreen() {
               style={[
                 styles.genderButton,
                 gender === "Male" && styles.genderButtonActive,
-                gender === "Male" && { backgroundColor: theme.primary },
+                gender === "Male" && { backgroundColor: '#4ECDC4' },
               ]}
               onPress={() => setGender("Male")}
             >
@@ -316,7 +314,7 @@ export default function EditProfileScreen() {
               style={[
                 styles.genderButton,
                 gender === "Female" && styles.genderButtonActive,
-                gender === "Female" && { backgroundColor: theme.primary },
+                gender === "Female" && { backgroundColor: '#4ECDC4' },
               ]}
               onPress={() => setGender("Female")}
             >
@@ -335,7 +333,7 @@ export default function EditProfileScreen() {
               style={[
                 styles.genderButton,
                 gender === "Other" && styles.genderButtonActive,
-                gender === "Other" && { backgroundColor: theme.primary },
+                gender === "Other" && { backgroundColor: '#4ECDC4' },
               ]}
               onPress={() => setGender("Other")}
             >
@@ -361,14 +359,14 @@ export default function EditProfileScreen() {
             onPress={() => setBloodTypeModalVisible(true)}
           >
             <Text
-              style={[styles.selectText, { color: theme.text }]}
+              style={[styles.selectText, { color: '#333' }]} // Dark text on white inputs
               numberOfLines={1}
               ellipsizeMode="tail"
               allowFontScaling={false} // Prevent text scaling issues
             >
               {bloodType}
             </Text>
-            <Ionicons name="chevron-down" size={20} color={theme.subText} />
+            <Ionicons name="chevron-down" size={20} color="#666" />
           </TouchableOpacity>
 
           {/* Blood Type Picker Modal */}
@@ -386,12 +384,12 @@ export default function EditProfileScreen() {
               <View
                 style={[
                   styles.pickerModalContainer,
-                  { backgroundColor: theme.card },
+                  { backgroundColor: 'white' }, // White modal background
                 ]}
                 onStartShouldSetResponder={() => true}
                 onTouchEnd={(e) => e.stopPropagation()}
               >
-                <Text style={[styles.pickerTitle, { color: theme.text }]}>
+                <Text style={[styles.pickerTitle, { color: '#333' }]}> {/* Dark text on white modal */}
                   Select Blood Type
                 </Text>
                 <View style={styles.bloodTypeGrid}>
@@ -403,7 +401,7 @@ export default function EditProfileScreen() {
                           styles.bloodTypeOption,
                           bloodType === type && styles.bloodTypeOptionSelected,
                           bloodType === type && {
-                            backgroundColor: theme.primary,
+                            backgroundColor: '#4ECDC4',
                           },
                         ]}
                         onPress={() => {
@@ -427,12 +425,12 @@ export default function EditProfileScreen() {
                 <TouchableOpacity
                   style={[
                     styles.cancelPickerButton,
-                    { borderColor: theme.border },
+                    { borderColor: '#E9ECEF' },
                   ]}
                   onPress={() => setBloodTypeModalVisible(false)}
                 >
                   <Text
-                    style={[styles.cancelButtonFullText, { color: theme.text }]}
+                    style={[styles.cancelButtonFullText, { color: '#333' }]}
                   >
                     Cancel
                   </Text>
@@ -451,7 +449,7 @@ export default function EditProfileScreen() {
             value={height}
             onChangeText={setHeight}
             placeholder="Enter your height in cm"
-            placeholderTextColor={theme.subText}
+            placeholderTextColor="#B0B0B0"
             keyboardType="number-pad"
           />
         </View>
@@ -465,7 +463,7 @@ export default function EditProfileScreen() {
             value={weight}
             onChangeText={setWeight}
             placeholder="Enter your weight in kg"
-            placeholderTextColor={theme.subText}
+            placeholderTextColor="#B0B0B0"
             keyboardType="number-pad"
           />
         </View>

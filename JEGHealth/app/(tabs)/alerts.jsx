@@ -127,7 +127,7 @@ export default function AlertsScreen() {
         title = title || "Activity Reminder";
         message = message || `Time for ${activityType}`;
         icon = "walk";
-        color = "#4CAF50";
+        color = "#4ECDC4";
         break;
       case "sleep":
         title = title || "Sleep Schedule";
@@ -969,7 +969,7 @@ export default function AlertsScreen() {
           <Switch
             value={medicationReminders}
             onValueChange={(value) => toggleAlert("medication", value)}
-            trackColor={{ false: "#d1d1d6", true: "#4CD964" }}
+            trackColor={{ false: "#d1d1d6", true: "#4ECDC4" }}
           />
         </TouchableOpacity>
 
@@ -986,7 +986,7 @@ export default function AlertsScreen() {
           <Switch
             value={waterReminders}
             onValueChange={(value) => toggleAlert("water", value)}
-            trackColor={{ false: "#d1d1d6", true: "#4CD964" }}
+            trackColor={{ false: "#d1d1d6", true: "#4ECDC4" }}
           />
         </TouchableOpacity>
 
@@ -995,7 +995,7 @@ export default function AlertsScreen() {
           onPress={() => activityReminders && openNewAlertModal("activity")}
         >
           <View style={styles.settingInfo}>
-            <Ionicons name="walk" size={20} color="#4CAF50" />
+            <Ionicons name="walk" size={20} color="#4ECDC4" />
             <Text style={[styles.settingText, dynamicStyles.settingText]}>
               Activity Reminders
             </Text>
@@ -1003,7 +1003,7 @@ export default function AlertsScreen() {
           <Switch
             value={activityReminders}
             onValueChange={(value) => toggleAlert("activity", value)}
-            trackColor={{ false: "#d1d1d6", true: "#4CD964" }}
+            trackColor={{ false: "#d1d1d6", true: "#4ECDC4" }}
           />
         </TouchableOpacity>
 
@@ -1020,7 +1020,7 @@ export default function AlertsScreen() {
           <Switch
             value={sleepReminders}
             onValueChange={(value) => toggleAlert("sleep", value)}
-            trackColor={{ false: "#d1d1d6", true: "#4CD964" }}
+            trackColor={{ false: "#d1d1d6", true: "#4ECDC4" }}
           />
         </TouchableOpacity>
 
@@ -1037,7 +1037,7 @@ export default function AlertsScreen() {
           <Switch
             value={appointmentAlerts}
             onValueChange={(value) => toggleAlert("appointment", value)}
-            trackColor={{ false: "#d1d1d6", true: "#4CD964" }}
+            trackColor={{ false: "#d1d1d6", true: "#4ECDC4" }}
           />
         </TouchableOpacity>
       </View>
@@ -1060,6 +1060,7 @@ export default function AlertsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#20B2AA", // Turquoise background for settings panel
   },
   header: {
     flexDirection: "row",
@@ -1067,27 +1068,32 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 16,
     borderBottomWidth: 1,
+    backgroundColor: "#4FD1C7", // Lighter turquoise for header
+    borderBottomColor: "rgba(255,255,255,0.2)",
   },
   title: {
     fontSize: 22,
     fontWeight: "bold",
+    color: "#fff", // White text on turquoise
   },
   settingsButton: {
     padding: 8,
   },
   section: {
-    borderRadius: 10,
+    backgroundColor: "#4FD1C7", // Turquoise cards
+    borderRadius: 15,
     padding: 16,
-    margin: 10,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    margin: 16,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 4,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
     marginBottom: 16,
+    color: "#fff", // White text on turquoise
   },
   emptyAlerts: {
     alignItems: "center",
@@ -1097,17 +1103,20 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "500",
     marginTop: 12,
+    color: "rgba(255,255,255,0.9)", // Semi-transparent white
   },
   emptyAlertsSubText: {
     fontSize: 14,
     textAlign: "center",
     marginTop: 8,
+    color: "rgba(255,255,255,0.8)", // Semi-transparent white
   },
   alertItem: {
     flexDirection: "row",
     alignItems: "center",
     padding: 16,
     borderBottomWidth: 1,
+    borderBottomColor: "rgba(255,255,255,0.2)",
   },
   alertContent: {
     flex: 1,
@@ -1117,17 +1126,20 @@ const styles = StyleSheet.create({
   alertTitle: {
     fontSize: 16,
     fontWeight: "500",
+    color: "#fff", // White text
   },
   alertMessage: {
     fontSize: 14,
     marginTop: 4,
+    color: "rgba(255,255,255,0.9)", // Semi-transparent white
   },
   alertTime: {
     fontSize: 12,
     marginTop: 4,
+    color: "rgba(255,255,255,0.8)", // Semi-transparent white
   },
   unreadAlert: {
-    backgroundColor: "rgba(33, 150, 243, 0.08)",
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
   },
   settingRow: {
     flexDirection: "row",
@@ -1135,7 +1147,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    borderBottomColor: "rgba(255,255,255,0.2)",
   },
   settingInfo: {
     flexDirection: "row",
@@ -1144,20 +1156,28 @@ const styles = StyleSheet.create({
   settingText: {
     fontSize: 16,
     marginLeft: 12,
+    color: "#fff", // White text
   },
   clearButton: {
-    borderRadius: 8,
+    borderRadius: 12,
     padding: 14,
     margin: 16,
     alignItems: "center",
     marginBottom: 30,
+    backgroundColor: "#FF4757", // Bright red for contrast
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
   },
   clearButtonText: {
     fontSize: 16,
-    fontWeight: "500",
+    fontWeight: "600",
+    color: "#fff", // White text on red
   },
 
-  // Modal styles
+  // Modal styles - keep white for readability
   modalOverlay: {
     flex: 1,
     justifyContent: "center",
@@ -1170,12 +1190,14 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 20,
     alignItems: "stretch",
+    backgroundColor: "#fff", // White modal for readability
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: "bold",
     marginBottom: 20,
     textAlign: "center",
+    color: "#333", // Dark text on white
   },
   inputGroup: {
     marginBottom: 16,
@@ -1183,6 +1205,7 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 16,
     marginBottom: 8,
+    color: "#333", // Dark text
   },
   input: {
     height: 46,
@@ -1190,6 +1213,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
     fontSize: 16,
+    borderColor: "#ddd",
+    backgroundColor: "#fff",
+    color: "#333",
   },
   dateTimeButton: {
     height: 46,
@@ -1197,9 +1223,12 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 12,
     justifyContent: "center",
+    borderColor: "#ddd",
+    backgroundColor: "#f8f8f8",
   },
   dateTimeButtonText: {
     fontSize: 16,
+    color: "#333", // Dark text
   },
   modalActions: {
     flexDirection: "row",
@@ -1213,6 +1242,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginLeft: 8,
+    backgroundColor: "#20B2AA", // Turquoise for CTA
   },
   addButtonText: {
     color: "#fff",
@@ -1227,10 +1257,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginRight: 8,
+    borderColor: "#20B2AA",
   },
   cancelButtonText: {
     fontSize: 16,
     fontWeight: "600",
+    color: "#20B2AA",
   },
   multiTimeContainer: {
     marginBottom: 16,
@@ -1282,7 +1314,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.05)",
   },
   frequencyOptionSelected: {
-    backgroundColor: "#007AFF",
+    backgroundColor: "#20B2AA",
   },
   frequencyText: {
     fontSize: 14,
@@ -1304,7 +1336,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.05)",
   },
   dayButtonSelected: {
-    backgroundColor: "#007AFF",
+    backgroundColor: "#20B2AA",
   },
   dayText: {
     fontSize: 14,

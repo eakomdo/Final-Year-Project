@@ -2,11 +2,9 @@ import React from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useTheme } from "../context/ThemeContext";
 
 export default function HealthTipsScreen() {
   const router = useRouter();
-  const { theme } = useTheme();
 
   // Comprehensive list of health tips with detailed information
   const healthTips = [
@@ -35,7 +33,7 @@ export default function HealthTipsScreen() {
         concerning: "Persistent pain, excessive fatigue, irregular heartbeat, difficulty breathing, dizziness"
       },
       icon: "fitness",
-      color: "#4CAF50",
+      color: "#4ECDC4",
       videoLink: "https://www.youtube.com/watch?v=IODxDxX7oi4"
     },
     {
@@ -124,37 +122,37 @@ export default function HealthTipsScreen() {
     },
   ];
 
-  // Apply dynamic styles based on theme
+  // Apply dynamic styles based on theme - Content/Information Screen (White Theme)
   const dynamicStyles = {
     container: {
       flex: 1,
-      backgroundColor: theme.background,
+      backgroundColor: 'white', // Clean white background for content screen
     },
     headerContainer: {
-      backgroundColor: theme.card,
-      borderBottomColor: theme.border,
+      backgroundColor: 'white',
+      borderBottomColor: '#E9ECEF', // Light border
     },
     title: {
-      color: theme.text,
+      color: '#333', // Dark text on white background
     },
     tipCard: {
-      backgroundColor: theme.card,
-      borderColor: theme.border,
+      backgroundColor: 'white', // White cards
+      borderColor: '#E9ECEF', // Light gray borders
     },
     tipTitle: {
-      color: theme.text,
+      color: '#333', // Dark titles
     },
     tipText: {
-      color: theme.subText,
+      color: '#666', // Medium gray body text
     },
     sectionTitle: {
-      color: theme.text,
+      color: '#333', // Dark section titles
     },
     sectionText: {
-      color: theme.subText,
+      color: '#666', // Medium gray section text
     },
     videoButton: {
-      backgroundColor: theme.primary,
+      backgroundColor: '#4ECDC4', // Minimal turquoise accent
     }
   };
 
@@ -189,14 +187,14 @@ export default function HealthTipsScreen() {
           <Ionicons 
             name={expanded ? "chevron-up" : "chevron-down"} 
             size={24} 
-            color={theme.subText} 
+            color="#666" 
           />
         </TouchableOpacity>
         
         {expanded && (
           <View style={styles.tipDetails}>
             <View style={styles.tipSection}>
-              <Text style={[styles.sectionTitle, dynamicStyles.sectionTitle]}>Why It's Important</Text>
+              <Text style={[styles.sectionTitle, dynamicStyles.sectionTitle]}>Why It&apos;s Important</Text>
               <Text style={[styles.sectionText, dynamicStyles.sectionText]}>{tip.importance}</Text>
             </View>
             
@@ -209,7 +207,7 @@ export default function HealthTipsScreen() {
               <Text style={[styles.sectionTitle, dynamicStyles.sectionTitle]}>Signs to Watch For</Text>
               <View style={styles.signsContainer}>
                 <View style={styles.signBox}>
-                  <Text style={[styles.signTitle, { color: "#4CAF50" }]}>Good Signs</Text>
+                  <Text style={[styles.signTitle, { color: "#4ECDC4" }]}>Good Signs</Text>
                   <Text style={[styles.sectionText, dynamicStyles.sectionText]}>{tip.signs.good}</Text>
                 </View>
                 <View style={styles.signBox}>
@@ -239,7 +237,7 @@ export default function HealthTipsScreen() {
           style={styles.backButton} 
           onPress={() => router.back()}
         >
-          <Ionicons name="arrow-back" size={24} color={theme.primary} />
+          <Ionicons name="arrow-back" size={24} color="#4ECDC4" />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, dynamicStyles.title]}>Health Tips</Text>
       </View>

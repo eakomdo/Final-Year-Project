@@ -187,7 +187,7 @@ export default function DevicesScreen() {
           </View>
           
           <View style={styles.infoCard}>
-            <Ionicons name="warning" size={20} color="#FF9500" />
+            <Ionicons name="warning" size={20} color="#FFA726" />
             <Text style={styles.infoText}>
               Note: This app is currently running in mock mode for development. 
               Real device connections require a development build.
@@ -222,12 +222,12 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
   },
   connectedCard: {
-    backgroundColor: '#E8F5E8',
+    backgroundColor: 'rgba(78, 205, 196, 0.1)',
     borderRadius: 12,
     padding: 16,
     marginBottom: 24,
     borderWidth: 1,
-    borderColor: '#4CAF50',
+    borderColor: '#4ECDC4',
   },
   connectedHeader: {
     flexDirection: 'row',
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
   },
   deviceStatus: {
     fontSize: 14,
-    color: '#4CAF50',
+    color: '#4ECDC4',
     fontWeight: '500',
   },
   disconnectButton: {

@@ -1,43 +1,48 @@
 export const Colors = {
-  // Primary JEGHealth Colors
-  primary: 'hsl(142, 76%, 36%)', // Primary green for logos, CTAs, navigation
-  primaryLight: 'hsl(142, 76%, 46%)', // Lighter green for hover states
-  primaryDark: 'hsl(142, 76%, 26%)', // Darker green for pressed states
+  // JEGHealth Turquoise Theme Colors
+  primary: '#4ECDC4', // Primary turquoise for backgrounds, CTAs, navigation
+  primaryMedium: '#2D8B85', // Medium turquoise for gradients, buttons
+  primaryDark: '#1A5F5A', // Dark turquoise for gradients, accents
+  primaryLight: '#7FCCCC', // Light turquoise for icons, borders
   
   // Background Colors
-  background: 'hsl(0, 0%, 100%)', // White main backgrounds
-  backgroundLight: 'hsl(142, 20%, 98%)', // Light green tint for hero sections
-  backgroundGray: 'hsl(0, 0%, 97%)', // Gray-50 for alternating sections
+  background: '#4ECDC4', // Primary turquoise for main backgrounds
+  backgroundLight: 'rgba(255, 255, 255, 0.9)', // White with opacity for cards
+  backgroundCard: 'white', // Pure white for content cards
+  backgroundGray: '#F8F9FA', // Light gray for input backgrounds
   
   // Text Colors
-  textPrimary: 'hsl(210, 11%, 15%)', // Dark gray for main headings
-  textSecondary: 'hsl(215, 13%, 34%)', // Medium gray for body text
-  textTertiary: 'hsl(215, 13%, 54%)', // Light gray for descriptions
-  textOnPrimary: 'hsl(0, 0%, 100%)', // White text on green backgrounds
+  textPrimary: '#333', // Dark gray for main headings
+  textSecondary: '#666', // Medium gray for body text
+  textTertiary: '#B0B0B0', // Light gray for placeholders
+  textOnPrimary: 'white', // White text on turquoise backgrounds
   
   // Accent Colors
-  success: 'hsl(142, 76%, 36%)', // Same as primary for consistency
-  warning: 'hsl(45, 93%, 47%)', // Amber for warnings
-  error: 'hsl(0, 84%, 60%)', // Red for errors
-  info: 'hsl(199, 89%, 48%)', // Blue for info
+  success: '#4ECDC4', // Same as primary for consistency
+  warning: '#FFA726', // Orange for warnings
+  error: '#FF5722', // Red for errors
+  info: '#2196F3', // Blue for info
   
   // Border and Shadow Colors
-  border: 'hsl(0, 0%, 90%)', // Light gray borders
-  shadow: 'rgba(34, 197, 94, 0.1)', // Green shadow for primary elements
+  border: '#E9ECEF', // Light gray borders
+  shadow: 'rgba(78, 205, 196, 0.3)', // Turquoise shadow for primary elements
   
   // Feature Section Colors
-  featureIconBg: 'hsl(142, 76%, 95%)', // Light green background for icons
-  featureIconColor: 'hsl(142, 76%, 36%)', // Green color for icons
+  featureIconBg: 'rgba(78, 205, 196, 0.1)', // Light turquoise background for icons
+  featureIconColor: '#4ECDC4', // Turquoise color for icons
   
   // Input Colors
-  inputBackground: 'hsl(0, 0%, 100%)', // White input backgrounds
-  inputBorder: 'hsl(0, 0%, 90%)', // Light gray input borders
-  inputFocus: 'hsl(142, 76%, 36%)', // Green focus ring
-  placeholder: 'hsl(215, 13%, 54%)', // Gray placeholder text
+  inputBackground: '#F8F9FA', // Light gray input backgrounds
+  inputBorder: '#E9ECEF', // Light gray input borders
+  inputFocus: '#4ECDC4', // Turquoise focus ring
+  placeholder: '#B0B0B0', // Gray placeholder text
   
-  // Logo Colors
-  logoIconBg: 'hsl(142, 76%, 36%)', // Green background for heart icon
-  logoIconColor: 'hsl(0, 0%, 100%)', // White heart icon
-  logoTextPrimary: 'hsl(210, 11%, 15%)', // Dark text for "JEG"
-  logoTextSecondary: 'hsl(142, 76%, 36%)', // Green text for "Health"
+  // Decorative Elements
+  decorativeLight: 'rgba(255, 255, 255, 0.15)', // Light decorative elements
+  decorativeMedium: 'rgba(255, 255, 255, 0.1)', // Medium decorative elements
+  decorativeDark: 'rgba(255, 255, 255, 0.08)', // Dark decorative elements
+  
+  // Gradient Arrays (for LinearGradient)
+  gradientPrimary: ['#4ECDC4', '#2D8B85', '#1A5F5A'], // Main gradient
+  gradientLight: ['#7FCCCC', '#4ECDC4'], // Light gradient
 };
