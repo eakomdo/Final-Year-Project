@@ -4,31 +4,31 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Define theme colors
 export const lightTheme = {
-  background: "#4ECDC4",
+  background: "#28A745",
   card: "#fff",
   text: "#333",
   subText: "#666",
   border: "#E9ECEF",
   divider: "#f0f0f0",
-  primary: "#4ECDC4",
-  primaryDark: "#2D8B85",
+  primary: "#28A745",
+  primaryDark: "#1e7e34",
   profileImage: "#e0e0e0",
-  switchTrack: { false: "#d1d1d6", true: "#4ECDC4" },
-  iconColor: "#7FCCCC",
+  switchTrack: { false: "#d1d1d6", true: "#28A745" },
+  iconColor: "#4CAF50",
 };
 
 export const darkTheme = {
-  background: "#1A5F5A",
-  card: "#2D8B85",
+  background: "#1a5932",
+  card: "#2d7a3f",
   text: "#f0f0f0",
   subText: "#a0a0a0",
-  border: "#4ECDC4",
+  border: "#28A745",
   divider: "#2c2c2c",
-  primary: "#4ECDC4",
-  primaryDark: "#1A5F5A",
+  primary: "#28A745",
+  primaryDark: "#1e7e34",
   profileImage: "#333333",
-  switchTrack: { false: "#3a3a3c", true: "#4ECDC4" },
-  iconColor: "#7FCCCC",
+  switchTrack: { false: "#3a3a3c", true: "#28A745" },
+  iconColor: "#4CAF50",
 };
 
 // Create context

@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { Colors } from '../constants/colors';
 import JEGHealthLogo from '../components/JEGHealthLogo';
 import CaretakerService from '../services/CaretakerService';
 import { showError, showSuccess } from '../utils/NotificationHelper';
@@ -101,7 +102,7 @@ const AddCaretakerScreen = () => {
           style={styles.backButton}
           onPress={() => router.back()}
         >
-          <Ionicons name="arrow-back" size={24} color="#4ECDC4" />
+          <Ionicons name="arrow-back" size={24} color={Colors.textOnPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Add Caretaker</Text>
         <View style={styles.headerRight} />
@@ -123,11 +124,11 @@ const AddCaretakerScreen = () => {
           <View style={styles.inputContainer}>
             <Text style={styles.inputLabel}>Full Name *</Text>
             <View style={styles.inputWrapper}>
-              <Ionicons name="person-outline" size={20} color="#B0B0B0" style={styles.inputIcon} />
+              <Ionicons name="person-outline" size={20} color={Colors.textTertiary} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder="Enter caretaker's full name"
-                placeholderTextColor="#B0B0B0"
+                placeholderTextColor={Colors.placeholder}
                 value={formData.fullName}
                 onChangeText={(value) => updateFormData('fullName', value)}
                 editable={!loading}
@@ -139,11 +140,11 @@ const AddCaretakerScreen = () => {
           <View style={styles.inputContainer}>
             <Text style={styles.inputLabel}>Email Address *</Text>
             <View style={styles.inputWrapper}>
-              <Ionicons name="mail-outline" size={20} color="#B0B0B0" style={styles.inputIcon} />
+              <Ionicons name="mail-outline" size={20} color={Colors.textTertiary} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder="Enter email address"
-                placeholderTextColor="#B0B0B0"
+                placeholderTextColor={Colors.placeholder}
                 value={formData.email}
                 onChangeText={(value) => updateFormData('email', value)}
                 keyboardType="email-address"
@@ -157,11 +158,11 @@ const AddCaretakerScreen = () => {
           <View style={styles.inputContainer}>
             <Text style={styles.inputLabel}>Phone Number *</Text>
             <View style={styles.inputWrapper}>
-              <Ionicons name="call-outline" size={20} color="#B0B0B0" style={styles.inputIcon} />
+              <Ionicons name="call-outline" size={20} color={Colors.textTertiary} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder="Enter phone number"
-                placeholderTextColor="#B0B0B0"
+                placeholderTextColor={Colors.placeholder}
                 value={formData.phoneNumber}
                 onChangeText={(value) => updateFormData('phoneNumber', value)}
                 keyboardType="phone-pad"
@@ -199,11 +200,11 @@ const AddCaretakerScreen = () => {
           <View style={styles.inputContainer}>
             <Text style={styles.inputLabel}>Address (Optional)</Text>
             <View style={styles.inputWrapper}>
-              <Ionicons name="location-outline" size={20} color="#B0B0B0" style={styles.inputIcon} />
+              <Ionicons name="location-outline" size={20} color={Colors.textTertiary} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder="Enter address"
-                placeholderTextColor="#B0B0B0"
+                placeholderTextColor={Colors.placeholder}
                 value={formData.address}
                 onChangeText={(value) => updateFormData('address', value)}
                 multiline
@@ -216,11 +217,11 @@ const AddCaretakerScreen = () => {
           <View style={styles.inputContainer}>
             <Text style={styles.inputLabel}>Date of Birth (Optional)</Text>
             <View style={styles.inputWrapper}>
-              <Ionicons name="calendar-outline" size={20} color="#B0B0B0" style={styles.inputIcon} />
+              <Ionicons name="calendar-outline" size={20} color={Colors.textTertiary} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 placeholder="YYYY-MM-DD"
-                placeholderTextColor="#B0B0B0"
+                placeholderTextColor={Colors.placeholder}
                 value={formData.dateOfBirth}
                 onChangeText={(value) => updateFormData('dateOfBirth', value)}
                 editable={!loading}
@@ -239,8 +240,8 @@ const AddCaretakerScreen = () => {
             <Switch
               value={formData.emergencyContact}
               onValueChange={(value) => updateFormData('emergencyContact', value)}
-              trackColor={{ false: '#E9ECEF', true: '#4ECDC4' }}
-              thumbColor={formData.emergencyContact ? 'white' : '#B0B0B0'}
+              trackColor={{ false: Colors.border, true: Colors.primary }}
+              thumbColor={formData.emergencyContact ? Colors.textOnPrimary : Colors.textTertiary}
               disabled={loading}
             />
           </View>
@@ -249,11 +250,11 @@ const AddCaretakerScreen = () => {
           <View style={styles.inputContainer}>
             <Text style={styles.inputLabel}>Notes (Optional)</Text>
             <View style={styles.inputWrapper}>
-              <Ionicons name="document-text-outline" size={20} color="#B0B0B0" style={styles.inputIcon} />
+              <Ionicons name="document-text-outline" size={20} color={Colors.textTertiary} style={styles.inputIcon} />
               <TextInput
                 style={[styles.input, styles.notesInput]}
                 placeholder="Any additional notes about this caretaker"
-                placeholderTextColor="#B0B0B0"
+                placeholderTextColor={Colors.placeholder}
                 value={formData.notes}
                 onChangeText={(value) => updateFormData('notes', value)}
                 multiline
@@ -266,7 +267,7 @@ const AddCaretakerScreen = () => {
 
           {/* Info Box */}
           <View style={styles.infoBox}>
-            <Ionicons name="information-circle-outline" size={24} color="#2196F3" />
+            <Ionicons name="information-circle-outline" size={24} color={Colors.info} />
             <Text style={styles.infoText}>
               A unique 6-character access code will be generated and sent to your registered phone and email. 
               This code allows the caretaker to access your health information when needed.
@@ -280,11 +281,11 @@ const AddCaretakerScreen = () => {
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator size="small" color="white" />
+              <ActivityIndicator size="small" color={Colors.textOnPrimary} />
             ) : (
               <>
                 <Text style={styles.submitButtonText}>Add Caretaker</Text>
-                <Ionicons name="person-add" size={18} color="white" style={styles.buttonIcon} />
+                <Ionicons name="person-add" size={18} color={Colors.textOnPrimary} style={styles.buttonIcon} />
               </>
             )}
           </TouchableOpacity>
@@ -297,10 +298,10 @@ const AddCaretakerScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#4ECDC4', // Turquoise background for block-based screen
+    backgroundColor: Colors.background,
   },
   header: {
-    backgroundColor: 'white', // White header with turquoise elements
+    backgroundColor: Colors.primary,
     flexDirection: 'row',
     alignItems: 'center',
     paddingTop: 10,
@@ -314,7 +315,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#4ECDC4', // Turquoise text on white header
+    color: Colors.textOnPrimary,
     textAlign: 'center',
     marginLeft: -32, // Compensate for back button
   },
@@ -331,7 +332,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    color: 'white', // White text on turquoise background
+    color: Colors.textSecondary,
     textAlign: 'center',
     marginBottom: 30,
     lineHeight: 24,
@@ -345,15 +346,15 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: 'white', // White labels on turquoise background
+    color: Colors.textPrimary,
     marginBottom: 8,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'white', // White input backgrounds
+    backgroundColor: Colors.inputBackground,
     borderWidth: 1,
-    borderColor: '#E9ECEF',
+    borderColor: Colors.inputBorder,
     borderRadius: 12,
     paddingHorizontal: 16,
     boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.05)',
@@ -366,7 +367,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     fontSize: 16,
-    color: '#333', // Dark text in white inputs
+    color: Colors.textPrimary,
   },
   notesInput: {
     minHeight: 80,
@@ -381,19 +382,19 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'white', // White borders on turquoise background
-    backgroundColor: 'rgba(255, 255, 255, 0.1)', // Subtle white overlay
+    borderColor: Colors.border,
+    backgroundColor: Colors.background,
   },
   relationshipSelected: {
-    backgroundColor: 'white', // White selected option
-    borderColor: 'white',
+    backgroundColor: Colors.primary,
+    borderColor: Colors.primary,
   },
   relationshipText: {
     fontSize: 14,
-    color: 'white', // White text for unselected options
+    color: Colors.textSecondary,
   },
   relationshipTextSelected: {
-    color: '#4ECDC4', // Turquoise text on white selected option
+    color: Colors.textOnPrimary,
     fontWeight: '600',
   },
   switchContainer: {
@@ -402,7 +403,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 16,
     paddingHorizontal: 16,
-    backgroundColor: 'white', // White card on turquoise background
+    backgroundColor: Colors.backgroundLight,
     borderRadius: 12,
     marginBottom: 20,
   },
@@ -413,45 +414,45 @@ const styles = StyleSheet.create({
   switchLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#333', // Dark text on white card
+    color: Colors.textPrimary,
     marginBottom: 4,
   },
   switchDescription: {
     fontSize: 14,
-    color: '#666', // Medium gray text on white card
+    color: Colors.textSecondary,
     lineHeight: 20,
   },
   infoBox: {
     flexDirection: 'row',
-    backgroundColor: 'white', // White info box
+    backgroundColor: Colors.backgroundLight,
     padding: 16,
     borderRadius: 12,
     marginBottom: 30,
     borderLeftWidth: 4,
-    borderLeftColor: '#2196F3', // Blue accent for info
+    borderLeftColor: Colors.info,
   },
   infoText: {
     flex: 1,
     fontSize: 14,
-    color: '#666', // Medium gray text
+    color: Colors.textSecondary,
     lineHeight: 20,
     marginLeft: 12,
   },
   submitButton: {
-    backgroundColor: '#4ECDC4', // Turquoise submit button
+    backgroundColor: Colors.primary,
     borderRadius: 12,
     padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    boxShadow: `0px 4px 8px rgba(78, 205, 196, 0.3)`, // Turquoise shadow
+    boxShadow: `0px 4px 8px ${Colors.primary}30`,
     elevation: 6,
   },
   disabledButton: {
     opacity: 0.6,
   },
   submitButtonText: {
-    color: 'white', // White text on turquoise button
+    color: Colors.textOnPrimary,
     fontSize: 16,
     fontWeight: 'bold',
     marginRight: 8,

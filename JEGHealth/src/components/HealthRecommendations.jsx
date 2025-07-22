@@ -272,7 +272,7 @@ const HealthRecommendations = ({ limit = 5, showHeader = true, style }) => {
       >
         {recommendations.length === 0 ? (
           <View style={styles.emptyState}>
-            <Ionicons name="checkmark-circle" size={64} color="#4ECDC4" />
+            <Ionicons name="checkmark-circle" size={64} color="#28A745" />
             <Text style={styles.emptyTitle}>All Caught Up!</Text>
             <Text style={styles.emptyMessage}>
               You&apos;re doing great! Check back later for new health recommendations.

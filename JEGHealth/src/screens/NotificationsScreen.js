@@ -8,8 +8,9 @@ import {
   TouchableOpacity,
   RefreshControl,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from 'expo-router';
+import { Colors } from '../constants/colors';
 import { showWarning } from '../utils/NotificationHelper';
 
 const NotificationsScreen = () => {
@@ -30,7 +31,7 @@ const NotificationsScreen = () => {
         message: 'Time to take your morning medication',
         type: 'medication',
         icon: 'medical',
-        color: '#4ECDC4',
+        color: Colors.primary,
         timestamp: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
         read: false,
         priority: 'high'
@@ -63,7 +64,7 @@ const NotificationsScreen = () => {
         message: 'Dr. Jane Smith has been added as your caretaker with code ABC123',
         type: 'caretaker',
         icon: 'people',
-        color: '#4ECDC4',
+        color: Colors.primary,
         timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
         read: true,
         priority: 'medium'
@@ -74,7 +75,7 @@ const NotificationsScreen = () => {
         message: 'Heart Rate Monitor connected successfully',
         type: 'device',
         icon: 'bluetooth',
-        color: '#4ECDC4',
+        color: Colors.primary,
         timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000), // 12 hours ago
         read: true,
         priority: 'low'
@@ -192,7 +193,7 @@ const NotificationsScreen = () => {
           style={styles.backButton}
           onPress={() => router.back()}
         >
-          <Ionicons name="arrow-back" size={24} color="#4ECDC4" />
+          <Ionicons name="arrow-back" size={24} color={Colors.primary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Notifications</Text>
         <TouchableOpacity
@@ -225,7 +226,7 @@ const NotificationsScreen = () => {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            tintColor="#4ECDC4"
+            tintColor={Colors.primary}
           />
         }
         showsVerticalScrollIndicator={false}
@@ -251,7 +252,7 @@ const NotificationsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#4ECDC4', // Turquoise background for block-based screen
+    backgroundColor: Colors.primary, // Green background for block-based screen
   },
   header: {
     backgroundColor: 'white', // White header with turquoise elements
@@ -268,7 +269,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#4ECDC4', // Turquoise text on white header
+    color: Colors.primary, // Green text on white header
     textAlign: 'center',
     marginLeft: -32,
   },
@@ -276,7 +277,7 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   markAllText: {
-    color: '#4ECDC4', // Turquoise text on white header
+    color: Colors.primary, // Green text on white header
     fontSize: 14,
     fontWeight: '600',
   },
@@ -314,7 +315,7 @@ const styles = StyleSheet.create({
   },
   unreadNotification: {
     borderLeftWidth: 4,
-    borderLeftColor: '#4ECDC4', // Turquoise accent for unread
+    borderLeftColor: Colors.primary, // Green accent for unread
     backgroundColor: 'white',
   },
   notificationContent: {
@@ -383,7 +384,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#4ECDC4', // Turquoise unread dot
+    backgroundColor: Colors.primary, // Green unread dot
   },
   emptyState: {
     flex: 1,

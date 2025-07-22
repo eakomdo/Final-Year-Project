@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 24,
     borderWidth: 1,
-    borderColor: '#4ECDC4',
+    borderColor: '#28A745',
   },
   connectedHeader: {
     flexDirection: 'row',
@@ -256,7 +256,7 @@ const styles = StyleSheet.create({
   },
   deviceStatus: {
     fontSize: 14,
-    color: '#4ECDC4',
+    color: '#28A745',
     fontWeight: '500',
   },
   disconnectButton: {

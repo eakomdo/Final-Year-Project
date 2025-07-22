@@ -349,7 +349,7 @@ const HealthScreen = () => {
   // Render risk level with appropriate color
   const renderRiskLevel = (risk) => {
     let color = "#888";
-    if (risk === "low") color = "#4ECDC4";
+    if (risk === "low") color = "#4CAF50";
     else if (risk === "moderate") color = "#FF9800";
     else if (risk === "high") color = "#F44336";
 
@@ -414,7 +414,7 @@ const HealthScreen = () => {
 
         {loading ? (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#4ECDC4" />
+            <ActivityIndicator size="large" color="#28A745" />
             <Text style={styles.loadingText}>Loading health data...</Text>
           </View>
         ) : (
@@ -507,7 +507,7 @@ const HealthScreen = () => {
                           backgroundGradientFrom: "#f5f5f5",
                           backgroundGradientTo: "#f5f5f5",
                           decimalPlaces: 0,
-                          color: () => "#4ECDC4",
+                          color: () => "#4CAF50",
                           labelColor: () => "#333",
                           style: {
                             borderRadius: 16,
@@ -515,7 +515,7 @@ const HealthScreen = () => {
                           propsForDots: {
                             r: "5",
                             strokeWidth: "2",
-                            stroke: "#4ECDC4",
+                            stroke: "#4CAF50",
                           },
                         }}
                         bezier
@@ -539,7 +539,7 @@ const HealthScreen = () => {
               {healthData.spo2.current ? (
                 <>
                   <View style={styles.currentReading}>
-                    <Ionicons name="water" size={32} color="#2D8B85" />
+                    <Ionicons name="water" size={32} color="#4CAF50" />
                     <Text style={styles.readingValue}>
                       {healthData.spo2.current.value}
                       <Text style={styles.readingUnit}>%</Text>
@@ -571,7 +571,7 @@ const HealthScreen = () => {
                           backgroundGradientFrom: "#f5f5f5",
                           backgroundGradientTo: "#f5f5f5",
                           decimalPlaces: 0,
-                          color: () => "#2D8B85",
+                          color: () => "#4CAF50",
                           labelColor: () => "#333",
                           style: {
                             borderRadius: 16,
@@ -579,7 +579,7 @@ const HealthScreen = () => {
                           propsForDots: {
                             r: "5",
                             strokeWidth: "2",
-                            stroke: "#2D8B85",
+                            stroke: "#4CAF50",
                           },
                         }}
                         bezier
@@ -645,7 +645,7 @@ const HealthScreen = () => {
                             : "bluetooth"
                         }
                         size={24}
-                        color={device.connected ? "#4ECDC4" : "#2D8B85"}
+                        color={device.connected ? "#4CAF50" : "#28A745"}
                       />
                       <View style={styles.deviceTextContainer}>
                         <Text style={styles.deviceName}>{device.name}</Text>
@@ -657,7 +657,7 @@ const HealthScreen = () => {
                       </View>
                     </View>
                     {device.connecting ? (
-                      <ActivityIndicator size="small" color="#4ECDC4" />
+                      <ActivityIndicator size="small" color="#28A745" />
                     ) : device.connected ? (
                       <Text style={styles.connectedText}>Connected</Text>
                     ) : (
@@ -715,7 +715,7 @@ const styles = StyleSheet.create({
   },
   connectionText: {
     marginLeft: 6,
-    color: "#4ECDC4",
+    color: "#28A745",
     fontSize: 14,
   },
   errorContainer: {
@@ -783,7 +783,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   scanButton: {
-    backgroundColor: "#4ECDC4",
+    backgroundColor: "#28A745",
     padding: 16,
     borderRadius: 8,
     alignItems: "center",
@@ -830,7 +830,7 @@ const styles = StyleSheet.create({
   },
   connectedText: {
     fontSize: 14,
-    color: "#4ECDC4",
+    color: "#28A745",
     fontWeight: "500",
   },
   noDevicesText: {

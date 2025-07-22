@@ -147,7 +147,7 @@ const AppointmentsScreen = () => {
     const getStatusColor = (status) => {
         switch (status) {
             case 'scheduled': return '#007BFF';
-            case 'confirmed': return '#4ECDC4';
+            case 'confirmed': return '#28A745';
             case 'completed': return '#6c757d';
             case 'cancelled': return '#dc3545';
             default: return '#6c757d';
