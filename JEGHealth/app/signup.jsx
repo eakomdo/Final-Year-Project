@@ -8,7 +8,9 @@ export default function SignUpPage() {
   // Create a navigation-like object that the SignUpScreen expects
   const navigationProxy = {
     navigate: (route) => {
-      if (route === "Login") {
+      if (route === "SignIn") {
+        router.push("/login");
+      } else if (route === "Login") {
         router.push("/login");
       } else {
         router.push(route);

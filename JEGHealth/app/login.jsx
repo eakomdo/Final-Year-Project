@@ -9,6 +9,8 @@ export default function LoginPage() {
     navigate: (route) => {
       if (route === "SignUp") {
         router.push("/signup");
+      } else if (route === "ForgotPassword") {
+        router.push("/forgotpassword");
       } else {
         router.push(route);
       }
