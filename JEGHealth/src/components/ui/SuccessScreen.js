@@ -9,7 +9,7 @@ const SuccessScreen = ({
   buttonTitle = 'Continue',
   onButtonPress,
   iconName = 'checkmark-circle',
-  iconColor = '#28A745',
+  iconColor = '#4ECDC4',
 }) => {
   return (
     <SafeAreaView style={styles.container}>

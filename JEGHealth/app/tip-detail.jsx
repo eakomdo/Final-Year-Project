@@ -114,7 +114,7 @@ export default function TipDetailScreen() {
       color: '#666', // Medium gray body text
     },
     videoButton: {
-      backgroundColor: color || '#28A745', // Use tip color or green fallback
+      backgroundColor: color || '#4ECDC4', // Use tip color or turquoise fallback
     }
   };
 
@@ -122,7 +122,7 @@ export default function TipDetailScreen() {
     <ScrollView style={[styles.container, dynamicStyles.container]}>
       <View style={[styles.header, dynamicStyles.header]}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color={color || '#28A745'} />
+          <Ionicons name="arrow-back" size={24} color={color || '#4ECDC4'} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, dynamicStyles.title]}>{title}</Text>
         <View style={{width: 24}} />
@@ -149,7 +149,7 @@ export default function TipDetailScreen() {
           <Text style={[styles.sectionTitle, dynamicStyles.sectionTitle]}>Signs to Watch For</Text>
           <View style={styles.signsContainer}>
             <View style={styles.signBox}>
-              <Text style={[styles.signTitle, { color: "#28A745" }]}>Good Signs</Text>
+              <Text style={[styles.signTitle, { color: "#4ECDC4" }]}>Good Signs</Text>
               <Text style={[styles.sectionText, dynamicStyles.sectionText]}>{detail.signs.good}</Text>
             </View>
             <View style={styles.signBox}>

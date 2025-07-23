@@ -282,7 +282,7 @@ const ProfileScreen = ({ navigation }) => {
                 
                 {user?.is_verified && (
                     <View style={styles.verifiedBadge}>
-                        <Ionicons name="checkmark-circle" size={16} color="#28A745" />
+                        <Ionicons name="checkmark-circle" size={16} color="#4ECDC4" />
                         <Text style={styles.verifiedText}>Verified</Text>
                     </View>
                 )}
@@ -359,7 +359,7 @@ const styles = StyleSheet.create({
     verifiedText: {
         marginLeft: 4,
         fontSize: 12,
-        color: '#28A745',
+        color: '#4ECDC4',
         fontWeight: '600',
     },
     section: {

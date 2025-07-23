@@ -68,8 +68,8 @@ const SimpleToast = ({ visible, message, type = 'info', duration = 3000, onHide 
           backgroundColor: '#d4edda',
           borderColor: '#c3e6cb',
           iconName: 'check-circle',
-          iconColor: '#155724',
-          textColor: '#155724',
+          iconColor: '#1A5F5A',
+          textColor: '#1A5F5A',
         };
       case 'warning':
         return {

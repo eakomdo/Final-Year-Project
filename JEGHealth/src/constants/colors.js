@@ -1,8 +1,8 @@
 export const Colors = {
   // JEGHealth Green Theme Colors
-  primary: '#28A745', // Primary green for backgrounds, CTAs, navigation
-  primaryMedium: '#1E7E34', // Medium green for gradients, buttons
-  primaryDark: '#155724', // Dark green for gradients, accents
+  primary: '#4ECDC4', // Primary turquoise for backgrounds, CTAs, navigation
+  primaryMedium: '#2D8B85', // Medium turquoise for gradients, buttons
+  primaryDark: '#1A5F5A', // Dark turquoise for gradients, accents
   primaryLight: '#52C96A', // Light green for icons, borders
   
   // Background Colors
@@ -18,7 +18,7 @@ export const Colors = {
   textOnPrimary: 'white', // White text on green backgrounds
   
   // Accent Colors
-  success: '#28A745', // Same as primary for consistency
+  success: '#4ECDC4', // Same as primary for consistency
   warning: '#FFA726', // Orange for warnings
   error: '#FF5722', // Red for errors
   info: '#2196F3', // Blue for info
@@ -29,12 +29,12 @@ export const Colors = {
   
   // Feature Section Colors
   featureIconBg: 'rgba(40, 167, 69, 0.1)', // Light green background for icons
-  featureIconColor: '#28A745', // Green color for icons
+  featureIconColor: '#4ECDC4', // Turquoise color for icons
   
   // Input Colors
   inputBackground: '#F8F9FA', // Light gray input backgrounds
   inputBorder: '#E9ECEF', // Light gray input borders
-  inputFocus: '#28A745', // Green focus ring
+  inputFocus: '#4ECDC4', // Turquoise focus ring
   placeholder: '#B0B0B0', // Gray placeholder text
   
   // Decorative Elements
@@ -43,6 +43,6 @@ export const Colors = {
   decorativeDark: 'rgba(255, 255, 255, 0.08)', // Dark decorative elements
   
   // Gradient Arrays (for LinearGradient)
-  gradientPrimary: ['#28A745', '#1E7E34', '#155724'], // Main gradient
-  gradientLight: ['#52C96A', '#28A745'], // Light gradient
+  gradientPrimary: ['#4ECDC4', '#2D8B85', '#1A5F5A'], // Main gradient
+  gradientLight: ['#7FCCCC', '#4ECDC4'], // Light gradient
 };

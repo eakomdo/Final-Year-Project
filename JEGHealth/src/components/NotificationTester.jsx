@@ -163,7 +163,7 @@ const NotificationTester = () => {
 
   const getStatusColor = () => {
     switch (permissionStatus) {
-      case 'granted': return '#28A745';
+      case 'granted': return '#4ECDC4';
       case 'denied': return '#F44336';
       case 'limited': return '#FF9800';
       default: return '#9E9E9E';
@@ -344,7 +344,7 @@ const styles = StyleSheet.create({
     borderColor: '#007BFF',
   },
   healthButton: {
-    backgroundColor: '#28A745',
+    backgroundColor: '#4ECDC4',
   },
   medicationButton: {
     backgroundColor: '#DC3545',
