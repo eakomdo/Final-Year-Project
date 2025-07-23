@@ -15,11 +15,9 @@ import HealthDataService from "../../src/services/HealthDataService";
 import DiseaseDetectionService from "../../src/services/DiseaseDetectionService";
 import Constants from "expo-constants";
 import SafeScreen from "../../component/SafeScreen";
-import { useTheme } from "../../context/ThemeContext";
 import { showError, showSuccess, showInfo } from "../../src/utils/NotificationHelper";
 
 const HealthScreen = () => {
-  const { theme } = useTheme();
 
   // State definitions
   const [loading, setLoading] = useState(true);
@@ -349,7 +347,7 @@ const HealthScreen = () => {
   // Render risk level with appropriate color
   const renderRiskLevel = (risk) => {
     let color = "#888";
-    if (risk === "low") color = "#2D8B85";
+    if (risk === "low") color = "#4CAF50"; // Green for low risk
     else if (risk === "moderate") color = "#FF9800";
     else if (risk === "high") color = "#F44336";
 
@@ -358,37 +356,41 @@ const HealthScreen = () => {
     );
   };
 
-  // Apply dynamic styles based on theme
+  // Apply dynamic styles based on theme - matching profile screen style
   const dynamicStyles = {
     container: {
       flex: 1,
-      backgroundColor: theme.background,
+      backgroundColor: "#f8f8f8", // White theme like profile
     },
     header: {
-      backgroundColor: theme.card,
-      borderBottomColor: theme.border,
+      padding: 16,
+      backgroundColor: "#2D8B85", // Deep turquoise top bar only
+      borderBottomWidth: 1,
+      borderBottomColor: "#eee",
     },
     title: {
-      color: theme.text,
+      fontSize: 22,
+      fontWeight: "bold",
+      color: "#fff", // White text on turquoise header
     },
     card: {
-      backgroundColor: theme.card,
-      shadowColor: theme.text,
+      backgroundColor: "#fff", // White cards with shadows
+      shadowColor: "#000",
     },
     text: {
-      color: theme.text,
+      color: "#333", // Dark text on white cards
     },
     subText: {
-      color: theme.subText,
+      color: "#666", // Gray text
     },
     statCard: {
-      backgroundColor: theme.card,
+      backgroundColor: "#fff", // White cards
     },
     statValue: {
-      color: theme.primary,
+      color: "#333", // Dark text for values
     },
     statLabel: {
-      color: theme.subText,
+      color: "#666", // Gray text for labels
     },
   };
 
@@ -403,7 +405,7 @@ const HealthScreen = () => {
           <RefreshControl refreshing={loading} onRefresh={loadHealthData} />
         }
       >
-        <Text style={styles.sectionTitle}>Your Health Metrics</Text>
+        <Text style={[styles.sectionTitle, { marginTop: 0, marginBottom: 8, paddingHorizontal: 6 }]}>Your Health Metrics</Text>
 
         {error && (
           <View style={styles.errorContainer}>
@@ -503,19 +505,19 @@ const HealthScreen = () => {
                         width={320}
                         height={180}
                         chartConfig={{
-                          backgroundColor: "#f5f5f5",
-                          backgroundGradientFrom: "#f5f5f5",
-                          backgroundGradientTo: "#f5f5f5",
+                          backgroundColor: "#fff",
+                          backgroundGradientFrom: "#fff",
+                          backgroundGradientTo: "#fff",
                           decimalPlaces: 0,
-                          color: () => "#2D8B85",
-                          labelColor: () => "#333",
+                          color: () => "#F44336",
+                          labelColor: () => "#666",
                           style: {
                             borderRadius: 16,
                           },
                           propsForDots: {
                             r: "5",
                             strokeWidth: "2",
-                            stroke: "#2D8B85",
+                            stroke: "#F44336",
                           },
                         }}
                         bezier
@@ -539,7 +541,7 @@ const HealthScreen = () => {
               {healthData.spo2.current ? (
                 <>
                   <View style={styles.currentReading}>
-                    <Ionicons name="water" size={32} color="#2D8B85" />
+                    <Ionicons name="water" size={32} color="#2196F3" />
                     <Text style={styles.readingValue}>
                       {healthData.spo2.current.value}
                       <Text style={styles.readingUnit}>%</Text>
@@ -567,19 +569,19 @@ const HealthScreen = () => {
                         width={320}
                         height={180}
                         chartConfig={{
-                          backgroundColor: "#f5f5f5",
-                          backgroundGradientFrom: "#f5f5f5",
-                          backgroundGradientTo: "#f5f5f5",
+                          backgroundColor: "#fff",
+                          backgroundGradientFrom: "#fff",
+                          backgroundGradientTo: "#fff",
                           decimalPlaces: 0,
-                          color: () => "#2D8B85",
-                          labelColor: () => "#333",
+                          color: () => "#2196F3",
+                          labelColor: () => "#666",
                           style: {
                             borderRadius: 16,
                           },
                           propsForDots: {
                             r: "5",
                             strokeWidth: "2",
-                            stroke: "#2D8B85",
+                            stroke: "#2196F3",
                           },
                         }}
                         bezier
@@ -645,7 +647,7 @@ const HealthScreen = () => {
                             : "bluetooth"
                         }
                         size={24}
-                        color={device.connected ? "#2D8B85" : "#2D8B85"}
+                        color={device.connected ? "#2D8B85" : "#666"}
                       />
                       <View style={styles.deviceTextContainer}>
                         <Text style={styles.deviceName}>{device.name}</Text>
@@ -690,23 +692,25 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: "#f8f8f8",
+    backgroundColor: "#f8f8f8", // Light gray background like profile
   },
   header: {
     paddingVertical: 16,
     paddingHorizontal: 16,
-    backgroundColor: "#fff",
+    backgroundColor: "#2D8B85", // Deep turquoise header only
     borderBottomWidth: 1,
     borderBottomColor: "#eee",
   },
   title: {
     fontSize: 22,
     fontWeight: "bold",
+    color: "#fff", // White text on turquoise header
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
     marginVertical: 16,
+    color: "#333", // Dark text on white cards
   },
   connectionIndicator: {
     flexDirection: "row",
@@ -715,7 +719,7 @@ const styles = StyleSheet.create({
   },
   connectionText: {
     marginLeft: 6,
-    color: "#2D8B85",
+    color: "#333", // Dark text on white cards
     fontSize: 14,
   },
   errorContainer: {
@@ -739,7 +743,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 16,
     fontSize: 16,
-    color: "#666",
+    color: "#666", // Gray text
   },
   section: {
     backgroundColor: "#fff",
@@ -788,6 +792,11 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: "center",
     marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   buttonContent: {
     flexDirection: "row",
@@ -809,7 +818,7 @@ const styles = StyleSheet.create({
     borderBottomColor: "#eee",
   },
   connectedDevice: {
-    backgroundColor: "#f0f8ff",
+    backgroundColor: "#f0fffe", // Very light turquoise tint
   },
   deviceInfo: {
     flexDirection: "row",
@@ -830,7 +839,7 @@ const styles = StyleSheet.create({
   },
   connectedText: {
     fontSize: 14,
-    color: "#2D8B85",
+    color: "#2D8B85", // Deep turquoise for connected status
     fontWeight: "500",
   },
   noDevicesText: {
@@ -849,6 +858,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     marginRight: 8,
+    color: "#333", // Dark text on white cards
   },
   riskText: {
     fontSize: 18,

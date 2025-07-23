@@ -60,52 +60,52 @@ export default function ProfileScreen() {
   const dynamicStyles = {
     container: {
       flex: 1,
-      backgroundColor: theme.background,
+      backgroundColor: "#f8f8f8", // Keep white theme
     },
     header: {
       padding: 16,
-      backgroundColor: theme.card,
+      backgroundColor: "#fff", // Keep white header
       borderBottomWidth: 1,
-      borderBottomColor: theme.border,
+      borderBottomColor: "#eee",
     },
     headerTitle: {
       fontSize: 22,
       fontWeight: "bold",
-      color: theme.text,
+      color: theme.text, // Use theme text color for title
     },
     profileSection: {
       alignItems: "center",
       padding: 24,
-      backgroundColor: theme.card,
+      backgroundColor: "#fff", // Keep white cards
     },
     profileImageContainer: {
       width: 100,
       height: 100,
       borderRadius: 50,
-      backgroundColor: theme.profileImage,
+      backgroundColor: "#f0f0f0",
       alignItems: "center",
       justifyContent: "center",
       marginBottom: 12,
     },
     section: {
-      backgroundColor: theme.card,
+      backgroundColor: "#fff", // Keep white cards
       borderRadius: 10,
       padding: 16,
       margin: 10,
-      shadowColor: isDarkMode ? "#000" : "#000",
+      shadowColor: "#000",
       shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: isDarkMode ? 0.2 : 0.1,
+      shadowOpacity: 0.1,
       shadowRadius: 2,
       elevation: 2,
     },
     text: {
-      color: theme.text,
+      color: "#333", // Dark text on white background
     },
     subText: {
-      color: theme.subText,
+      color: "#666", // Gray text on white background
     },
     divider: {
-      borderBottomColor: theme.divider,
+      borderBottomColor: "#f0f0f0", // Light gray dividers
     },
   };
 
@@ -130,7 +130,7 @@ export default function ProfileScreen() {
               style={styles.profileImage}
             />
           ) : (
-            <Ionicons name="person" size={50} color={theme.iconColor} />
+            <Ionicons name="person" size={50} color="#2D8B85" />
           )}
         </View>
         <Text style={[styles.profileName, dynamicStyles.text]}>
@@ -140,10 +140,10 @@ export default function ProfileScreen() {
           {profileData.email}
         </Text>
         <TouchableOpacity
-          style={[styles.editProfileButton, { borderColor: theme.primary }]}
+          style={[styles.editProfileButton]}
           onPress={() => router.push("/edit-profile")}
         >
-          <Text style={[styles.editProfileText, { color: theme.primary }]}>
+          <Text style={[styles.editProfileText]}>
             Edit Profile
           </Text>
         </TouchableOpacity>
@@ -234,7 +234,8 @@ export default function ProfileScreen() {
           <Switch
             value={notifications}
             onValueChange={setNotifications}
-            trackColor={theme.switchTrack}
+            trackColor={{ false: "#d1d1d6", true: "#2D8B85" }}
+            thumbColor={notifications ? "#fff" : "#f4f3f4"}
           />
         </View>
 
@@ -245,7 +246,8 @@ export default function ProfileScreen() {
           <Switch
             value={isDarkMode}
             onValueChange={toggleTheme}
-            trackColor={theme.switchTrack}
+            trackColor={{ false: "#d1d1d6", true: "#2D8B85" }}
+            thumbColor={isDarkMode ? "#fff" : "#f4f3f4"}
           />
         </View>
       </View>
@@ -258,32 +260,32 @@ export default function ProfileScreen() {
           <Ionicons
             name="information-circle-outline"
             size={22}
-            color={theme.primary}
+            color="#2D8B85"
           />
           <Text style={[styles.menuText, dynamicStyles.text]}>
             About JEGHealth{" "}
           </Text>
-          <Ionicons name="chevron-forward" size={20} color={theme.subText} />
+          <Ionicons name="chevron-forward" size={20} color="#666" />
         </TouchableOpacity>
 
         <TouchableOpacity style={[styles.menuRow, dynamicStyles.divider]}>
           <Ionicons
             name="help-circle-outline"
             size={22}
-            color={theme.primary}
+            color="#2D8B85"
           />
           <Text style={[styles.menuText, dynamicStyles.text]}>
             Help & Support{" "}
           </Text>
-          <Ionicons name="chevron-forward" size={20} color={theme.subText} />
+          <Ionicons name="chevron-forward" size={20} color="#666" />
         </TouchableOpacity>
 
         <TouchableOpacity style={[styles.menuRow, dynamicStyles.divider]}>
-          <Ionicons name="shield-outline" size={22} color={theme.primary} />
+          <Ionicons name="shield-outline" size={22} color="#2D8B85" />
           <Text style={[styles.menuText, dynamicStyles.text]}>
             Privacy Policy{" "}
           </Text>
-          <Ionicons name="chevron-forward" size={20} color={theme.subText} />
+          <Ionicons name="chevron-forward" size={20} color="#666" />
         </TouchableOpacity>
       </View>
 
@@ -298,23 +300,23 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#20B2AA", // Turquoise background for block screen
+    backgroundColor: "#f8f8f8", // Light gray background
   },
   header: {
     padding: 16,
-    backgroundColor: "#4FD1C7", // Lighter turquoise for header
+    backgroundColor: "#fff", // White header
     borderBottomWidth: 1,
-    borderBottomColor: "rgba(255,255,255,0.2)",
+    borderBottomColor: "#eee",
   },
   headerTitle: {
     fontSize: 22,
     fontWeight: "bold",
-    color: "#fff", // White text on turquoise
+    color: "#333", // Dark text on white
   },
   profileSection: {
     alignItems: "center",
     padding: 24,
-    backgroundColor: "#4FD1C7", // Card with lighter turquoise
+    backgroundColor: "#fff", // White card
     margin: 16,
     borderRadius: 15,
     shadowColor: "#000",
@@ -327,39 +329,39 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: "rgba(255,255,255,0.3)",
+    backgroundColor: "#f0f0f0",
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 12,
     borderWidth: 3,
-    borderColor: "#fff",
+    borderColor: "#e0e0e0",
   },
   profileName: {
     fontSize: 22,
     fontWeight: "bold",
-    color: "#fff", // White text
+    color: "#333", // Dark text
   },
   profileEmail: {
     fontSize: 16,
-    color: "rgba(255,255,255,0.9)", // Semi-transparent white
+    color: "#666", // Gray text
     marginTop: 4,
     marginBottom: 16,
   },
   editProfileButton: {
     borderWidth: 2,
-    borderColor: "#fff",
+    borderColor: "#2D8B85", // Deep turquoise border
     borderRadius: 20,
     paddingVertical: 8,
     paddingHorizontal: 16,
-    backgroundColor: "rgba(255,255,255,0.1)",
+    backgroundColor: "#2D8B85", // Deep turquoise background
   },
   editProfileText: {
-    color: "#fff",
+    color: "#fff", // White text on turquoise
     fontSize: 14,
     fontWeight: "600",
   },
   section: {
-    backgroundColor: "#4FD1C7", // Turquoise cards
+    backgroundColor: "#fff", // White cards
     borderRadius: 15,
     padding: 16,
     margin: 16,
@@ -373,7 +375,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#fff", // White text on turquoise
+    color: "#333", // Dark text on white
     marginBottom: 16,
   },
   infoRow: {
@@ -381,15 +383,15 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "rgba(255,255,255,0.2)",
+    borderBottomColor: "#f0f0f0",
   },
   infoLabel: {
     fontSize: 16,
-    color: "#fff", // White text
+    color: "#333", // Dark text
   },
   infoValue: {
     fontSize: 16,
-    color: "rgba(255,255,255,0.9)", // Semi-transparent white
+    color: "#666", // Gray text
     paddingHorizontal: 5,
     marginLeft: 8,
   },
@@ -399,28 +401,28 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "rgba(255,255,255,0.2)",
+    borderBottomColor: "#f0f0f0",
   },
   settingLabel: {
     fontSize: 16,
-    color: "#fff", // White text
+    color: "#333", // Dark text
   },
   menuRow: {
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "rgba(255,255,255,0.2)",
+    borderBottomColor: "#f0f0f0",
   },
   menuText: {
     fontSize: 16,
-    color: "#fff", // White text
+    color: "#333", // Dark text
     marginLeft: 12,
     flex: 1,
   },
   logoutButton: {
     margin: 16,
-    backgroundColor: "#FF4757", // Bright red for contrast on turquoise
+    backgroundColor: "#2D8B85", // Deep turquoise for logout button
     borderRadius: 12,
     padding: 14,
     alignItems: "center",
