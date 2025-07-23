@@ -12,7 +12,6 @@ import { useRouter } from "expo-router";
 import { Colors } from "../../src/constants/colors";
 import JEGHealthLogo from "../../src/components/JEGHealthLogo";
 import CaretakerQuickAccess from "../../src/components/CaretakerQuickAccess";
-import HealthRecommendations from "../../src/components/HealthRecommendations";
 
 const HomeScreen = () => {
   const router = useRouter();
@@ -53,16 +52,16 @@ const HomeScreen = () => {
       id: "1",
       title: "Stay Hydrated",
       description:
-        "Drink at least 8 glasses of water daily to maintain optimal health.",
+        "Drink 8-10 glasses of water daily to maintain optimal health and support all bodily functions.",
       icon: "water-outline",
       color: Colors.info,
       priority: "medium",
     },
     {
       id: "2",
-      title: "Regular Exercise",
+      title: "Daily Exercise",
       description:
-        "Aim for 30 minutes of moderate exercise daily to keep your heart healthy.",
+        "Aim for 30 minutes of moderate exercise daily to strengthen your heart and boost energy.",
       icon: "fitness-outline",
       color: Colors.primary,
       priority: "high",
@@ -71,9 +70,18 @@ const HomeScreen = () => {
       id: "3",
       title: "Quality Sleep",
       description:
-        "Get 7-9 hours of quality sleep to help your body recover and recharge.",
+        "Get 7-9 hours of quality sleep to help your body recover and improve cognitive function.",
       icon: "moon-outline",
       color: Colors.warning,
+      priority: "high",
+    },
+    {
+      id: "4",
+      title: "Balanced Diet",
+      description:
+        "Eat a variety of nutrient-rich foods including fruits, vegetables, lean proteins, and whole grains.",
+      icon: "nutrition-outline",
+      color: Colors.success,
       priority: "high",
     },
   ];
@@ -97,22 +105,32 @@ const HomeScreen = () => {
   );
 
   const renderHealthTip = (tip, index) => (
-    <View key={tip.id} style={styles.tipCard}>
+    <TouchableOpacity 
+      key={tip.id} 
+      style={styles.tipCard}
+      onPress={() => router.push({
+        pathname: "/tip-detail",
+        params: {
+          title: tip.title,
+          color: tip.color,
+          icon: tip.icon
+        }
+      })}
+      activeOpacity={0.7}
+    >
       <View style={styles.tipHeader}>
         <View style={[styles.tipIcon, { backgroundColor: `${tip.color}15` }]}>
-          <Ionicons name={tip.icon} size={20} color={tip.color} />
+          <Ionicons name={tip.icon} size={24} color={tip.color} />
         </View>
         <View style={styles.tipContent}>
           <Text style={styles.tipTitle}>{tip.title}</Text>
           <Text style={styles.tipDescription}>{tip.description}</Text>
         </View>
-        {tip.priority === "high" && (
-          <View style={styles.priorityBadge}>
-            <Text style={styles.priorityText}>!</Text>
-          </View>
-        )}
+        <View style={styles.tipArrow}>
+          <Ionicons name="chevron-forward" size={20} color={Colors.textSecondary} />
+        </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   const renderActionCard = (action, index) => (
@@ -160,12 +178,9 @@ const HomeScreen = () => {
         {/* Health Stats Grid */}
         <View style={styles.statsContainer}>
           <Text style={styles.sectionTitle}>Health Overview</Text>
-          <View style={styles.statsGrid}>{healthStats.map(renderStatCard)}</View>
-        </View>
-
-        {/* Health Recommendations */}
-        <View style={styles.section}>
-          <HealthRecommendations limit={3} showHeader={true} />
+          <View style={styles.statsWrapper}>
+            <View style={styles.statsGrid}>{healthStats.map(renderStatCard)}</View>
+          </View>
         </View>
 
         {/* Health Tips Section */}
@@ -277,6 +292,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 24,
   },
+  statsWrapper: {
+    backgroundColor: Colors.primary, // Deep turquoise background
+    borderRadius: 20,
+    padding: 16,
+    shadowColor: Colors.shadow,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
   statsGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -285,12 +310,14 @@ const styles = StyleSheet.create({
   statCard: {
     flex: 1,
     minWidth: "45%",
-    backgroundColor: Colors.background,
+    backgroundColor: 'white', // Ensure white background inside turquoise container
     borderRadius: 16,
     padding: 16,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.05)",
+    borderWidth: 0, // Remove border since we have the turquoise container
+    shadowColor: 'rgba(0, 0, 0, 0.05)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 4,
     elevation: 2,
   },
   statHeader: {
@@ -338,51 +365,45 @@ const styles = StyleSheet.create({
   },
   tipCard: {
     backgroundColor: Colors.background,
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 12,
     borderWidth: 1,
     borderColor: Colors.border,
-    boxShadow: "0px 1px 2px rgba(0, 0, 0, 0.05)",
-    elevation: 1,
+    shadowColor: 'rgba(0, 0, 0, 0.08)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 8,
+    elevation: 3,
   },
   tipHeader: {
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "center",
   },
   tipIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 12,
+    marginRight: 16,
   },
   tipContent: {
     flex: 1,
   },
   tipTitle: {
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: 18,
+    fontWeight: "700",
     color: Colors.textPrimary,
-    marginBottom: 4,
+    marginBottom: 6,
   },
   tipDescription: {
-    fontSize: 14,
+    fontSize: 15,
     color: Colors.textSecondary,
-    lineHeight: 20,
+    lineHeight: 22,
   },
-  priorityBadge: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: Colors.error,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  priorityText: {
-    color: Colors.textOnPrimary,
-    fontSize: 12,
-    fontWeight: "bold",
+  tipArrow: {
+    padding: 4,
   },
   actionsGrid: {
     flexDirection: "row",
