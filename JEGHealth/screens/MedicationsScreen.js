@@ -8,16 +8,18 @@ import {
     TextInput,
     Modal,
     Alert,
-    ActivityIndicator
+    ActivityIndicator,
+    Switch
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useAuth } from '../context/AuthContext';
 import DatabaseService from '../lib/database';
+import NotificationService from '../src/services/NotificationService';
 
 const MedicationsScreen = () => {
-    const { user } = useAuth();
+    const { user, isLoading: authLoading } = useAuth();
     const [medications, setMedications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [modalVisible, setModalVisible] = useState(false);
@@ -33,6 +35,28 @@ const MedicationsScreen = () => {
     const [instructions, setInstructions] = useState('');
     const [reminderTimes, setReminderTimes] = useState(['08:00']);
 
+    // Reminder scheduling states
+    const [reminderModalVisible, setReminderModalVisible] = useState(false);
+    const [selectedMedication, setSelectedMedication] = useState(null);
+    const [reminderFrequency, setReminderFrequency] = useState('daily');
+    const [reminderDate, setReminderDate] = useState(new Date());
+    const [showReminderTimePicker, setShowReminderTimePicker] = useState(false);
+    const [reminderMessage, setReminderMessage] = useState('');
+    const [repeatDays, setRepeatDays] = useState({
+        sunday: false,
+        monday: true,
+        tuesday: true,
+        wednesday: true,
+        thursday: true,
+        friday: true,
+        saturday: false,
+    });
+
+    // Water reminder states
+    const [waterReminderModalVisible, setWaterReminderModalVisible] = useState(false);
+    const [waterAmount, setWaterAmount] = useState('250');
+    const [waterInterval, setWaterInterval] = useState('2'); // hours
+
     const frequencyOptions = [
         { value: 'once_daily', label: 'Once Daily' },
         { value: 'twice_daily', label: 'Twice Daily' },
@@ -45,11 +69,23 @@ const MedicationsScreen = () => {
 
     useEffect(() => {
         loadMedications();
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Reload when user becomes available
+    useEffect(() => {
+        if (user && !authLoading) {
+            loadMedications();
+        }
+    }, [user, authLoading]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const loadMedications = async () => {
         try {
             setLoading(true);
+            if (!user || !user.$id) {
+                console.warn('User not authenticated or user ID missing');
+                setMedications([]);
+                return;
+            }
             const response = await DatabaseService.getUserMedications(user.$id);
             setMedications(response.documents || []);
         } catch (error) {
@@ -64,6 +100,11 @@ const MedicationsScreen = () => {
         try {
             if (!medicationName || !dosage) {
                 Alert.alert('Error', 'Please fill in medication name and dosage');
+                return;
+            }
+
+            if (!user || !user.$id) {
+                Alert.alert('Error', 'User not authenticated. Please log in again.');
                 return;
             }
 
@@ -105,6 +146,130 @@ const MedicationsScreen = () => {
         setReminderTimes(['08:00']);
     };
 
+    // Reminder scheduling functions
+    const openReminderModal = (medication) => {
+        setSelectedMedication(medication);
+        setReminderMessage(`Time to take your ${medication.medication_name}`);
+        setReminderModalVisible(true);
+    };
+
+    const scheduleNotification = async (title, message, trigger) => {
+        try {
+            const id = await NotificationService.scheduleNotification({
+                title,
+                body: message,
+                trigger,
+            });
+            return id;
+        } catch (error) {
+            console.error('Error scheduling notification:', error);
+            return null;
+        }
+    };
+
+    const scheduleReminder = async () => {
+        if (!selectedMedication) return;
+
+        try {
+            const title = `Medication Reminder: ${selectedMedication.medication_name}`;
+            const message = reminderMessage || `Time to take your ${selectedMedication.medication_name}`;
+
+            let trigger;
+            if (reminderFrequency === 'daily') {
+                trigger = {
+                    hour: reminderDate.getHours(),
+                    minute: reminderDate.getMinutes(),
+                    repeats: true,
+                };
+            } else if (reminderFrequency === 'custom') {
+                // Schedule for each selected day
+                const weekdays = [];
+                if (repeatDays.sunday) weekdays.push(0);
+                if (repeatDays.monday) weekdays.push(1);
+                if (repeatDays.tuesday) weekdays.push(2);
+                if (repeatDays.wednesday) weekdays.push(3);
+                if (repeatDays.thursday) weekdays.push(4);
+                if (repeatDays.friday) weekdays.push(5);
+                if (repeatDays.saturday) weekdays.push(6);
+
+                if (weekdays.length === 0) {
+                    Alert.alert('Select Days', 'Please select at least one day for your reminder');
+                    return;
+                }
+
+                // Schedule separate notifications for each day
+                for (const weekday of weekdays) {
+                    const dayTrigger = {
+                        hour: reminderDate.getHours(),
+                        minute: reminderDate.getMinutes(),
+                        weekday,
+                        repeats: true,
+                    };
+                    await scheduleNotification(title, message, dayTrigger);
+                }
+
+                Alert.alert('Reminder Set', 'Medication reminders have been scheduled successfully!');
+                setReminderModalVisible(false);
+                return;
+            } else {
+                // One-time reminder
+                trigger = { date: reminderDate };
+            }
+
+            const notificationId = await scheduleNotification(title, message, trigger);
+            
+            if (notificationId) {
+                Alert.alert('Reminder Set', 'Medication reminder has been scheduled successfully!');
+                setReminderModalVisible(false);
+            } else {
+                Alert.alert('Error', 'Failed to schedule reminder');
+            }
+        } catch (error) {
+            console.error('Error scheduling reminder:', error);
+            Alert.alert('Error', 'Failed to schedule reminder');
+        }
+    };
+
+    // Water reminder function
+    const openWaterReminderModal = () => {
+        setWaterReminderModalVisible(true);
+    };
+
+    const scheduleWaterReminders = async () => {
+        try {
+            const title = "Hydration Reminder";
+            const message = `Time to drink ${waterAmount}ml of water`;
+            const intervalHours = parseInt(waterInterval);
+
+            // Schedule multiple reminders throughout the day
+            const startHour = 8; // Start at 8 AM
+            const endHour = 22; // End at 10 PM
+            
+            for (let hour = startHour; hour <= endHour; hour += intervalHours) {
+                const trigger = {
+                    hour: hour,
+                    minute: 0,
+                    repeats: true,
+                };
+
+                await NotificationService.scheduleNotification({
+                    title,
+                    body: message,
+                    trigger,
+                });
+            }
+
+            Alert.alert(
+                'Water Reminders Set', 
+                `You will be reminded to drink ${waterAmount}ml of water every ${waterInterval} hours from 8 AM to 10 PM`
+            );
+            setWaterReminderModalVisible(false);
+        } catch (error) {
+            console.error('Error scheduling water reminders:', error);
+            Alert.alert('Error', 'Failed to schedule water reminders');
+        }
+    };
+
     const renderMedicationCard = (medication, index) => {
         const isActive = medication.is_active && 
             (!medication.end_date || new Date(medication.end_date) > new Date());
@@ -141,9 +306,12 @@ const MedicationsScreen = () => {
                 )}
 
                 <View style={styles.cardActions}>
-                    <TouchableOpacity style={styles.actionButton}>
-                        <Ionicons name="alarm-outline" size={16} color="#007BFF" />
-                        <Text style={styles.actionText}>Reminders</Text>
+                    <TouchableOpacity 
+                        style={styles.actionButton}
+                        onPress={() => openReminderModal(medication)}
+                    >
+                        <Ionicons name="alarm-outline" size={16} color="#2D8B85" />
+                        <Text style={[styles.actionText, { color: "#2D8B85" }]}>Schedule Reminder</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.actionButton}>
                         <Ionicons name="create-outline" size={16} color="#007BFF" />
@@ -154,11 +322,20 @@ const MedicationsScreen = () => {
         );
     };
 
-    if (loading) {
+    if (loading || authLoading) {
         return (
             <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#007BFF" />
+                <ActivityIndicator size="large" color="#2D8B85" />
                 <Text style={styles.loadingText}>Loading medications...</Text>
+            </View>
+        );
+    }
+
+    if (!user) {
+        return (
+            <View style={styles.loadingContainer}>
+                <Ionicons name="person-outline" size={64} color="#ccc" />
+                <Text style={styles.emptyText}>Please log in to view your medications</Text>
             </View>
         );
     }
@@ -189,6 +366,27 @@ const MedicationsScreen = () => {
                         {medications.map((medication, index) => renderMedicationCard(medication, index))}
                     </View>
                 )}
+
+                {/* Water Intake Reminders Section */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Water Intake Reminders</Text>
+                    <View style={styles.waterReminderCard}>
+                        <View style={styles.waterHeader}>
+                            <Ionicons name="water-outline" size={24} color="#2196F3" />
+                            <Text style={styles.waterTitle}>Daily Hydration Reminders</Text>
+                        </View>
+                        <Text style={styles.waterDescription}>
+                            Set regular reminders to help you stay hydrated throughout the day
+                        </Text>
+                        <TouchableOpacity 
+                            style={styles.waterReminderButton}
+                            onPress={() => openWaterReminderModal()}
+                        >
+                            <Ionicons name="alarm-outline" size={18} color="white" />
+                            <Text style={styles.waterReminderButtonText}>Schedule Water Reminders</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
             </ScrollView>
 
             {/* Add Medication Modal */}
@@ -300,6 +498,152 @@ const MedicationsScreen = () => {
                         }}
                     />
                 )}
+            </Modal>
+
+            {/* Reminder Scheduling Modal */}
+            <Modal
+                visible={reminderModalVisible}
+                animationType="slide"
+                presentationStyle="pageSheet"
+            >
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalHeader}>
+                        <TouchableOpacity onPress={() => setReminderModalVisible(false)}>
+                            <Text style={styles.cancelButton}>Cancel</Text>
+                        </TouchableOpacity>
+                        <Text style={styles.modalTitle}>Schedule Reminder</Text>
+                        <TouchableOpacity onPress={scheduleReminder}>
+                            <Text style={styles.saveButton}>Set Reminder</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    <View style={styles.modalContent}>
+                        <Text style={styles.label}>Reminder Time</Text>
+                        <TouchableOpacity
+                            style={styles.dateButton}
+                            onPress={() => setShowReminderTimePicker(true)}
+                        >
+                            <Text style={styles.dateButtonText}>
+                                {reminderDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </Text>
+                            <Ionicons name="clock-outline" size={20} color="#666" />
+                        </TouchableOpacity>
+
+                        <Text style={styles.label}>Frequency</Text>
+                        <View style={styles.pickerContainer}>
+                            <Picker
+                                selectedValue={reminderFrequency}
+                                onValueChange={setReminderFrequency}
+                                style={styles.picker}
+                            >
+                                <Picker.Item label="Daily" value="daily" />
+                                <Picker.Item label="Custom" value="custom" />
+                            </Picker>
+                        </View>
+
+                        {reminderFrequency === 'custom' && (
+                            <View style={styles.repeatDaysContainer}>
+                                <Text style={styles.label}>Repeat On</Text>
+                                <View style={styles.repeatDays}>
+                                    <TouchableOpacity
+                                        style={[styles.repeatDayButton, repeatDays.sunday && styles.selectedDay]}
+                                        onPress={() => setRepeatDays({ ...repeatDays, sunday: !repeatDays.sunday })}
+                                    >
+                                        <Text style={styles.repeatDayText}>Sun</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={[styles.repeatDayButton, repeatDays.monday && styles.selectedDay]}
+                                        onPress={() => setRepeatDays({ ...repeatDays, monday: !repeatDays.monday })}
+                                    >
+                                        <Text style={styles.repeatDayText}>Mon</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={[styles.repeatDayButton, repeatDays.tuesday && styles.selectedDay]}
+                                        onPress={() => setRepeatDays({ ...repeatDays, tuesday: !repeatDays.tuesday })}
+                                    >
+                                        <Text style={styles.repeatDayText}>Tue</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={[styles.repeatDayButton, repeatDays.wednesday && styles.selectedDay]}
+                                        onPress={() => setRepeatDays({ ...repeatDays, wednesday: !repeatDays.wednesday })}
+                                    >
+                                        <Text style={styles.repeatDayText}>Wed</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={[styles.repeatDayButton, repeatDays.thursday && styles.selectedDay]}
+                                        onPress={() => setRepeatDays({ ...repeatDays, thursday: !repeatDays.thursday })}
+                                    >
+                                        <Text style={styles.repeatDayText}>Thu</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={[styles.repeatDayButton, repeatDays.friday && styles.selectedDay]}
+                                        onPress={() => setRepeatDays({ ...repeatDays, friday: !repeatDays.friday })}
+                                    >
+                                        <Text style={styles.repeatDayText}>Fri</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={[styles.repeatDayButton, repeatDays.saturday && styles.selectedDay]}
+                                        onPress={() => setRepeatDays({ ...repeatDays, saturday: !repeatDays.saturday })}
+                                    >
+                                        <Text style={styles.repeatDayText}>Sat</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        )}
+                    </View>
+                </View>
+
+                {/* Time Picker */}
+                {showReminderTimePicker && (
+                    <DateTimePicker
+                        value={reminderDate}
+                        mode="time"
+                        display="default"
+                        onChange={(event, selectedTime) => {
+                            setShowReminderTimePicker(false);
+                            if (selectedTime) setReminderDate(selectedTime);
+                        }}
+                    />
+                )}
+            </Modal>
+
+            {/* Water Reminder Scheduling Modal */}
+            <Modal
+                visible={waterReminderModalVisible}
+                animationType="slide"
+                presentationStyle="pageSheet"
+            >
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalHeader}>
+                        <TouchableOpacity onPress={() => setWaterReminderModalVisible(false)}>
+                            <Text style={styles.cancelButton}>Cancel</Text>
+                        </TouchableOpacity>
+                        <Text style={styles.modalTitle}>Schedule Water Reminder</Text>
+                        <TouchableOpacity onPress={scheduleWaterReminders}>
+                            <Text style={styles.saveButton}>Set Reminder</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    <View style={styles.modalContent}>
+                        <Text style={styles.label}>Water Amount (ml)</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Enter amount of water"
+                            value={waterAmount}
+                            onChangeText={setWaterAmount}
+                            keyboardType="numeric"
+                        />
+
+                        <Text style={styles.label}>Interval (hours)</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="e.g., 2"
+                            value={waterInterval}
+                            onChangeText={setWaterInterval}
+                            keyboardType="numeric"
+                        />
+                    </View>
+                </View>
             </Modal>
         </View>
     );
@@ -522,6 +866,81 @@ const styles = StyleSheet.create({
     instructionsInput: {
         height: 80,
         textAlignVertical: 'top',
+    },
+    repeatDaysContainer: {
+        marginTop: 16,
+    },
+    repeatDays: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+    },
+    repeatDayButton: {
+        borderWidth: 1,
+        borderColor: '#007BFF',
+        borderRadius: 8,
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        margin: 4,
+    },
+    selectedDay: {
+        backgroundColor: '#007BFF',
+    },
+    repeatDayText: {
+        color: '#007BFF',
+        fontWeight: '500',
+    },
+    // Water reminder styles
+    section: {
+        margin: 16,
+    },
+    sectionTitle: {
+        fontSize: 18,
+        fontWeight: '600',
+        marginBottom: 12,
+        color: '#333',
+    },
+    waterReminderCard: {
+        backgroundColor: 'white',
+        borderRadius: 12,
+        padding: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    waterHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    waterTitle: {
+        fontSize: 16,
+        fontWeight: '600',
+        marginLeft: 12,
+        color: '#333',
+    },
+    waterDescription: {
+        fontSize: 14,
+        color: '#666',
+        marginBottom: 16,
+        lineHeight: 20,
+    },
+    waterReminderButton: {
+        backgroundColor: '#2196F3',
+        borderRadius: 8,
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    waterReminderButtonText: {
+        color: 'white',
+        fontSize: 16,
+        fontWeight: '600',
+        marginLeft: 8,
     },
 });
 

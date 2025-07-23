@@ -15,9 +15,10 @@ import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useAuth } from '../context/AuthContext';
 import DatabaseService from '../lib/database';
+import NotificationService from '../src/services/NotificationService';
 
 const AppointmentsScreen = () => {
-    const { user } = useAuth();
+    const { user, isLoading: authLoading } = useAuth();
     const [appointments, setAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [modalVisible, setModalVisible] = useState(false);
@@ -37,6 +38,13 @@ const AppointmentsScreen = () => {
     const [reason, setReason] = useState('');
     const [notes, setNotes] = useState('');
 
+    // Reminder scheduling states
+    const [reminderModalVisible, setReminderModalVisible] = useState(false);
+    const [selectedAppointment, setSelectedAppointment] = useState(null);
+    const [reminderTime, setReminderTime] = useState(new Date());
+    const [showReminderTimePicker, setShowReminderTimePicker] = useState(false);
+    const [reminderType, setReminderType] = useState('1hour'); // '1hour', '24hours', 'custom'
+
     const appointmentTypes = [
         { value: 'consultation', label: 'General Consultation' },
         { value: 'follow_up', label: 'Follow-up' },
@@ -55,11 +63,24 @@ const AppointmentsScreen = () => {
 
     useEffect(() => {
         loadAppointments();
-    }, [selectedTab]);
+    }, [selectedTab]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Reload when user becomes available
+    useEffect(() => {
+        if (user && !authLoading) {
+            loadAppointments();
+        }
+    }, [user, authLoading]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const loadAppointments = async () => {
         try {
             setLoading(true);
+            if (!user || !user.$id) {
+                console.warn('User not authenticated or user ID missing');
+                setAppointments([]);
+                return;
+            }
+            
             let options = { limit: 50 };
             
             if (selectedTab === 'upcoming') {
@@ -89,6 +110,11 @@ const AppointmentsScreen = () => {
         try {
             if (!doctorName || !appointmentDate) {
                 Alert.alert('Error', 'Please fill in required fields');
+                return;
+            }
+
+            if (!user || !user.$id) {
+                Alert.alert('Error', 'User not authenticated. Please log in again.');
                 return;
             }
 
@@ -142,6 +168,61 @@ const AppointmentsScreen = () => {
         setAppointmentType('consultation');
         setReason('');
         setNotes('');
+    };
+
+    // Reminder scheduling functions
+    const openReminderModal = (appointment) => {
+        setSelectedAppointment(appointment);
+        const appointmentDateTime = new Date(appointment.appointment_date);
+        
+        // Set default reminder time to 1 hour before appointment
+        const defaultReminderTime = new Date(appointmentDateTime.getTime() - 60 * 60 * 1000);
+        setReminderTime(defaultReminderTime);
+        setReminderModalVisible(true);
+    };
+
+    const scheduleAppointmentReminder = async () => {
+        if (!selectedAppointment) return;
+
+        try {
+            const appointmentDateTime = new Date(selectedAppointment.appointment_date);
+            const title = `Appointment Reminder`;
+            const message = `You have an appointment with Dr. ${selectedAppointment.doctor_name} in 1 hour`;
+
+            let reminderDateTime;
+            if (reminderType === '1hour') {
+                reminderDateTime = new Date(appointmentDateTime.getTime() - 60 * 60 * 1000);
+            } else if (reminderType === '24hours') {
+                reminderDateTime = new Date(appointmentDateTime.getTime() - 24 * 60 * 60 * 1000);
+            } else {
+                reminderDateTime = reminderTime;
+            }
+
+            // Check if reminder time is in the future
+            if (reminderDateTime <= new Date()) {
+                Alert.alert('Invalid Time', 'Please select a future time for your reminder');
+                return;
+            }
+
+            const notificationId = await NotificationService.scheduleNotification({
+                title,
+                body: message,
+                trigger: { date: reminderDateTime },
+            });
+
+            if (notificationId) {
+                Alert.alert(
+                    'Reminder Set', 
+                    `You will be reminded on ${reminderDateTime.toLocaleDateString()} at ${reminderDateTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+                );
+                setReminderModalVisible(false);
+            } else {
+                Alert.alert('Error', 'Failed to schedule reminder');
+            }
+        } catch (error) {
+            console.error('Error scheduling appointment reminder:', error);
+            Alert.alert('Error', 'Failed to schedule reminder');
+        }
     };
 
     const getStatusColor = (status) => {
@@ -206,6 +287,13 @@ const AppointmentsScreen = () => {
                 <View style={styles.cardActions}>
                     {upcoming && (
                         <>
+                            <TouchableOpacity 
+                                style={styles.actionButton}
+                                onPress={() => openReminderModal(appointment)}
+                            >
+                                <Ionicons name="alarm-outline" size={16} color="#2D8B85" />
+                                <Text style={[styles.actionText, { color: "#2D8B85" }]}>Set Reminder</Text>
+                            </TouchableOpacity>
                             <TouchableOpacity style={styles.actionButton}>
                                 <Ionicons name="call-outline" size={16} color="#007BFF" />
                                 <Text style={styles.actionText}>Call</Text>
@@ -249,11 +337,20 @@ const AppointmentsScreen = () => {
         </View>
     );
 
-    if (loading) {
+    if (loading || authLoading) {
         return (
             <View style={styles.loadingContainer}>
-                <ActivityIndicator size="large" color="#007BFF" />
+                <ActivityIndicator size="large" color="#2D8B85" />
                 <Text style={styles.loadingText}>Loading appointments...</Text>
+            </View>
+        );
+    }
+
+    if (!user) {
+        return (
+            <View style={styles.loadingContainer}>
+                <Ionicons name="person-outline" size={64} color="#ccc" />
+                <Text style={styles.emptyText}>Please log in to view your appointments</Text>
             </View>
         );
     }
@@ -433,6 +530,64 @@ const AppointmentsScreen = () => {
                         onChange={(event, selectedTime) => {
                             setShowTimePicker(false);
                             if (selectedTime) setAppointmentTime(selectedTime);
+                        }}
+                    />
+                )}
+            </Modal>
+
+            {/* Reminder Scheduling Modal */}
+            <Modal
+                visible={reminderModalVisible}
+                animationType="slide"
+                presentationStyle="pageSheet"
+            >
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalHeader}>
+                        <TouchableOpacity onPress={() => setReminderModalVisible(false)}>
+                            <Text style={styles.cancelButton}>Cancel</Text>
+                        </TouchableOpacity>
+                        <Text style={styles.modalTitle}>Set Appointment Reminder</Text>
+                        <TouchableOpacity onPress={scheduleAppointmentReminder}>
+                            <Text style={styles.saveButton}>Save</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    <View style={styles.modalContent}>
+                        <Text style={styles.label}>Reminder Time</Text>
+                        <TouchableOpacity
+                            style={styles.dateButton}
+                            onPress={() => setShowReminderTimePicker(true)}
+                        >
+                            <Text style={styles.dateButtonText}>
+                                {reminderTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </Text>
+                            <Ionicons name="time-outline" size={20} color="#666" />
+                        </TouchableOpacity>
+
+                        <Text style={styles.label}>Reminder Type</Text>
+                        <View style={styles.pickerContainer}>
+                            <Picker
+                                selectedValue={reminderType}
+                                onValueChange={setReminderType}
+                                style={styles.picker}
+                            >
+                                <Picker.Item label="1 hour before" value="1hour" />
+                                <Picker.Item label="24 hours before" value="24hours" />
+                                <Picker.Item label="Custom" value="custom" />
+                            </Picker>
+                        </View>
+                    </View>
+                </View>
+
+                {/* Reminder Time Picker */}
+                {showReminderTimePicker && (
+                    <DateTimePicker
+                        value={reminderTime}
+                        mode="time"
+                        display="default"
+                        onChange={(event, selectedTime) => {
+                            setShowReminderTimePicker(false);
+                            if (selectedTime) setReminderTime(selectedTime);
                         }}
                     />
                 )}
