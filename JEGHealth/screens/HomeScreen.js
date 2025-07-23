@@ -97,7 +97,7 @@ const HomeScreen = ({ navigation }) => {
                 {
                     title: 'Book Appointment',
                     icon: 'calendar-outline',
-                    color: '#2ecc71',
+                    color: '#2D8B85',
                     onPress: () => navigation.navigate('Appointments')
                 }
             );

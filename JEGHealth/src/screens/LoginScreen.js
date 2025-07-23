@@ -45,11 +45,6 @@ const SignInScreen = ({ navigation }) => {
         }
     };
 
-    const handleQuickLogin = (userEmail, userPassword) => {
-        setEmail(userEmail);
-        setPassword(userPassword);
-    };
-
     return (
         <View style={styles.container}>
             {/* Background Gradient */}
@@ -126,53 +121,12 @@ const SignInScreen = ({ navigation }) => {
                         )}
                     </TouchableOpacity>
 
-                    {/* Social Login Divider */}
-                    <View style={styles.dividerContainer}>
-                        <View style={styles.dividerLine} />
-                        <Text style={styles.dividerText}>or sign up with</Text>
-                        <View style={styles.dividerLine} />
-                    </View>
-
-                    {/* Social Login Buttons */}
-                    <View style={styles.socialButtonsContainer}>
-                        <TouchableOpacity style={styles.socialButton}>
-                            <Text style={styles.socialButtonText}>f</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.socialButton}>
-                            <Text style={styles.socialButtonText}>G</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.socialButton}>
-                            <Text style={styles.socialButtonText}>🍎</Text>
-                        </TouchableOpacity>
-                    </View>
-
                     {/* Sign Up Link */}
                     <View style={styles.signUpLinkContainer}>
                         <Text style={styles.signUpLinkText}>Don&apos;t have an account? </Text>
                         <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
                             <Text style={styles.signUpLink}>Sign Up</Text>
                         </TouchableOpacity>
-                    </View>
-
-                    {/* Quick Test Login Section */}
-                    <View style={styles.testSection}>
-                        <Text style={styles.testTitle}>Quick Test Login:</Text>
-                        <View style={styles.testButtonsRow}>
-                            <TouchableOpacity
-                                style={styles.testButton}
-                                onPress={() => handleQuickLogin('patient@jeghealth.com', 'password123')}
-                            >
-                                <Feather name="user" size={16} color="white" />
-                                <Text style={styles.testButtonText}>Patient</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={styles.testButton}
-                                onPress={() => handleQuickLogin('doctor@jeghealth.com', 'password123')}
-                            >
-                                <Feather name="user-plus" size={16} color="white" />
-                                <Text style={styles.testButtonText}>Doctor</Text>
-                            </TouchableOpacity>
-                        </View>
                     </View>
                 </View>
             </View>
@@ -338,50 +292,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
     },
-    dividerContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginVertical: 20,
-    },
-    dividerLine: {
-        flex: 1,
-        height: 1,
-        backgroundColor: '#E9ECEF',
-    },
-    dividerText: {
-        marginHorizontal: 15,
-        color: '#666',
-        fontSize: 14,
-    },
-    socialButtonsContainer: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        marginBottom: 25,
-    },
-    socialButton: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        backgroundColor: '#F8F9FA',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginHorizontal: 10,
-        borderWidth: 1,
-        borderColor: '#E9ECEF',
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-        elevation: 2,
-    },
-    socialButtonText: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#666',
-    },
+
     signUpLinkContainer: {
         flexDirection: 'row',
         justifyContent: 'center',
@@ -397,41 +308,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
     },
-    testSection: {
-        backgroundColor: '#F8F9FA',
-        borderRadius: 12,
-        padding: 20,
-        marginTop: 10,
-        borderWidth: 1,
-        borderColor: '#E9ECEF',
-    },
-    testTitle: {
-        fontSize: 14,
-        fontWeight: 'bold',
-        color: '#666',
-        textAlign: 'center',
-        marginBottom: 15,
-    },
-    testButtonsRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-    },
-    testButton: {
-        backgroundColor: '#6c757d',
-        borderRadius: 8,
-        padding: 12,
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexDirection: 'row',
-        flex: 0.48,
-        minHeight: 45,
-    },
-    testButtonText: {
-        color: 'white',
-        fontSize: 14,
-        fontWeight: '600',
-        marginLeft: 8,
-    },
+
 });
 
 export default SignInScreen;

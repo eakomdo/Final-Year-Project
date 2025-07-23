@@ -33,7 +33,7 @@ export default function HealthTipsScreen() {
         concerning: "Persistent pain, excessive fatigue, irregular heartbeat, difficulty breathing, dizziness"
       },
       icon: "fitness",
-      color: "#4ECDC4",
+      color: "#2D8B85",
       videoLink: "https://www.youtube.com/watch?v=IODxDxX7oi4"
     },
     {
@@ -152,7 +152,7 @@ export default function HealthTipsScreen() {
       color: '#666', // Medium gray section text
     },
     videoButton: {
-      backgroundColor: '#4ECDC4', // Minimal turquoise accent
+      backgroundColor: '#2D8B85', // Minimal turquoise accent
     }
   };
 
@@ -207,7 +207,7 @@ export default function HealthTipsScreen() {
               <Text style={[styles.sectionTitle, dynamicStyles.sectionTitle]}>Signs to Watch For</Text>
               <View style={styles.signsContainer}>
                 <View style={styles.signBox}>
-                  <Text style={[styles.signTitle, { color: "#4ECDC4" }]}>Good Signs</Text>
+                  <Text style={[styles.signTitle, { color: "#2D8B85" }]}>Good Signs</Text>
                   <Text style={[styles.sectionText, dynamicStyles.sectionText]}>{tip.signs.good}</Text>
                 </View>
                 <View style={styles.signBox}>
@@ -237,7 +237,7 @@ export default function HealthTipsScreen() {
           style={styles.backButton} 
           onPress={() => router.back()}
         >
-          <Ionicons name="arrow-back" size={24} color="#4ECDC4" />
+          <Ionicons name="arrow-back" size={24} color="#2D8B85" />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, dynamicStyles.title]}>Health Tips</Text>
       </View>

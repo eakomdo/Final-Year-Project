@@ -127,7 +127,7 @@ export default function AlertsScreen() {
         title = title || "Activity Reminder";
         message = message || `Time for ${activityType}`;
         icon = "walk";
-        color = "#4ECDC4";
+        color = "#2D8B85";
         break;
       case "sleep":
         title = title || "Sleep Schedule";
@@ -969,7 +969,7 @@ export default function AlertsScreen() {
           <Switch
             value={medicationReminders}
             onValueChange={(value) => toggleAlert("medication", value)}
-            trackColor={{ false: "#d1d1d6", true: "#4ECDC4" }}
+            trackColor={{ false: "#d1d1d6", true: "#2D8B85" }}
           />
         </TouchableOpacity>
 
@@ -986,7 +986,7 @@ export default function AlertsScreen() {
           <Switch
             value={waterReminders}
             onValueChange={(value) => toggleAlert("water", value)}
-            trackColor={{ false: "#d1d1d6", true: "#4ECDC4" }}
+            trackColor={{ false: "#d1d1d6", true: "#2D8B85" }}
           />
         </TouchableOpacity>
 
@@ -995,7 +995,7 @@ export default function AlertsScreen() {
           onPress={() => activityReminders && openNewAlertModal("activity")}
         >
           <View style={styles.settingInfo}>
-            <Ionicons name="walk" size={20} color="#4ECDC4" />
+            <Ionicons name="walk" size={20} color="#2D8B85" />
             <Text style={[styles.settingText, dynamicStyles.settingText]}>
               Activity Reminders
             </Text>
@@ -1003,7 +1003,7 @@ export default function AlertsScreen() {
           <Switch
             value={activityReminders}
             onValueChange={(value) => toggleAlert("activity", value)}
-            trackColor={{ false: "#d1d1d6", true: "#4ECDC4" }}
+            trackColor={{ false: "#d1d1d6", true: "#2D8B85" }}
           />
         </TouchableOpacity>
 
@@ -1020,7 +1020,7 @@ export default function AlertsScreen() {
           <Switch
             value={sleepReminders}
             onValueChange={(value) => toggleAlert("sleep", value)}
-            trackColor={{ false: "#d1d1d6", true: "#4ECDC4" }}
+            trackColor={{ false: "#d1d1d6", true: "#2D8B85" }}
           />
         </TouchableOpacity>
 
@@ -1037,7 +1037,7 @@ export default function AlertsScreen() {
           <Switch
             value={appointmentAlerts}
             onValueChange={(value) => toggleAlert("appointment", value)}
-            trackColor={{ false: "#d1d1d6", true: "#4ECDC4" }}
+            trackColor={{ false: "#d1d1d6", true: "#2D8B85" }}
           />
         </TouchableOpacity>
       </View>
