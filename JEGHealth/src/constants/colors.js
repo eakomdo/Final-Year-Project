@@ -45,4 +45,9 @@ export const Colors = {
   // Gradient Arrays (for LinearGradient)
   gradientPrimary: ['#2D8B85', '#1A5F5A', '#154A47'], // Main gradient
   gradientLight: ['#2D8B85', '#2D8B85'], // Light gradient
+  
+  // Logo Colors
+  logoIconBg: '#2D8B85', // Deep turquoise circle background
+  logoTextPrimary: '#2D8B85', // Deep turquoise text for "JEG" 
+  logoTextSecondary: '#2D8B85', // Deep turquoise text for "Health"
 };

@@ -63,7 +63,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.logoIconBg,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 6, // Reduced padding to make heart larger in circle
     borderWidth: 2,
     borderColor: Colors.textOnPrimary, // White border around circle
   },
@@ -93,7 +92,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.logoIconBg,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 8, // Reduced padding
     borderWidth: 2,
     borderColor: Colors.textOnPrimary, // White border around circle
   },

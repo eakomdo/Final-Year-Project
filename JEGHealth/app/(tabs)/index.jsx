@@ -91,6 +91,7 @@ const HomeScreen = () => {
     { icon: "calendar-outline", label: "Appointments", route: "/appointments" },
     { icon: "medical-outline", label: "Medications", route: "/medications" },
     { icon: "analytics-outline", label: "Reports", route: "/reports" },
+    { icon: "flask-outline", label: "Test Appwrite", route: "/appwrite-test" }, // Temporary test button
   ];
 
   const renderStatCard = (stat, index) => (
@@ -281,12 +282,12 @@ const styles = StyleSheet.create({
   welcomeText: {
     fontSize: 28,
     fontWeight: "bold",
-    color: Colors.textPrimary,
+    color: Colors.primary,
     marginBottom: 4,
   },
   welcomeSubtext: {
     fontSize: 16,
-    color: Colors.textSecondary,
+    color: Colors.primary,
   },
   statsContainer: {
     paddingHorizontal: 20,
@@ -368,8 +369,8 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 20,
     marginBottom: 12,
-    borderWidth: 1,
-    borderColor: Colors.border,
+    borderWidth: 2,
+    borderColor: Colors.primary,
     shadowColor: 'rgba(0, 0, 0, 0.08)',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 1,
@@ -417,10 +418,13 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     alignItems: "center",
-    borderWidth: 1,
-    borderColor: Colors.border,
-    boxShadow: "0px 1px 2px rgba(0, 0, 0, 0.05)",
-    elevation: 1,
+    borderWidth: 2,
+    borderColor: Colors.primary,
+    shadowColor: 'rgba(0, 0, 0, 0.08)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   actionIcon: {
     width: 40,
@@ -441,10 +445,13 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.background,
     borderRadius: 12,
     padding: 16,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    boxShadow: "0px 1px 2px rgba(0, 0, 0, 0.05)",
-    elevation: 1,
+    borderWidth: 2,
+    borderColor: Colors.primary,
+    shadowColor: 'rgba(0, 0, 0, 0.08)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   activityItem: {
     flexDirection: "row",

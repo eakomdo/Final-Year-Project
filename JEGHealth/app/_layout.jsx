@@ -7,6 +7,7 @@ import { ThemeProvider } from '../context/ThemeContext';
 import { ToastProvider, useToast, setGlobalToastContext } from '../src/utils/ToastManager';
 import DevelopmentModeIndicator from '../components/DevelopmentModeIndicator';
 import DevelopmentLogger from '../src/utils/DevelopmentLogger';
+import SplashWrapper from '../src/components/SplashWrapper';
 
 // Component to initialize global toast context
 const ToastInitializer = ({ children }) => {
@@ -30,21 +31,23 @@ export default function RootLayout() {
         <ToastInitializer>
           <AuthProvider>
             <ThemeProvider>
-              <StatusBar style="auto" />
-              <Stack 
-                screenOptions={{
-                  headerShown: false, // Hide headers by default
-                }}
-              >
-                <Stack.Screen
-                  name="(tabs)" // This specifically hides the (tabs) folder name from the header
-                  options={{
-                    headerShown: false, // Ensure no header for the tabs navigator
-                    title: '', // Clear the title that would show the folder name
+              <SplashWrapper>
+                <StatusBar style="auto" />
+                <Stack 
+                  screenOptions={{
+                    headerShown: false, // Hide headers by default
                   }}
-                />
-              </Stack>
-              <DevelopmentModeIndicator />
+                >
+                  <Stack.Screen
+                    name="(tabs)" // This specifically hides the (tabs) folder name from the header
+                    options={{
+                      headerShown: false, // Ensure no header for the tabs navigator
+                      title: '', // Clear the title that would show the folder name
+                    }}
+                  />
+                </Stack>
+                <DevelopmentModeIndicator />
+              </SplashWrapper>
             </ThemeProvider>
           </AuthProvider>
         </ToastInitializer>
