@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     View,
     Text,
@@ -9,53 +9,48 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
-import DatabaseService from '../lib/database';
+import DjangoDatabaseService from '../lib/djangoDatabase';
 
 const HomeScreen = ({ navigation }) => {
-    const { user, userProfile, getUserRole, logout } = useAuth();
+    const { user, getUserRole, logout } = useAuth();
     const [recentMetrics, setRecentMetrics] = useState([]);
     const [upcomingAppointments, setUpcomingAppointments] = useState([]);
     const [notifications, setNotifications] = useState([]);
-    const [loading, setLoading] = useState(true);
 
     const userRole = getUserRole();
 
-    useEffect(() => {
-        loadDashboardData();
-    }, []);
-
-    const loadDashboardData = async () => {
+    const loadDashboardData = useCallback(async () => {
         try {
-            setLoading(true);
-
             if (userRole === 'patient') {
                 // Load patient-specific data
-                const metricsResponse = await DatabaseService.getHealthMetrics(
-                    user.$id, 
+                const metricsResponse = await DjangoDatabaseService.getHealthMetrics(
+                    user.$id || user.id, 
                     { limit: 5 }
                 );
                 setRecentMetrics(metricsResponse.documents || []);
 
-                const appointmentsResponse = await DatabaseService.getUserAppointments(
-                    user.$id,
+                const appointmentsResponse = await DjangoDatabaseService.getUserAppointments(
+                    user.$id || user.id,
                     { upcoming: true, limit: 3 }
                 );
                 setUpcomingAppointments(appointmentsResponse.documents || []);
             }
 
             // Load notifications for all users
-            const notificationsResponse = await DatabaseService.getUserNotifications(
-                user.$id,
+            const notificationsResponse = await DjangoDatabaseService.getUserNotifications(
+                user.$id || user.id,
                 { unreadOnly: true, limit: 5 }
             );
             setNotifications(notificationsResponse.documents || []);
 
         } catch (error) {
             console.error('Error loading dashboard data:', error);
-        } finally {
-            setLoading(false);
         }
-    };
+    }, [user, userRole]);
+
+    useEffect(() => {
+        loadDashboardData();
+    }, [loadDashboardData]);
 
     const handleLogout = async () => {
         Alert.alert(
@@ -109,6 +104,16 @@ const HomeScreen = ({ navigation }) => {
             color: '#9b59b6',
             onPress: () => navigation.navigate('Chat')
         });
+
+        // Add test button for Django connection (remove this in production)
+        if (__DEV__) {
+            actions.push({
+                title: 'Test Django',
+                icon: 'bug-outline',
+                color: '#e67e22',
+                onPress: () => navigation.navigate('TestDjango')
+            });
+        }
 
         return (
             <View style={styles.quickActions}>

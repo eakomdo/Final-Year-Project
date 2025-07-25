@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import AuthService from '../lib/auth';
-import DatabaseService from '../lib/database';
+import DjangoAuthService from '../lib/djangoAuth';
+import DjangoDatabaseService from '../lib/djangoDatabase';
 
 const AuthContext = createContext({});
 
@@ -25,15 +25,11 @@ export const AuthProvider = ({ children }) => {
             try {
                 setIsLoading(true);
                 
-                // Skip role initialization in development/when not authenticated
-                // This prevents authorization errors in Expo Go
-                // Role initialization should be done by admin users only
-                
                 // Check if user is already authenticated
-                const isAuth = await AuthService.isAuthenticated();
+                const isAuth = await DjangoAuthService.isAuthenticated();
                 
                 if (isAuth) {
-                    const userData = await AuthService.getCurrentUser();
+                    const userData = await DjangoAuthService.getCurrentUser();
                     setUser(userData.authUser);
                     setUserProfile(userData.userProfile);
                     setUserRole(userData.role);
@@ -54,10 +50,10 @@ export const AuthProvider = ({ children }) => {
     const login = async (email, password) => {
         try {
             setIsLoading(true);
-            await AuthService.loginUser(email, password);
+            await DjangoAuthService.loginUser(email, password);
             
             // Get full user data
-            const userData = await AuthService.getCurrentUser();
+            const userData = await DjangoAuthService.getCurrentUser();
             
             setUser(userData.authUser);
             setUserProfile(userData.userProfile);
@@ -77,7 +73,7 @@ export const AuthProvider = ({ children }) => {
     const register = async (userData) => {
         try {
             setIsLoading(true);
-            const result = await AuthService.registerUser(userData);
+            const result = await DjangoAuthService.registerUser(userData);
             
             // Auto-login after successful registration
             const loginResult = await login(userData.email, userData.password);
@@ -95,7 +91,7 @@ export const AuthProvider = ({ children }) => {
     const logout = async () => {
         try {
             setIsLoading(true);
-            await AuthService.logoutUser();
+            await DjangoAuthService.logoutUser();
             
             setUser(null);
             setUserProfile(null);
@@ -118,8 +114,8 @@ export const AuthProvider = ({ children }) => {
                 throw new Error('No user profile found');
             }
 
-            const updatedProfile = await DatabaseService.updateUserProfile(
-                userProfile.$id,
+            const updatedProfile = await DjangoDatabaseService.updateUserProfile(
+                user.$id || user.id,
                 profileData
             );
 
