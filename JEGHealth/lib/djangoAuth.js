@@ -10,8 +10,9 @@ class DjangoAuthService {
             const response = await authAPI.register({
                 email: userData.email,
                 password: userData.password,
-                full_name: userData.fullName,
-                phone_number: userData.phoneNumber,
+                first_name: userData.first_name,
+                last_name: userData.last_name,
+                contact: userData.contact,
                 role: userData.roleName,
                 profile_data: userData.profileData || {}
             });

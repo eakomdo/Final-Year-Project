@@ -18,40 +18,29 @@ const SignUpScreen = ({ navigation }) => {
     const { register } = useAuth();
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
-        fullName: '',
+        username: '',
+        first_name: '',
+        last_name: '',
         email: '',
         password: '',
-        confirmPassword: '',
-        phoneNumber: '',
-        roleName: 'patient'
+        password_confirm: '',
+        phone_number: '',
+        date_of_birth: '',
+        gender: '',
     });
 
-    // Additional profile data based on role
-    const [profileData, setProfileData] = useState({
-        // Patient fields
-        dateOfBirth: '',
-        gender: '',
-        emergencyContactName: '',
-        emergencyContactPhone: '',
-        
-        // Doctor fields
-        licenseNumber: '',
-        specialty: '',
-        clinicName: '',
-        
-        // Caretaker fields
-        relationship: ''
-    });
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const handleSignUp = async () => {
         try {
             // Validation
-            if (!formData.fullName || !formData.email || !formData.password) {
+            if (!formData.username || !formData.first_name || !formData.last_name || !formData.email || !formData.password || !formData.password_confirm || !formData.phone_number || !formData.date_of_birth || !formData.gender) {
                 showError('Error', 'Please fill in all required fields');
                 return;
             }
 
-            if (formData.password !== formData.confirmPassword) {
+            if (formData.password !== formData.password_confirm) {
                 showError('Error', 'Passwords do not match');
                 return;
             }
@@ -71,42 +60,44 @@ const SignUpScreen = ({ navigation }) => {
             setLoading(true);
 
             const userData = {
-                ...formData,
-                profileData
+                email: formData.email?.trim() || '',
+                password: formData.password || '',
+                password_confirm: formData.password_confirm || '',
+                first_name: formData.first_name?.trim() || '',
+                last_name: formData.last_name?.trim() || '',
             };
 
+            // Optionally add username if provided
+            if (formData.username?.trim()) {
+                userData.username = formData.username.trim();
+            }
+
+            // Optionally add phone_number if provided
+            if (formData.phone_number?.trim()) {
+                userData.phone_number = formData.phone_number.trim();
+            }
+
+            // Optionally add date_of_birth if provided
+            if (formData.date_of_birth?.trim()) {
+                userData.date_of_birth = formData.date_of_birth.trim();
+            }
+
+            // Optionally add gender if provided
+            if (formData.gender) {
+                userData.gender = formData.gender;
+            }
+
+            console.log('[DEBUG] Registration payload:', userData);
             const result = await register(userData);
 
             if (result.success) {
                 showSuccess('Success', 'Account created successfully!');
-                // Navigation will be handled automatically by AuthContext
             } else {
-                // Handle specific backend errors with user-friendly messages
                 let errorMessage = result.error;
-                
-                if (errorMessage.includes('user with the same id, email, or phone already exists')) {
-                    errorMessage = 'An account with this email already exists. Please use a different email or try signing in.';
-                } else if (errorMessage.includes('not authorized to perform the requested action')) {
-                    errorMessage = 'Account created but requires admin approval. Please contact support for account activation.';
-                } else if (errorMessage.includes('Invalid credentials')) {
-                    errorMessage = 'Invalid email or password format. Please check your details.';
-                }
-                
                 showError('Registration Failed', errorMessage);
             }
         } catch (error) {
-            let errorMessage = error.message;
-            
-            // Handle specific error types
-            if (errorMessage.includes('user with the same id, email, or phone already exists')) {
-                errorMessage = 'An account with this email already exists. Please use a different email or try signing in.';
-            } else if (errorMessage.includes('not authorized to perform the requested action')) {
-                errorMessage = 'Account created but requires admin approval. Please contact support for account activation.';
-            } else if (errorMessage.includes('network')) {
-                errorMessage = 'Network error. Please check your internet connection and try again.';
-            }
-            
-            showError('Error', errorMessage);
+            showError('Error', error.message);
         } finally {
             setLoading(false);
         }
@@ -114,117 +105,6 @@ const SignUpScreen = ({ navigation }) => {
 
     const updateFormData = (key, value) => {
         setFormData(prev => ({ ...prev, [key]: value }));
-    };
-
-    const updateProfileData = (key, value) => {
-        setProfileData(prev => ({ ...prev, [key]: value }));
-    };
-
-    const renderRoleSpecificFields = () => {
-        switch (formData.roleName) {
-            case 'patient':
-                return (
-                    <>
-                        <View style={styles.inputContainer}>
-                    <Feather name="calendar" size={20} color="#7FCCCC" style={styles.inputIcon} />
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Date of Birth (YYYY-MM-DD)"
-                                placeholderTextColor="#B0B0B0"
-                                value={profileData.dateOfBirth}
-                                onChangeText={(value) => updateProfileData('dateOfBirth', value)}
-                            />
-                        </View>
-                        <View style={styles.pickerContainer}>
-                            <Feather name="users" size={20} color="#7FCCCC" style={styles.inputIcon} />
-                            <Picker
-                                selectedValue={profileData.gender}
-                                onValueChange={(value) => updateProfileData('gender', value)}
-                                style={styles.picker}
-                            >
-                                <Picker.Item label="Select Gender" value="" />
-                                <Picker.Item label="Male" value="male" />
-                                <Picker.Item label="Female" value="female" />
-                                <Picker.Item label="Other" value="other" />
-                            </Picker>
-                        </View>
-                        <View style={styles.inputContainer}>
-                            <Feather name="user-plus" size={20} color="#7FCCCC" style={styles.inputIcon} />
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Emergency Contact Name"
-                                placeholderTextColor="#B0B0B0"
-                                value={profileData.emergencyContactName}
-                                onChangeText={(value) => updateProfileData('emergencyContactName', value)}
-                            />
-                        </View>
-                        <View style={styles.inputContainer}>
-                            <Feather name="phone" size={20} color="#7FCCCC" style={styles.inputIcon} />
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Emergency Contact Phone"
-                                placeholderTextColor="#B0B0B0"
-                                value={profileData.emergencyContactPhone}
-                                onChangeText={(value) => updateProfileData('emergencyContactPhone', value)}
-                                keyboardType="phone-pad"
-                            />
-                        </View>
-                    </>
-                );
-
-            case 'doctor':
-                return (
-                    <>
-                        <View style={styles.inputContainer}>
-                            <Feather name="award" size={20} color="#7FCCCC" style={styles.inputIcon} />
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Medical License Number *"
-                                placeholderTextColor="#B0B0B0"
-                                value={profileData.licenseNumber}
-                                onChangeText={(value) => updateProfileData('licenseNumber', value)}
-                            />
-                        </View>
-                        <View style={styles.inputContainer}>
-                            <Feather name="activity" size={20} color="#7FCCCC" style={styles.inputIcon} />
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Specialty *"
-                                placeholderTextColor="#B0B0B0"
-                                value={profileData.specialty}
-                                onChangeText={(value) => updateProfileData('specialty', value)}
-                            />
-                        </View>
-                        <View style={styles.inputContainer}>
-                            <Feather name="home" size={20} color="#7FCCCC" style={styles.inputIcon} />
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Clinic/Hospital Name"
-                                placeholderTextColor="#B0B0B0"
-                                value={profileData.clinicName}
-                                onChangeText={(value) => updateProfileData('clinicName', value)}
-                            />
-                        </View>
-                    </>
-                );
-
-            case 'caretaker':
-                return (
-                    <View style={styles.inputContainer}>
-                        <Feather name="heart" size={20} color="#7FCCCC" style={styles.inputIcon} />
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Relationship to Patient"
-                            placeholderTextColor="#B0B0B0"
-                            value={profileData.relationship}
-                            onChangeText={(value) => updateProfileData('relationship', value)}
-                        />
-                    </View>
-                );
-
-            default:
-                return null;
-        }
     };
 
     return (
@@ -268,18 +148,43 @@ const SignUpScreen = ({ navigation }) => {
             >
                 <Text style={styles.formTitle}>Sign Up</Text>
 
-                {/* Basic Information */}
+                {/* Username */}
                 <View style={styles.inputContainer}>
                     <Feather name="user" size={20} color="#7FCCCC" style={styles.inputIcon} />
                     <TextInput
                         style={styles.input}
-                        placeholder="Full Name"
+                        placeholder="Username"
                         placeholderTextColor="#B0B0B0"
-                        value={formData.fullName}
-                        onChangeText={(value) => updateFormData('fullName', value)}
+                        value={formData.username}
+                        onChangeText={(value) => updateFormData('username', value)}
                     />
                 </View>
 
+                {/* First Name */}
+                <View style={styles.inputContainer}>
+                    <Feather name="user" size={20} color="#7FCCCC" style={styles.inputIcon} />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="First Name"
+                        placeholderTextColor="#B0B0B0"
+                        value={formData.first_name}
+                        onChangeText={(value) => updateFormData('first_name', value)}
+                    />
+                </View>
+
+                {/* Last Name */}
+                <View style={styles.inputContainer}>
+                    <Feather name="user" size={20} color="#7FCCCC" style={styles.inputIcon} />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Last Name"
+                        placeholderTextColor="#B0B0B0"
+                        value={formData.last_name}
+                        onChangeText={(value) => updateFormData('last_name', value)}
+                    />
+                </View>
+
+                {/* Email */}
                 <View style={styles.inputContainer}>
                     <Feather name="mail" size={20} color="#7FCCCC" style={styles.inputIcon} />
                     <TextInput
@@ -293,6 +198,7 @@ const SignUpScreen = ({ navigation }) => {
                     />
                 </View>
 
+                {/* Password */}
                 <View style={styles.inputContainer}>
                     <Feather name="lock" size={20} color="#7FCCCC" style={styles.inputIcon} />
                     <TextInput
@@ -301,50 +207,76 @@ const SignUpScreen = ({ navigation }) => {
                         placeholderTextColor="#B0B0B0"
                         value={formData.password}
                         onChangeText={(value) => updateFormData('password', value)}
-                        secureTextEntry
+                        secureTextEntry={!showPassword}
                     />
+                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                        <Feather
+                            name={showPassword ? "eye" : "eye-off"}
+                            size={20}
+                            color="#7FCCCC"
+                        />
+                    </TouchableOpacity>
                 </View>
 
+                {/* Confirm Password */}
                 <View style={styles.inputContainer}>
                     <Feather name="lock" size={20} color="#7FCCCC" style={styles.inputIcon} />
                     <TextInput
                         style={styles.input}
                         placeholder="Confirm Password"
                         placeholderTextColor="#B0B0B0"
-                        value={formData.confirmPassword}
-                        onChangeText={(value) => updateFormData('confirmPassword', value)}
-                        secureTextEntry
+                        value={formData.password_confirm}
+                        onChangeText={(value) => updateFormData('password_confirm', value)}
+                        secureTextEntry={!showConfirmPassword}
                     />
+                    <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+                        <Feather
+                            name={showConfirmPassword ? "eye" : "eye-off"}
+                            size={20}
+                            color="#7FCCCC"
+                        />
+                    </TouchableOpacity>
                 </View>
 
+                {/* Phone Number */}
                 <View style={styles.inputContainer}>
                     <Feather name="phone" size={20} color="#7FCCCC" style={styles.inputIcon} />
                     <TextInput
                         style={styles.input}
                         placeholder="Phone Number"
                         placeholderTextColor="#B0B0B0"
-                        value={formData.phoneNumber}
-                        onChangeText={(value) => updateFormData('phoneNumber', value)}
+                        value={formData.phone_number}
+                        onChangeText={(value) => updateFormData('phone_number', value)}
                         keyboardType="phone-pad"
                     />
                 </View>
 
-                {/* Role Selection */}
-                <View style={styles.pickerContainer}>
-                    <Feather name="briefcase" size={20} color="#7FCCCC" style={styles.inputIcon} />
-                    <Picker
-                        selectedValue={formData.roleName}
-                        onValueChange={(value) => updateFormData('roleName', value)}
-                        style={styles.picker}
-                    >
-                        <Picker.Item label="Patient" value="patient" />
-                        <Picker.Item label="Doctor" value="doctor" />
-                        <Picker.Item label="Caretaker" value="caretaker" />
-                    </Picker>
+                {/* Date of Birth */}
+                <View style={styles.inputContainer}>
+                    <Feather name="calendar" size={20} color="#7FCCCC" style={styles.inputIcon} />
+                    <TextInput
+                        style={styles.input}
+                        placeholder="Date of Birth (YYYY-MM-DD)"
+                        placeholderTextColor="#B0B0B0"
+                        value={formData.date_of_birth}
+                        onChangeText={(value) => updateFormData('date_of_birth', value)}
+                    />
                 </View>
 
-                {/* Role-specific fields */}
-                {renderRoleSpecificFields()}
+                {/* Gender */}
+                <View style={styles.inputContainer}>
+                    <Feather name="users" size={20} color="#7FCCCC" style={styles.inputIcon} />
+                    <Picker
+                        selectedValue={formData.gender}
+                        onValueChange={(value) => updateFormData('gender', value)}
+                        style={styles.picker}
+                    >
+                        <Picker.Item label="Select Gender" value="" />
+                        <Picker.Item label="Male" value="MALE" />
+                        <Picker.Item label="Female" value="FEMALE" />
+                        <Picker.Item label="Other" value="OTHER" />
+                    </Picker>
+                </View>
 
                 {/* Sign Up Button */}
                 <TouchableOpacity
@@ -358,14 +290,6 @@ const SignUpScreen = ({ navigation }) => {
                         <Text style={styles.signUpButtonText}>Create Account</Text>
                     )}
                 </TouchableOpacity>
-
-                {/* Helpful Info */}
-                <View style={styles.infoContainer}>
-                    <Text style={styles.infoText}>
-                        By signing up, you agree to our terms of service. 
-                        If you encounter any issues, please contact support.
-                    </Text>
-                </View>
 
                 {/* Sign In Link */}
                 <View style={styles.signInLinkContainer}>

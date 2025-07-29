@@ -8,7 +8,7 @@ import { Platform } from 'react-native';
 // Development configuration
 const DEVELOPMENT_CONFIG = {
     // Update this IP address to your machine's IP where Django is running
-    DJANGO_HOST: '192.168.32.186',
+    DJANGO_HOST: '10.42.0.61', // <-- use this IP!
     DJANGO_PORT: '8000',
     
     // For Android emulator, use 10.0.2.2 to reach host machine
@@ -64,16 +64,17 @@ export const getBackendURL = () => {
     const protocol = getProtocol();
     const host = getBackendHost();
     const port = getBackendPort();
-    
     // Don't include port if it's the default for the protocol
     const includePort = (protocol === 'http' && port !== '80') || 
                        (protocol === 'https' && port !== '443');
-    
     const baseURL = includePort ? 
         `${protocol}://${host}:${port}` : 
         `${protocol}://${host}`;
-    
-    return `${baseURL}/api/v1`;
+
+    // Log the full backend URL for debugging
+    const fullURL = `${baseURL}/api/v1`;
+    console.log('[DEBUG] Backend URL used for requests:', fullURL);
+    return fullURL;
 };
 
 // Network timeout configuration
