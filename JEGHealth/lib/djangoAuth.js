@@ -8,8 +8,10 @@ class DjangoAuthService {
             console.log('Starting user registration for:', userData.email);
 
             const response = await authAPI.register({
+                username: userData.email,
                 email: userData.email,
                 password: userData.password,
+                password_confirm: userData.password_confirm,
                 first_name: userData.first_name,
                 last_name: userData.last_name,
                 contact: userData.contact,
@@ -49,11 +51,15 @@ class DjangoAuthService {
             console.log('Starting user login for:', email);
 
             const response = await authAPI.login({ email, password });
-            const { access, refresh, user } = response.data;
+            const { tokens, user } = response.data;
 
+            console.log('Login response:', response.data)
+            console.log('Login response:', tokens.access)
+            console.log('Login response:', tokens.refresh)
+            console.log('Login response:',user);
             // Store tokens
-            await AsyncStorage.setItem('access_token', access);
-            await AsyncStorage.setItem('refresh_token', refresh);
+            await AsyncStorage.setItem('access_token', tokens.access);
+            await AsyncStorage.setItem('refresh_token', tokens.refresh);
 
             console.log('User login completed successfully');
 

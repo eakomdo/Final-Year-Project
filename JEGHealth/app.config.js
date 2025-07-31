@@ -30,6 +30,7 @@ export default {
       },
       package: "com.jeghealth.app",
       permissions: [
+        "android.permission.INTERNET",
         "android.permission.BLUETOOTH",
         "android.permission.BLUETOOTH_ADMIN",
         "android.permission.BLUETOOTH_CONNECT",

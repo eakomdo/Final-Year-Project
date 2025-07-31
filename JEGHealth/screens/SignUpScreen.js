@@ -19,7 +19,7 @@ const SignUpScreen = ({ navigation }) => {
         fullName: '',
         email: '',
         password: '',
-        confirmPassword: '',
+        password_confirm: '',
         phoneNumber: '',
         roleName: 'patient'
     });
@@ -49,10 +49,10 @@ const SignUpScreen = ({ navigation }) => {
                 return;
             }
 
-            if (formData.password !== formData.confirmPassword) {
-                Alert.alert('Error', 'Passwords do not match');
-                return;
-            }
+            // if (formData.password !== formData.password_confirm) {
+            //     Alert.alert('Error', 'Passwords do not match');
+            //     return;
+            // }
 
             if (formData.password.length < 8) {
                 Alert.alert('Error', 'Password must be at least 8 characters long');
@@ -227,8 +227,8 @@ const SignUpScreen = ({ navigation }) => {
                 <TextInput
                     style={styles.input}
                     placeholder="Confirm Password *"
-                    value={formData.confirmPassword}
-                    onChangeText={(value) => updateFormData('confirmPassword', value)}
+                    value={formData.password_confirm}
+                    onChangeText={(value) => updateFormData('password_confirm', value)}
                     secureTextEntry
                 />
 

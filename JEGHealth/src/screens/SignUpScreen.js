@@ -226,7 +226,9 @@ const SignUpScreen = ({ navigation }) => {
                         placeholder="Confirm Password"
                         placeholderTextColor="#B0B0B0"
                         value={formData.password_confirm}
-                        onChangeText={(value) => updateFormData('password_confirm', value)}
+                        onChangeText={(data_value) => {
+                            // console.log('Confirm Password:', data_value);
+                            updateFormData('password_confirm', data_value)}}
                         secureTextEntry={!showConfirmPassword}
                     />
                     <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>

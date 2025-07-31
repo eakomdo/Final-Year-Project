@@ -54,8 +54,9 @@ export const AuthProvider = ({ children }) => {
             
             // Get full user data
             const userData = await DjangoAuthService.getCurrentUser();
-            
-            setUser(userData.authUser);
+            console.log('User logged in successfully:', email);
+            // TODO: Fix Navigation
+            // setUser(userData.authUser);
             setUserProfile(userData.userProfile);
             setUserRole(userData.role);
             setIsAuthenticated(true);
@@ -73,10 +74,12 @@ export const AuthProvider = ({ children }) => {
     const register = async (userData) => {
         try {
             setIsLoading(true);
+
             const result = await DjangoAuthService.registerUser(userData);
             
             // Auto-login after successful registration
             const loginResult = await login(userData.email, userData.password);
+            console.log('Registration result:', result);
             
             return { success: true, user: result, loginResult };
         } catch (error) {
