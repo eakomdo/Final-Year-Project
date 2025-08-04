@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -12,14 +12,25 @@ import { useAuth } from '../../context/AuthContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather } from '@expo/vector-icons';
 import { showError } from '../utils/NotificationHelper';
+import { jwtDecode } from 'jwt-decode';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router } from 'expo-router';
 
 const { height } = Dimensions.get('window');
 
 const SignInScreen = ({ navigation }) => {
-    const { login } = useAuth();
+    const { login, isAuthenticated, isLoading } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
+
+    // Debug auth state changes
+    useEffect(() => {
+        console.log('Auth State Changed:', { isAuthenticated, isLoading });
+        if (isAuthenticated && !isLoading) {
+            console.log('User is authenticated, should navigate to main app');
+        }
+    }, [isAuthenticated, isLoading]);
 
     const handleSignIn = async () => {
         try {
@@ -33,8 +44,26 @@ const SignInScreen = ({ navigation }) => {
             const result = await login(email, password);
 
             if (result.success) {
+                // Try to get the JWT token from storage and decode it
+                let token = null;
+                try {
+                    token = await AsyncStorage.getItem('access_token');
+                    if (token) {
+                        const decoded = jwtDecode(token);
+                        console.log('Decoded JWT:', decoded);
+                    } else {
+                        console.warn('No access_token found in storage after login.');
+                    }
+                } catch (jwtErr) {
+                    console.warn('JWT decode error:', jwtErr);
+                }
                 // Navigation will be handled automatically by AuthContext
                 console.log('Login successful');
+                
+                // Force navigation to tabs after successful login
+                setTimeout(() => {
+                    router.replace('/(tabs)');
+                }, 100);
             } else {
                 showError('Login Failed', result.error);
             }

@@ -8,11 +8,11 @@ import { Platform } from 'react-native';
 // Development configuration
 const DEVELOPMENT_CONFIG = {
     // Update this IP address to your machine's IP where Django is running
-    DJANGO_HOST: '10.42.0.61', // <-- use this IP!
+    DJANGO_HOST: '192.168.1.246', // <-- Your machine's IP where Django is running
     DJANGO_PORT: '8000',
     
-    // For Android emulator, use 10.0.2.2 to reach host machine
-    ANDROID_EMULATOR_HOST: '10.0.2.2',
+    // For Android emulator, use this IP to reach host machine
+    ANDROID_EMULATOR_HOST: '192.168.1.246',
     
     // For iOS simulator, localhost works fine
     IOS_SIMULATOR_HOST: 'localhost',
@@ -30,10 +30,12 @@ const getBackendHost = () => {
     if (__DEV__) {
         // Development environment
         if (Platform.OS === 'android') {
-            // Check if running on emulator or physical device
-            // You might need to adjust this logic based on your setup
-            return DEVELOPMENT_CONFIG.DJANGO_HOST;
+            // For Android emulator, use 10.0.2.2 to reach host machine
+            // For Android physical device, use your machine's IP
+            return DEVELOPMENT_CONFIG.ANDROID_EMULATOR_HOST;
         } else if (Platform.OS === 'ios') {
+            // For iOS simulator, localhost should work
+            // For iOS physical device, use your machine's IP
             return DEVELOPMENT_CONFIG.DJANGO_HOST;
         }
         return DEVELOPMENT_CONFIG.DJANGO_HOST;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import {
     View,
     Text,
@@ -9,12 +9,23 @@ import {
     ActivityIndicator
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
+import { useNavigation } from '@react-navigation/native';
 
-const SignInScreen = ({ navigation }) => {
-    const { login } = useAuth();
+const SignInScreen = () => {
+    const navigate = useNavigation();
+    const { login ,isAuthenticated,isLoading} = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
+
+
+      useEffect(() => {
+        if (isAuthenticated) {
+            // Navigation will happen automatically due to AppNavigator logic
+            // But you can add any additional logic here if needed
+            console.log('User authenticated, navigation will happen automatically');
+        }
+    }, [isAuthenticated]);
 
     const handleSignIn = async () => {
         try {
@@ -26,13 +37,10 @@ const SignInScreen = ({ navigation }) => {
             setLoading(true);
 
             const result = await login(email, password);
+            if (!result.success) {
+            Alert.alert('Login Failed', result.error || 'Please try again');
+        }
 
-            if (result.success) {
-                // Navigation will be handled automatically by AuthContext
-                console.log('Login successful');
-            } else {
-                Alert.alert('Login Failed', result.error);
-            }
         } catch (error) {
             Alert.alert('Error', error.message);
         } finally {
@@ -80,7 +88,7 @@ const SignInScreen = ({ navigation }) => {
                     onPress={() => navigation.navigate('SignUp')}
                 >
                     <Text style={styles.linkText}>
-                        Don't have an account? Sign Up
+                        Dont have an account? Sign Up
                     </Text>
                 </TouchableOpacity>
 

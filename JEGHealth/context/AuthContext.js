@@ -1,8 +1,11 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import DjangoAuthService from '../lib/djangoAuth';
 import DjangoDatabaseService from '../lib/djangoDatabase';
+import { useNavigation } from '@react-navigation/native';
 
 const AuthContext = createContext({});
+
+
 
 export const useAuth = () => {
     const context = useContext(AuthContext);
@@ -13,6 +16,7 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
+    const navigate = useNavigation();
     const [user, setUser] = useState(null);
     const [userProfile, setUserProfile] = useState(null);
     const [userRole, setUserRole] = useState(null);
@@ -30,10 +34,12 @@ export const AuthProvider = ({ children }) => {
                 
                 if (isAuth) {
                     const userData = await DjangoAuthService.getCurrentUser();
-                    setUser(userData.authUser);
-                    setUserProfile(userData.userProfile);
-                    setUserRole(userData.role);
-                    setIsAuthenticated(true);
+                    if (userData) {
+                        setUser(userData.authUser);
+                        setUserProfile(userData.userProfile);
+                        setUserRole(userData.role);
+                        setIsAuthenticated(true);
+                    }
                 }
             } catch (error) {
                 console.error('App initialization error:', error);
@@ -50,20 +56,44 @@ export const AuthProvider = ({ children }) => {
     const login = async (email, password) => {
         try {
             setIsLoading(true);
-            await DjangoAuthService.loginUser(email, password);
             
-            // Get full user data
-            const userData = await DjangoAuthService.getCurrentUser();
-            console.log('User logged in successfully:', email);
-            // TODO: Fix Navigation
-            // setUser(userData.authUser);
-            setUserProfile(userData.userProfile);
-            setUserRole(userData.role);
-            setIsAuthenticated(true);
+            // First, perform the login and get the response directly
+            const loginResponse = await DjangoAuthService.loginUser(email, password);
             
-            return { success: true, user: userData };
+            if (loginResponse && loginResponse.success) {
+                // Use the data from the login response first
+                setUser(loginResponse.authUser);
+                setUserProfile(loginResponse.userProfile);
+                setUserRole(loginResponse.role);
+                setIsAuthenticated(true);
+                
+                console.log('User logged in successfully:', email);
+                
+                // Try to get fresh user data, but don't fail if it doesn't work
+                //navigate.navigate('Main');// this is where the routings should be handled 
+                try {
+                    const userData = await DjangoAuthService.getCurrentUser();
+                    if (userData) {
+                        setUser(userData.authUser);
+                        setUserProfile(userData.userProfile);
+                        setUserRole(userData.role);
+                    }
+                } catch (fetchError) {
+                    console.warn('Could not fetch fresh user data after login:', fetchError.message);
+                    // We already have the user data from login, so this is not critical
+                }
+                
+                return { success: true, user: loginResponse };
+            } else {
+                throw new Error('Login failed - no response data');
+            }
+            
         } catch (error) {
             console.error('Login error:', error);
+            setIsAuthenticated(false);
+            setUser(null);
+            setUserProfile(null);
+            setUserRole(null);
             return { success: false, error: error.message };
         } finally {
             setIsLoading(false);
@@ -77,11 +107,19 @@ export const AuthProvider = ({ children }) => {
 
             const result = await DjangoAuthService.registerUser(userData);
             
-            // Auto-login after successful registration
-            const loginResult = await login(userData.email, userData.password);
-            console.log('Registration result:', result);
+            if (result && result.success) {
+                // Use the registration response data directly
+                setUser(result.authUser);
+                setUserProfile(result.userProfile);
+                setUserRole(result.role);
+                setIsAuthenticated(true);
+                
+                console.log('Registration completed successfully');
+                return { success: true, user: result };
+            } else {
+                throw new Error('Registration failed - no response data');
+            }
             
-            return { success: true, user: result, loginResult };
         } catch (error) {
             console.error('Registration error:', error);
             return { success: false, error: error.message };
