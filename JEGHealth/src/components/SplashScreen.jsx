@@ -324,10 +324,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 32,
     maxWidth: 320,
+    flex: 1,
+    justifyContent: 'center',
   },
   logoContainer: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 48,
     position: 'relative',
   },
   outerGlow: {
@@ -374,19 +376,19 @@ const styles = StyleSheet.create({
   },
   titleContainer: {
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 24,
   },
   appTitle: {
     fontSize: 42,
     fontWeight: 'bold',
     color: '#0F766E',
-    marginBottom: 8,
+    marginBottom: 12,
     textAlign: 'center',
   },
   decorativeLine: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 16,
   },
   gradientLine: {
     width: 60,
@@ -395,14 +397,14 @@ const styles = StyleSheet.create({
     marginHorizontal: 8,
   },
   taglineContainer: {
-    marginBottom: 32,
+    marginBottom: 48,
   },
   tagline: {
     fontSize: 18,
     color: '#475569',
     fontWeight: '500',
     textAlign: 'center',
-    lineHeight: 26,
+    lineHeight: 28,
   },
   taglineAccent: {
     color: '#0F766E',
@@ -410,6 +412,7 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     alignItems: 'center',
+    marginTop: 24,
   },
   dotsContainer: {
     flexDirection: 'row',
@@ -424,8 +427,9 @@ const styles = StyleSheet.create({
   },
   bottomText: {
     position: 'absolute',
-    bottom: 40,
+    bottom: 60,
     alignItems: 'center',
+    width: '100%',
   },
   bottomTagline: {
     fontSize: 12,
@@ -433,6 +437,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     letterSpacing: 2,
     textAlign: 'center',
+    paddingHorizontal: 20,
   },
 });
 

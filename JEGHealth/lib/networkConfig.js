@@ -7,12 +7,12 @@ import { Platform } from 'react-native';
 
 // Development configuration
 const DEVELOPMENT_CONFIG = {
-    // Update this IP address to your machine's IP where Django is running
-    DJANGO_HOST: '192.168.1.246', // <-- Your machine's IP where Django is running
+    // Your machine's current IP address on the local network
+    DJANGO_HOST: '192.168.1.50', // <-- Updated to your current machine's IP
     DJANGO_PORT: '8000',
     
-    // For Android emulator, use this IP to reach host machine
-    ANDROID_EMULATOR_HOST: '192.168.1.246',
+    // For Android emulator, use special IP to reach host machine
+    ANDROID_EMULATOR_HOST: '10.0.2.2',
     
     // For iOS simulator, localhost works fine
     IOS_SIMULATOR_HOST: 'localhost',
@@ -25,17 +25,27 @@ const PRODUCTION_CONFIG = {
     USE_HTTPS: true,
 };
 
+// Helper function to detect if running on physical device vs simulator/emulator
+const isPhysicalDevice = () => {
+    // This is a simple heuristic - you could also use expo-device for more accurate detection
+    return Platform.OS === 'ios' ? 
+        !__DEV__ || (Platform.OS === 'ios' && !Platform.isPad && !Platform.isTV) :
+        Platform.OS === 'android';
+};
+
 // Helper function to get the correct host based on platform and environment
 const getBackendHost = () => {
     if (__DEV__) {
         // Development environment
         if (Platform.OS === 'android') {
-            // For Android emulator, use 10.0.2.2 to reach host machine
-            // For Android physical device, use your machine's IP
-            return DEVELOPMENT_CONFIG.ANDROID_EMULATOR_HOST;
+            // Check if it's Android emulator vs physical device
+            // For emulator, use special IP; for physical device, use machine IP
+            return isPhysicalDevice() ? 
+                DEVELOPMENT_CONFIG.DJANGO_HOST : 
+                DEVELOPMENT_CONFIG.ANDROID_EMULATOR_HOST;
         } else if (Platform.OS === 'ios') {
-            // For iOS simulator, localhost should work
-            // For iOS physical device, use your machine's IP
+            // For iOS: use localhost for simulator, machine IP for physical device
+            // Since you're using physical device, always use machine IP in development
             return DEVELOPMENT_CONFIG.DJANGO_HOST;
         }
         return DEVELOPMENT_CONFIG.DJANGO_HOST;
@@ -113,6 +123,83 @@ export const getLocalIPAddress = async () => {
         console.warn('Could not get local IP:', error);
         return null;
     }
+};
+
+// Enhanced debugging function to log all network configuration details
+export const debugNetworkConfig = () => {
+    const config = {
+        platform: Platform.OS,
+        isDevelopment: __DEV__,
+        isPhysicalDevice: isPhysicalDevice(),
+        backendHost: getBackendHost(),
+        backendPort: getBackendPort(),
+        protocol: getProtocol(),
+        fullBackendURL: getBackendURL(),
+        machineIP: DEVELOPMENT_CONFIG.DJANGO_HOST,
+    };
+    
+    console.log('=== NETWORK CONFIGURATION DEBUG ===');
+    console.log(JSON.stringify(config, null, 2));
+    console.log('====================================');
+    
+    return config;
+};
+
+// Test multiple endpoints to diagnose connection issues
+export const runNetworkDiagnostics = async () => {
+    console.log('🔍 Running network diagnostics...');
+    
+    const baseURL = getBackendURL();
+    const testEndpoints = [
+        { name: 'Health Check', path: '/health/' },
+        { name: 'Auth Check', path: '/auth/check/' },
+        { name: 'API Root', path: '/' },
+    ];
+    
+    const results = [];
+    
+    for (const endpoint of testEndpoints) {
+        try {
+            const url = `${baseURL}${endpoint.path}`;
+            console.log(`Testing: ${url}`);
+            
+            const startTime = Date.now();
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                timeout: 5000,
+            });
+            const endTime = Date.now();
+            
+            results.push({
+                endpoint: endpoint.name,
+                url,
+                status: response.status,
+                ok: response.ok,
+                responseTime: `${endTime - startTime}ms`,
+                success: true,
+            });
+            
+            console.log(`✅ ${endpoint.name}: ${response.status} (${endTime - startTime}ms)`);
+            
+        } catch (error) {
+            results.push({
+                endpoint: endpoint.name,
+                url: `${baseURL}${endpoint.path}`,
+                error: error.message,
+                success: false,
+            });
+            
+            console.log(`❌ ${endpoint.name}: ${error.message}`);
+        }
+    }
+    
+    console.log('📊 Network Diagnostics Complete');
+    console.log(results);
+    
+    return results;
 };
 
 export default {

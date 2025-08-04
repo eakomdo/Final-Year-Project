@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -6,46 +6,209 @@ import {
   SafeAreaView,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
+  RefreshControl,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useFocusEffect } from "@react-navigation/native";
 import { Colors } from "../../src/constants/colors";
+import { useAuth } from "../../context/AuthContext";
 import JEGHealthLogo from "../../src/components/JEGHealthLogo";
 import CaretakerQuickAccess from "../../src/components/CaretakerQuickAccess";
+import DjangoDatabaseService from "../../lib/djangoDatabase";
+import { showError } from "../../src/utils/NotificationHelper";
 
 const HomeScreen = () => {
   const router = useRouter();
-
-  const healthStats = [
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [healthStats, setHealthStats] = useState([
     {
       icon: "heart-outline",
       label: "Heart Rate",
-      value: "72 BPM",
+      value: "-- BPM",
       color: Colors.error,
-      status: "Normal",
+      status: "No data",
     },
     {
       icon: "walk-outline",
       label: "Steps Today",
-      value: "8,420",
+      value: "-- steps",
       color: Colors.primary,
-      status: "Goal: 10,000",
+      status: "No data",
     },
     {
       icon: "water-outline",
       label: "Water Intake",
-      value: "1.8L",
+      value: "-- L",
       color: Colors.info,
-      status: "Goal: 2.5L",
+      status: "No data",
     },
     {
       icon: "moon-outline",
       label: "Sleep",
-      value: "7h 30m",
+      value: "-- hours",
       color: Colors.warning,
-      status: "Good quality",
+      status: "No data",
     },
-  ];
+  ]);
+  const [recentActivity, setRecentActivity] = useState([]);
+
+  // Load user's health data
+  const loadHealthData = async () => {
+    try {
+      if (!user) return;
+
+      const userId = user.$id || user.id;
+      
+      // Get recent health metrics (last 7 days)
+      const metricsResponse = await DjangoDatabaseService.getHealthMetrics(userId, {
+        limit: 50,
+        ordering: '-recorded_at'
+      });
+
+      const metrics = metricsResponse.documents || [];
+      
+      // Process metrics to update health stats
+      const today = new Date().toDateString();
+      const updatedStats = [...healthStats];
+      const activities = [];
+
+      // Get latest values for each metric type
+      const metricMap = {};
+      metrics.forEach(metric => {
+        const key = metric.metric_type.toLowerCase();
+        const recordedDate = new Date(metric.recorded_at);
+        
+        if (!metricMap[key] || new Date(metricMap[key].recorded_at) < recordedDate) {
+          metricMap[key] = metric;
+        }
+        
+        // Add to recent activity
+        activities.push({
+          title: `${metric.metric_type} logged`,
+          value: `${metric.value} ${metric.unit}`,
+          time: formatTimeAgo(recordedDate),
+          icon: getIconForMetric(metric.metric_type),
+          color: getColorForMetric(metric.metric_type),
+        });
+      });
+
+      // Update stats with real data
+      updatedStats.forEach((stat, index) => {
+        switch (stat.label) {
+          case "Heart Rate":
+            const heartRate = metricMap["heart rate"];
+            if (heartRate) {
+              updatedStats[index] = {
+                ...stat,
+                value: `${heartRate.value} BPM`,
+                status: getHeartRateStatus(heartRate.value),
+              };
+            }
+            break;
+          case "Steps Today":
+            const steps = metricMap["steps today"];
+            if (steps) {
+              updatedStats[index] = {
+                ...stat,
+                value: `${steps.value.toLocaleString()} steps`,
+                status: steps.value >= 10000 ? "Goal reached!" : `${(10000 - steps.value).toLocaleString()} to go`,
+              };
+            }
+            break;
+          case "Water Intake":
+            const water = metricMap["water intake"];
+            if (water) {
+              updatedStats[index] = {
+                ...stat,
+                value: `${water.value}L`,
+                status: water.value >= 2.5 ? "Great hydration!" : "Drink more water",
+              };
+            }
+            break;
+          case "Sleep":
+            const sleep = metricMap["sleep duration"];
+            if (sleep) {
+              updatedStats[index] = {
+                ...stat,
+                value: `${sleep.value}h`,
+                status: sleep.value >= 7 ? "Good sleep!" : "Need more rest",
+              };
+            }
+            break;
+        }
+      });
+
+      setHealthStats(updatedStats);
+      setRecentActivity(activities.slice(0, 3)); // Show last 3 activities
+
+    } catch (error) {
+      console.error('Error loading health data:', error);
+      showError('Error', 'Failed to load health data');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  // Helper functions
+  const formatTimeAgo = (date) => {
+    const now = new Date();
+    const diffInHours = Math.floor((now - date) / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) return 'Just now';
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+    
+    const diffInDays = Math.floor(diffInHours / 24);
+    return `${diffInDays}d ago`;
+  };
+
+  const getIconForMetric = (metricType) => {
+    const type = metricType.toLowerCase();
+    if (type.includes('heart')) return 'heart-outline';
+    if (type.includes('step')) return 'walk-outline';
+    if (type.includes('water')) return 'water-outline';
+    if (type.includes('sleep')) return 'moon-outline';
+    if (type.includes('weight')) return 'scale-outline';
+    if (type.includes('pressure')) return 'pulse-outline';
+    if (type.includes('temperature')) return 'thermometer-outline';
+    return 'fitness-outline';
+  };
+
+  const getColorForMetric = (metricType) => {
+    const type = metricType.toLowerCase();
+    if (type.includes('heart')) return Colors.error;
+    if (type.includes('step')) return Colors.primary;
+    if (type.includes('water')) return Colors.info;
+    if (type.includes('sleep')) return Colors.warning;
+    return Colors.success;
+  };
+
+  const getHeartRateStatus = (value) => {
+    if (value >= 60 && value <= 100) return 'Normal';
+    if (value < 60) return 'Low';
+    return 'High';
+  };
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadHealthData();
+  };
+
+  // Load data when screen is focused
+  useFocusEffect(
+    useCallback(() => {
+      loadHealthData();
+    }, [user])
+  );
+
+  // Initial load
+  useEffect(() => {
+    loadHealthData();
+  }, [user]);
 
   const healthTips = [
     {
@@ -149,7 +312,17 @@ const HomeScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[Colors.primary]}
+            tintColor={Colors.primary}
+          />
+        }
+      >
         {/* Header */}
         <View style={styles.header}>
           <JEGHealthLogo size="normal" />
@@ -212,26 +385,41 @@ const HomeScreen = () => {
         {/* Recent Activity */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Recent Activity</Text>
-          <View style={styles.activityCard}>
-            <View style={styles.activityItem}>
-              <View style={styles.activityIcon}>
-                <Ionicons name="heart-outline" size={16} color={Colors.error} />
-              </View>
-              <View style={styles.activityContent}>
-                <Text style={styles.activityTitle}>Heart rate logged</Text>
-                <Text style={styles.activityTime}>2 hours ago</Text>
-              </View>
+          {loading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color={Colors.primary} />
+              <Text style={styles.loadingText}>Loading your health data...</Text>
             </View>
-            <View style={[styles.activityItem, styles.lastActivityItem]}>
-              <View style={styles.activityIcon}>
-                <Ionicons name="walk-outline" size={16} color={Colors.primary} />
-              </View>
-              <View style={styles.activityContent}>
-                <Text style={styles.activityTitle}>Daily steps goal reached</Text>
-                <Text style={styles.activityTime}>4 hours ago</Text>
-              </View>
+          ) : recentActivity.length > 0 ? (
+            <View style={styles.activityCard}>
+              {recentActivity.map((activity, index) => (
+                <View 
+                  key={index} 
+                  style={[
+                    styles.activityItem,
+                    index === recentActivity.length - 1 && styles.lastActivityItem
+                  ]}
+                >
+                  <View style={styles.activityIcon}>
+                    <Ionicons name={activity.icon} size={16} color={activity.color} />
+                  </View>
+                  <View style={styles.activityContent}>
+                    <Text style={styles.activityTitle}>{activity.title}</Text>
+                    <Text style={styles.activityValue}>{activity.value}</Text>
+                    <Text style={styles.activityTime}>{activity.time}</Text>
+                  </View>
+                </View>
+              ))}
             </View>
-          </View>
+          ) : (
+            <View style={styles.noDataCard}>
+              <Ionicons name="analytics-outline" size={32} color={Colors.textSecondary} />
+              <Text style={styles.noDataText}>No health data logged yet</Text>
+              <Text style={styles.noDataSubtext}>
+                Tap "Log Health Data" to start tracking your health metrics
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* Bottom Spacing */}
@@ -481,9 +669,48 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     marginBottom: 2,
   },
+  activityValue: {
+    fontSize: 12,
+    color: Colors.primary,
+    fontWeight: "600",
+    marginBottom: 2,
+  },
   activityTime: {
     fontSize: 14,
     color: Colors.textSecondary,
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+    backgroundColor: 'white',
+    borderRadius: 12,
+  },
+  loadingText: {
+    marginLeft: 12,
+    fontSize: 14,
+    color: Colors.textSecondary,
+  },
+  noDataCard: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  noDataText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: Colors.textSecondary,
+    marginTop: 12,
+    marginBottom: 4,
+  },
+  noDataSubtext: {
+    fontSize: 14,
+    color: Colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 20,
   },
   bottomSpacing: {
     height: 20,
