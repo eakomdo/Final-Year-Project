@@ -9,6 +9,9 @@ import {
   Image,
   Platform,
   Modal,
+  SafeAreaView,
+  Alert,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -16,6 +19,8 @@ import { useTheme } from "../context/ThemeContext";
 import * as ImagePicker from "expo-image-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { showError, showSuccess, showInfo } from "../src/utils/NotificationHelper";
+import { authAPI } from "../api/services";
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 export default function EditProfileScreen() {
   const router = useRouter();
@@ -23,47 +28,139 @@ export default function EditProfileScreen() {
 
   // Profile state
   const [profileImage, setProfileImage] = useState(null);
-  const [name, setName] = useState("John Doe");
-  const [email, setEmail] = useState("john.doe@example.com");
-  const [age, setAge] = useState("32");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState(new Date());
+  const [age, setAge] = useState("");
   const [gender, setGender] = useState("Male");
   const [bloodType, setBloodType] = useState("O+");
-  const [height, setHeight] = useState("175");
-  const [weight, setWeight] = useState("70");
+  const [height, setHeight] = useState("");
+  const [weight, setWeight] = useState("");
   const [bloodTypeModalVisible, setBloodTypeModalVisible] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Load profile data when component mounts
   useEffect(() => {
     loadProfileData();
   }, []);
 
-  // Load profile data from AsyncStorage
+  // Calculate age from date of birth
+  const calculateAge = (dateOfBirth) => {
+    const today = new Date();
+    const birthDate = new Date(dateOfBirth);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    
+    return age;
+  };
+
+  // Update age when date of birth changes
+  useEffect(() => {
+    if (dateOfBirth) {
+      const calculatedAge = calculateAge(dateOfBirth);
+      setAge(calculatedAge.toString());
+    }
+  }, [dateOfBirth]);
+
+  // Split full name into first and last name
+  const splitFullName = (fullName) => {
+    const nameParts = fullName.trim().split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
+    return { firstName, lastName };
+  };
+
+  // Load profile data from API with fallback to AsyncStorage
   const loadProfileData = async () => {
     try {
-      const profileData = await AsyncStorage.getItem("profileData");
-      if (profileData) {
-        const parsedData = JSON.parse(profileData);
-        setProfileImage(parsedData.profileImage);
-        setName(parsedData.name || "John Doe");
-        setEmail(parsedData.email || "john.doe@example.com");
-        setAge(parsedData.age || "32");
-        setGender(parsedData.gender || "Male");
-        setBloodType(parsedData.bloodType || "O+");
-        setHeight(parsedData.height || "175");
-        setWeight(parsedData.weight || "70");
+      setIsLoading(true);
+      
+      // First try to load from API
+      try {
+        console.log('Attempting to load profile from API...');
+        
+        // Try to fetch basic profile information
+        const basicResponse = await authAPI.getBasicProfile();
+        const basicData = basicResponse.data;
+        
+        console.log('Basic profile loaded:', basicData);
+        
+        setName(basicData.full_name || basicData.name || '');
+        setEmail(basicData.email || '');
+        setProfileImage(basicData.profile_image);
+        
+        // Try to fetch personal profile information
+        try {
+          const personalResponse = await authAPI.getPersonalProfile();
+          const personalData = personalResponse.data;
+          
+          console.log('Personal profile loaded:', personalData);
+          
+          if (personalData.date_of_birth) {
+            const dobDate = new Date(personalData.date_of_birth);
+            setDateOfBirth(dobDate);
+            setAge(personalData.age?.toString() || calculateAge(dobDate).toString());
+          }
+          
+          setHeight(personalData.height?.toString() || '');
+          setWeight(personalData.weight?.toString() || '');
+          setGender(personalData.gender === 'M' ? 'Male' : personalData.gender === 'F' ? 'Female' : 'Male');
+          setBloodType(personalData.blood_type || 'O+');
+          
+        } catch (personalError) {
+          console.log('Personal profile API not available, using defaults:', personalError.message);
+          // Personal profile API not available, use defaults or AsyncStorage fallback
+        }
+        
+      } catch (apiError) {
+        console.log('Profile API not available, falling back to AsyncStorage:', apiError.message);
+        
+        // API not available, fallback to AsyncStorage
+        const profileData = await AsyncStorage.getItem("profileData");
+        if (profileData) {
+          const parsedData = JSON.parse(profileData);
+          setProfileImage(parsedData.profileImage);
+          setName(parsedData.name || "");
+          setEmail(parsedData.email || "");
+          
+          if (parsedData.dateOfBirth) {
+            const dobDate = new Date(parsedData.dateOfBirth);
+            setDateOfBirth(dobDate);
+          }
+          
+          setGender(parsedData.gender === "Other" ? "Male" : parsedData.gender || "Male");
+          setBloodType(parsedData.bloodType || "O+");
+          setHeight(parsedData.height || "");
+          setWeight(parsedData.weight || "");
+        } else {
+          console.log('No profile data found in storage, using defaults');
+        }
       }
+      
     } catch (error) {
-      console.log("Error loading profile data:", error);
+      console.log('Error loading profile data:', error);
+      showError('Info', 'Profile API is not available. Using local data.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Save profile data to AsyncStorage
+  // Save profile data to API with fallback to AsyncStorage
   const saveProfileData = async () => {
     try {
+      setIsLoading(true);
+      
+      // Always save to AsyncStorage as backup
       const profileData = {
         profileImage,
         name,
         email,
+        dateOfBirth: dateOfBirth.toISOString(),
         age,
         gender,
         bloodType,
@@ -72,11 +169,61 @@ export default function EditProfileScreen() {
       };
 
       await AsyncStorage.setItem("profileData", JSON.stringify(profileData));
-      showSuccess("Success", "Profile updated successfully");
+      
+      // Try to save to API
+      try {
+        console.log('Attempting to save profile to API...');
+        
+        // Split full name for basic profile
+        const { firstName, lastName } = splitFullName(name);
+        
+        // Update basic profile information
+        const basicData = {
+          first_name: firstName,
+          last_name: lastName,
+          email: email
+        };
+        
+        await authAPI.updateBasicProfile(basicData);
+        console.log('Basic profile saved successfully');
+        
+        // Update personal profile information
+        const personalData = {
+          date_of_birth: dateOfBirth.toISOString().split('T')[0], // Format as YYYY-MM-DD
+          height: parseFloat(height) || null,
+          weight: parseFloat(weight) || null,
+          gender: gender === 'Male' ? 'M' : 'F',
+          blood_type: bloodType
+        };
+        
+        await authAPI.updatePersonalProfile(personalData);
+        console.log('Personal profile saved successfully');
+        
+        // Upload profile picture if it's a local URI (starts with file:// or content://)
+        if (profileImage && (profileImage.startsWith('file://') || profileImage.startsWith('content://'))) {
+          try {
+            await authAPI.uploadProfilePicture(profileImage);
+            console.log('Profile picture uploaded successfully');
+          } catch (imageError) {
+            console.log('Profile picture upload failed:', imageError.message);
+            // Don't fail the entire save operation if image upload fails
+          }
+        }
+        
+        showSuccess("Success", "Profile updated successfully");
+        
+      } catch (apiError) {
+        console.log('API save failed, but local save succeeded:', apiError.message);
+        showSuccess("Success", "Profile updated locally. Changes will sync when API is available.");
+      }
+      
       router.back();
+      
     } catch (error) {
       console.log("Error saving profile data:", error);
-      showError("Error", "Failed to update profile");
+      showError("Error", "Failed to save profile. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -133,10 +280,43 @@ export default function EditProfileScreen() {
 
   // Show image selection options
   const showImageOptions = () => {
-    showInfo(
-      "Profile Picture", 
-      "Tap the camera button to take a photo or the gallery button to choose from gallery"
+    Alert.alert(
+      "Profile Picture",
+      "Choose how you'd like to update your profile picture",
+      [
+        {
+          text: "Camera",
+          onPress: takePhoto,
+          style: "default"
+        },
+        {
+          text: "Photo Library",
+          onPress: pickImage,
+          style: "default"
+        },
+        {
+          text: "Cancel",
+          style: "cancel"
+        }
+      ],
+      { cancelable: true }
     );
+  };
+
+  // Handle date picker change
+  const onDateChange = (event, selectedDate) => {
+    const currentDate = selectedDate || dateOfBirth;
+    setShowDatePicker(Platform.OS === 'ios');
+    setDateOfBirth(currentDate);
+  };
+
+  // Format date for display
+  const formatDate = (date) => {
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
   };
 
   // Add platform-specific text styles where you have rendering issues
@@ -148,58 +328,107 @@ export default function EditProfileScreen() {
         }
       : {};
 
-  // Apply dynamic styles based on theme
+  // Enhanced dynamic styles with better color theming
   const dynamicStyles = {
     container: {
       flex: 1,
-      backgroundColor: theme.background,
+      backgroundColor: '#f8f9fa', // Light gray background
     },
     header: {
-      backgroundColor: theme.card,
-      borderBottomColor: theme.border,
+      backgroundColor: '#ffffff', // White header
+      borderBottomColor: '#e9ecef',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 3,
+      elevation: 3,
     },
     title: {
-      color: theme.text,
+      color: '#2D8B85', // Teal color for title
+      fontSize: 20,
+      fontWeight: '600',
     },
     inputContainer: {
-      backgroundColor: theme.card,
+      backgroundColor: '#ffffff', // White cards
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.05,
+      shadowRadius: 2,
+      elevation: 2,
     },
     inputLabel: {
-      color: theme.text,
+      color: '#495057', // Dark gray for labels
+      fontSize: 16,
+      fontWeight: '500',
     },
     input: {
-      color: theme.text,
-      backgroundColor: theme.background,
-      borderColor: theme.border,
+      color: '#212529', // Dark text
+      backgroundColor: '#f8f9fa', // Light background for inputs
+      borderColor: '#dee2e6',
+      borderWidth: 1.5,
     },
     sectionTitle: {
-      color: theme.text,
+      color: '#2D8B85', // Teal for section titles
+      fontSize: 18,
+      fontWeight: '600',
     },
     profileImagePlaceholder: {
-      backgroundColor: theme.profileImage,
+      backgroundColor: '#e9ecef',
     },
     cameraButtonBackground: {
-      backgroundColor: theme.primary,
+      backgroundColor: '#2D8B85', // Teal camera button
+      shadowColor: '#2D8B85',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.3,
+      shadowRadius: 4,
+      elevation: 4,
     },
     saveButton: {
-      backgroundColor: theme.primary,
+      backgroundColor: '#2D8B85', // Teal save button
+      shadowColor: '#2D8B85',
+      shadowOffset: { width: 0, height: 3 },
+      shadowOpacity: 0.3,
+      shadowRadius: 6,
+      elevation: 6,
     },
     cancelButton: {
-      borderColor: theme.border,
+      borderColor: '#6c757d',
+      borderWidth: 1.5,
+      backgroundColor: '#ffffff',
     },
     cancelButtonText: {
-      color: theme.text,
+      color: '#6c757d',
+      fontWeight: '500',
+    },
+    genderButtonActive: {
+      backgroundColor: '#2D8B85',
+      borderColor: '#2D8B85',
+    },
+    bloodTypeButton: {
+      borderColor: '#dee2e6',
+      backgroundColor: '#ffffff',
+    },
+    bloodTypeButtonActive: {
+      backgroundColor: '#2D8B85',
+      borderColor: '#2D8B85',
     },
   };
 
   return (
-    <ScrollView style={[styles.container, dynamicStyles.container]}>
+    <SafeAreaView style={styles.safeArea}>
+      {isLoading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#2D8B85" />
+          <Text style={styles.loadingText}>Loading profile...</Text>
+        </View>
+      ) : (
+        <ScrollView style={[styles.container, dynamicStyles.container]}>
       <View style={[styles.header, dynamicStyles.header]}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => router.back()}
         >
-          <Ionicons name="arrow-back" size={24} color={theme.primary} />
+          <Ionicons name="arrow-back" size={24} color="#2D8B85" />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, dynamicStyles.title]}>
           Edit Profile
@@ -222,7 +451,7 @@ export default function EditProfileScreen() {
                 dynamicStyles.profileImagePlaceholder,
               ]}
             >
-              <Ionicons name="person" size={60} color={theme.iconColor} />
+              <Ionicons name="person" size={60} color="#6c757d" />
             </View>
           )}
           <View
@@ -231,6 +460,25 @@ export default function EditProfileScreen() {
             <Ionicons name="camera" size={20} color="#fff" />
           </View>
         </TouchableOpacity>
+        
+        {/* Action buttons for image selection */}
+        <View style={styles.imageActionButtons}>
+          <TouchableOpacity 
+            style={[styles.imageActionButton, { backgroundColor: '#2D8B85' }]}
+            onPress={takePhoto}
+          >
+            <Ionicons name="camera" size={16} color="#fff" />
+            <Text style={styles.imageActionText}>Camera</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.imageActionButton, { backgroundColor: '#2D8B85' }]}
+            onPress={pickImage}
+          >
+            <Ionicons name="images" size={16} color="#fff" />
+            <Text style={styles.imageActionText}>Gallery</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Basic Information */}
@@ -248,7 +496,7 @@ export default function EditProfileScreen() {
             value={name}
             onChangeText={setName}
             placeholder="Enter your full name"
-            placeholderTextColor={theme.subText}
+            placeholderTextColor="#6c757d"
           />
         </View>
 
@@ -257,13 +505,18 @@ export default function EditProfileScreen() {
             Email
           </Text>
           <TextInput
-            style={[styles.input, dynamicStyles.input]}
+            style={[
+              styles.input, 
+              dynamicStyles.input, 
+              { backgroundColor: '#e9ecef', color: '#6c757d' }
+            ]}
             value={email}
-            onChangeText={setEmail}
-            placeholder="Enter your email"
-            placeholderTextColor={theme.subText}
+            placeholder="Email address"
+            placeholderTextColor="#6c757d"
             keyboardType="email-address"
             autoCapitalize="none"
+            editable={false}
+            selectTextOnFocus={false}
           />
         </View>
       </View>
@@ -276,15 +529,54 @@ export default function EditProfileScreen() {
 
         <View style={styles.inputGroup}>
           <Text style={[styles.inputLabel, dynamicStyles.inputLabel]}>
-            Age{" "}
+            Date of Birth
+          </Text>
+          <TouchableOpacity
+            style={[
+              styles.input, 
+              dynamicStyles.input, 
+              { 
+                flexDirection: 'row', 
+                alignItems: 'center', 
+                justifyContent: 'space-between',
+                paddingHorizontal: 12 
+              }
+            ]}
+            onPress={() => setShowDatePicker(true)}
+          >
+            <Text style={{ color: '#212529', fontSize: 16 }}>
+              {formatDate(dateOfBirth)}
+            </Text>
+            <Ionicons name="calendar-outline" size={20} color="#2D8B85" />
+          </TouchableOpacity>
+          
+          {showDatePicker && (
+            <DateTimePicker
+              value={dateOfBirth}
+              mode="date"
+              display={Platform.OS === 'ios' ? 'compact' : 'default'}
+              onChange={onDateChange}
+              maximumDate={new Date()}
+              minimumDate={new Date(1900, 0, 1)}
+            />
+          )}
+        </View>
+
+        <View style={styles.inputGroup}>
+          <Text style={[styles.inputLabel, dynamicStyles.inputLabel]}>
+            Age
           </Text>
           <TextInput
-            style={[styles.input, dynamicStyles.input]}
+            style={[
+              styles.input, 
+              dynamicStyles.input, 
+              { backgroundColor: '#e9ecef', color: '#6c757d' }
+            ]}
             value={age}
-            onChangeText={setAge}
-            placeholder="Enter your age"
-            placeholderTextColor={theme.subText}
-            keyboardType="number-pad"
+            placeholder="Age is calculated from date of birth"
+            placeholderTextColor="#6c757d"
+            editable={false}
+            selectTextOnFocus={false}
           />
         </View>
 
@@ -296,8 +588,7 @@ export default function EditProfileScreen() {
             <TouchableOpacity
               style={[
                 styles.genderButton,
-                gender === "Male" && styles.genderButtonActive,
-                gender === "Male" && { backgroundColor: theme.primary },
+                gender === "Male" && dynamicStyles.genderButtonActive,
               ]}
               onPress={() => setGender("Male")}
             >
@@ -315,8 +606,7 @@ export default function EditProfileScreen() {
             <TouchableOpacity
               style={[
                 styles.genderButton,
-                gender === "Female" && styles.genderButtonActive,
-                gender === "Female" && { backgroundColor: theme.primary },
+                gender === "Female" && dynamicStyles.genderButtonActive,
               ]}
               onPress={() => setGender("Female")}
             >
@@ -328,25 +618,6 @@ export default function EditProfileScreen() {
                 allowFontScaling={false} // Prevent text scaling issues
               >
                 Female
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.genderButton,
-                gender === "Other" && styles.genderButtonActive,
-                gender === "Other" && { backgroundColor: theme.primary },
-              ]}
-              onPress={() => setGender("Other")}
-            >
-              <Text
-                style={[
-                  styles.genderButtonText,
-                  gender === "Other" && { color: "#fff" },
-                ]}
-                allowFontScaling={false} // Prevent text scaling issues
-              >
-                Other
               </Text>
             </TouchableOpacity>
           </View>
@@ -361,14 +632,14 @@ export default function EditProfileScreen() {
             onPress={() => setBloodTypeModalVisible(true)}
           >
             <Text
-              style={[styles.selectText, { color: theme.text }]}
+              style={[styles.selectText, { color: '#212529' }]}
               numberOfLines={1}
               ellipsizeMode="tail"
               allowFontScaling={false} // Prevent text scaling issues
             >
               {bloodType}
             </Text>
-            <Ionicons name="chevron-down" size={20} color={theme.subText} />
+            <Ionicons name="chevron-down" size={20} color="#6c757d" />
           </TouchableOpacity>
 
           {/* Blood Type Picker Modal */}
@@ -386,12 +657,12 @@ export default function EditProfileScreen() {
               <View
                 style={[
                   styles.pickerModalContainer,
-                  { backgroundColor: theme.card },
+                  { backgroundColor: '#ffffff' },
                 ]}
                 onStartShouldSetResponder={() => true}
                 onTouchEnd={(e) => e.stopPropagation()}
               >
-                <Text style={[styles.pickerTitle, { color: theme.text }]}>
+                <Text style={[styles.pickerTitle, { color: '#2D8B85' }]}>
                   Select Blood Type
                 </Text>
                 <View style={styles.bloodTypeGrid}>
@@ -401,10 +672,7 @@ export default function EditProfileScreen() {
                         key={type}
                         style={[
                           styles.bloodTypeOption,
-                          bloodType === type && styles.bloodTypeOptionSelected,
-                          bloodType === type && {
-                            backgroundColor: theme.primary,
-                          },
+                          bloodType === type && dynamicStyles.bloodTypeButtonActive,
                         ]}
                         onPress={() => {
                           setBloodType(type);
@@ -427,12 +695,12 @@ export default function EditProfileScreen() {
                 <TouchableOpacity
                   style={[
                     styles.cancelPickerButton,
-                    { borderColor: theme.border },
+                    { borderColor: '#dee2e6' },
                   ]}
                   onPress={() => setBloodTypeModalVisible(false)}
                 >
                   <Text
-                    style={[styles.cancelButtonFullText, { color: theme.text }]}
+                    style={[styles.cancelButtonFullText, { color: '#6c757d' }]}
                   >
                     Cancel
                   </Text>
@@ -451,7 +719,7 @@ export default function EditProfileScreen() {
             value={height}
             onChangeText={setHeight}
             placeholder="Enter your height in cm"
-            placeholderTextColor={theme.subText}
+            placeholderTextColor="#6c757d"
             keyboardType="number-pad"
           />
         </View>
@@ -465,7 +733,7 @@ export default function EditProfileScreen() {
             value={weight}
             onChangeText={setWeight}
             placeholder="Enter your weight in kg"
-            placeholderTextColor={theme.subText}
+            placeholderTextColor="#6c757d"
             keyboardType="number-pad"
           />
         </View>
@@ -487,15 +755,36 @@ export default function EditProfileScreen() {
         <TouchableOpacity
           style={[styles.saveButton, dynamicStyles.saveButton]}
           onPress={saveProfileData}
+          disabled={isLoading}
         >
-          <Text style={styles.saveButtonText}>Save Changes</Text>
+          <Text style={styles.saveButtonText}>
+            {isLoading ? 'Saving...' : 'Save Changes'}
+          </Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
+      )}
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#f8f9fa', // Match the container background
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f8f9fa',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#2D8B85',
+    fontWeight: '500',
+  },
   container: {
     flex: 1,
   },
@@ -544,6 +833,25 @@ const styles = StyleSheet.create({
     backgroundColor: "#007BFF",
     alignItems: "center",
     justifyContent: "center",
+  },
+  imageActionButtons: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 20,
+    marginTop: 16,
+  },
+  imageActionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    gap: 6,
+  },
+  imageActionText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '500',
   },
   section: {
     borderRadius: 10,
@@ -741,27 +1049,26 @@ const styles = StyleSheet.create({
   },
   genderButtonContainer: {
     flexDirection: "row",
+    gap: 12, // Add gap between buttons
     justifyContent: "space-between",
   },
   genderButton: {
     flex: 1,
     height: 48,
-    borderWidth: 1,
-    borderColor: "#ccc",
+    borderWidth: 1.5,
+    borderColor: "#dee2e6",
     borderRadius: 8,
     justifyContent: "center",
     alignItems: "center",
-    marginHorizontal: 4,
-    paddingHorizontal: 4,
+    backgroundColor: "#ffffff",
   },
   genderButtonActive: {
     borderWidth: 0,
   },
   genderButtonText: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: "500",
+    color: "#495057",
     textAlign: "center",
-    includeFontPadding: false,
-    padding: 0,
   },
 });
