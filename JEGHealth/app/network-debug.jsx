@@ -1,265 +1,185 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
-import { getNetworkConfig } from '../lib/networkConfig';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  ActivityIndicator,
+  SafeAreaView,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { getBackendURL, checkBackendConnection } from '../lib/networkConfig';
 
-const NetworkDebugScreen = () => {
-  const [testResults, setTestResults] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+export default function NetworkDebugScreen() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState(null);
+  const [backendUrl, setBackendUrl] = useState('');
 
-  const addResult = (test, status, message, details = null) => {
-    const result = {
-      test,
-      status, // 'success', 'error', 'info'
-      message,
-      details,
-      timestamp: new Date().toLocaleTimeString()
-    };
-    setTestResults(prev => [...prev, result]);
-  };
+  useEffect(() => {
+    setBackendUrl(getBackendURL());
+  }, []);
 
-  const runNetworkTests = async () => {
-    setIsLoading(true);
-    setTestResults([]);
-
-    // Test 1: Check network configuration
+  const testConnection = async () => {
+    setLoading(true);
     try {
-      const config = getNetworkConfig();
-      addResult('Network Config', 'info', 'Current configuration', config);
+      const isConnected = await checkBackendConnection();
+      setConnectionStatus(isConnected);
     } catch (error) {
-      addResult('Network Config', 'error', 'Failed to get config', error.message);
-    }
-
-    // Test 2: Test different URLs
-    const urlsToTest = [
-      'http://127.0.0.1:8000/',
-      'http://192.168.1.50:8000/',
-      'http://localhost:8000/',
-    ];
-
-    for (const url of urlsToTest) {
-      try {
-        addResult('URL Test', 'info', `Testing ${url}...`);
-        
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
-        
-        const response = await fetch(url, {
-          method: 'GET',
-          signal: controller.signal,
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-          }
-        });
-        
-        clearTimeout(timeoutId);
-        
-        if (response.ok) {
-          addResult('URL Test', 'success', `✅ ${url} - Status: ${response.status}`);
-        } else {
-          addResult('URL Test', 'error', `❌ ${url} - Status: ${response.status}`);
-        }
-      } catch (error) {
-        addResult('URL Test', 'error', `❌ ${url} - ${error.message}`);
-      }
-    }
-
-    // Test 3: Test authentication endpoints
-    const config = getNetworkConfig();
-    const baseUrl = config.baseUrl;
-    
-    const authEndpoints = [
-      '/api/auth/test/',
-      '/api/auth/login/',
-      '/api/auth/register/',
-    ];
-
-    for (const endpoint of authEndpoints) {
-      try {
-        const url = `${baseUrl}${endpoint}`;
-        addResult('Auth Endpoint Test', 'info', `Testing ${url}...`);
-        
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
-        
-        const response = await fetch(url, {
-          method: 'GET',
-          signal: controller.signal,
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-          }
-        });
-        
-        clearTimeout(timeoutId);
-        
-        addResult('Auth Endpoint Test', response.ok ? 'success' : 'error', 
-          `${endpoint} - Status: ${response.status}`);
-      } catch (error) {
-        addResult('Auth Endpoint Test', 'error', `${endpoint} - ${error.message}`);
-      }
-    }
-
-    // Test 4: Test actual login attempt
-    try {
-      addResult('Login Test', 'info', 'Testing login with sample credentials...');
-      
-      const config = getNetworkConfig();
-      const response = await fetch(`${config.baseUrl}/api/auth/login/`, {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: 'test@example.com',
-          password: 'testpassword'
-        })
-      });
-
-      const responseText = await response.text();
-      addResult('Login Test', response.ok ? 'success' : 'error', 
-        `Login test - Status: ${response.status}`, responseText);
-    } catch (error) {
-      addResult('Login Test', 'error', `Login test failed: ${error.message}`);
-    }
-
-    setIsLoading(false);
-  };
-
-  const clearResults = () => {
-    setTestResults([]);
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'success': return '#4CAF50';
-      case 'error': return '#F44336';
-      case 'info': return '#2196F3';
-      default: return '#757575';
+      console.error('Connection test failed:', error);
+      setConnectionStatus(false);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Network & Auth Diagnostics</Text>
-      
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity 
-          style={[styles.button, styles.testButton]} 
-          onPress={runNetworkTests}
-          disabled={isLoading}
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.back()}
         >
-          <Text style={styles.buttonText}>
-            {isLoading ? 'Running Tests...' : 'Run Network Tests'}
-          </Text>
+          <Ionicons name="arrow-back" size={24} color="#2D8B85" />
         </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={[styles.button, styles.clearButton]} 
-          onPress={clearResults}
-        >
-          <Text style={styles.buttonText}>Clear Results</Text>
-        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Network Debug</Text>
+        <View style={{ width: 24 }} />
       </View>
 
-      <ScrollView style={styles.resultsContainer}>
-        {testResults.map((result, index) => (
-          <View key={index} style={styles.resultItem}>
-            <View style={styles.resultHeader}>
-              <Text style={styles.testName}>{result.test}</Text>
-              <Text style={styles.timestamp}>{result.timestamp}</Text>
-            </View>
-            <Text style={[styles.message, { color: getStatusColor(result.status) }]}>
-              {result.message}
-            </Text>
-            {result.details && (
-              <Text style={styles.details}>
-                {typeof result.details === 'string' ? result.details : JSON.stringify(result.details, null, 2)}
-              </Text>
+      <ScrollView style={styles.content}>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Backend URL</Text>
+          <Text style={styles.urlText}>{backendUrl}</Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Connection Test</Text>
+          <TouchableOpacity
+            style={styles.testButton}
+            onPress={testConnection}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.testButtonText}>Test Connection</Text>
             )}
-          </View>
-        ))}
+          </TouchableOpacity>
+
+          {connectionStatus !== null && (
+            <View style={styles.statusContainer}>
+              <Ionicons
+                name={connectionStatus ? 'checkmark-circle' : 'close-circle'}
+                size={24}
+                color={connectionStatus ? '#4CAF50' : '#F44336'}
+              />
+              <Text
+                style={[
+                  styles.statusText,
+                  { color: connectionStatus ? '#4CAF50' : '#F44336' },
+                ]}
+              >
+                {connectionStatus ? 'Connected' : 'Connection Failed'}
+              </Text>
+            </View>
+          )}
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Instructions</Text>
+          <Text style={styles.instructionText}>
+            1. Make sure your Django backend is running on port 8000
+          </Text>
+          <Text style={styles.instructionText}>
+            2. Check if your device/emulator can reach the backend IP
+          </Text>
+          <Text style={styles.instructionText}>
+            3. Update the IP address in networkConfig.js if needed
+          </Text>
+        </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
-    padding: 20,
+    backgroundColor: '#f8f9fa',
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    gap: 10,
-    marginBottom: 20,
-  },
-  button: {
-    flex: 1,
-    padding: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  testButton: {
-    backgroundColor: '#2196F3',
-  },
-  clearButton: {
-    backgroundColor: '#757575',
-  },
-  buttonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  resultsContainer: {
-    flex: 1,
-  },
-  resultItem: {
-    backgroundColor: 'white',
-    padding: 15,
-    marginBottom: 10,
-    borderRadius: 8,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-  },
-  resultHeader: {
+  header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 5,
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
   },
-  testName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  timestamp: {
-    fontSize: 12,
-    color: '#666',
-  },
-  message: {
-    fontSize: 14,
-    marginBottom: 5,
-  },
-  details: {
-    fontSize: 12,
-    color: '#666',
-    fontFamily: 'monospace',
-    backgroundColor: '#f5f5f5',
+  backButton: {
     padding: 8,
-    borderRadius: 4,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#2D8B85',
+  },
+  content: {
+    flex: 1,
+    padding: 16,
+  },
+  section: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#2D8B85',
+    marginBottom: 12,
+  },
+  urlText: {
+    fontSize: 14,
+    color: '#495057',
+    backgroundColor: '#f8f9fa',
+    padding: 12,
+    borderRadius: 8,
+    fontFamily: 'monospace',
+  },
+  testButton: {
+    backgroundColor: '#2D8B85',
+    borderRadius: 8,
+    padding: 12,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  testButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  statusContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  statusText: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  instructionText: {
+    fontSize: 14,
+    color: '#6c757d',
+    marginBottom: 8,
+    lineHeight: 20,
   },
 });
-
-export default NetworkDebugScreen;

@@ -7,18 +7,16 @@ import {
   ScrollView,
   Switch,
   Image,
-  SafeAreaView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useFocusEffect } from "expo-router"; // Import useFocusEffect
 import { useTheme } from "../../context/ThemeContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { authAPI } from "../../api/services";
 
 export default function ProfileScreen() {
   const router = useRouter();
   const [notifications, setNotifications] = useState(true);
-  const { theme } = useTheme();
+  const { isDarkMode, toggleTheme, theme } = useTheme();
 
   // Profile data state
   const [profileData, setProfileData] = useState({
@@ -42,53 +40,13 @@ export default function ProfileScreen() {
     }, [])
   );
 
-  // Load profile data from API with AsyncStorage fallback
+  // Load profile data from AsyncStorage
   const loadProfileData = async () => {
     try {
-      // First try to load from API
-      try {
-        console.log('Loading profile from API...');
-        
-        const basicResponse = await authAPI.getBasicProfile();
-        const basicData = basicResponse.data;
-        
-        const updatedProfile = {
-          ...profileData,
-          name: basicData.full_name || basicData.name || profileData.name,
-          email: basicData.email || profileData.email,
-          profileImage: basicData.profile_image || profileData.profileImage,
-        };
-        
-        // Try to get personal info
-        try {
-          const personalResponse = await authAPI.getPersonalProfile();
-          const personalData = personalResponse.data;
-          
-          updatedProfile.age = personalData.age?.toString() || profileData.age;
-          updatedProfile.height = personalData.height?.toString() || profileData.height;
-          updatedProfile.weight = personalData.weight?.toString() || profileData.weight;
-          updatedProfile.gender = personalData.gender === 'M' ? 'Male' : personalData.gender === 'F' ? 'Female' : profileData.gender;
-          updatedProfile.bloodType = personalData.blood_type || profileData.bloodType;
-          
-        } catch (personalError) {
-          console.log('Personal profile API not available, using stored data');
-        }
-        
-        setProfileData(updatedProfile);
-        
-        // Save updated data to AsyncStorage
-        await AsyncStorage.setItem("profileData", JSON.stringify(updatedProfile));
-        
-      } catch (apiError) {
-        console.log('Profile API not available, using AsyncStorage:', apiError.message);
-        
-        // Fallback to AsyncStorage
-        const data = await AsyncStorage.getItem("profileData");
-        if (data) {
-          setProfileData(JSON.parse(data));
-        }
+      const data = await AsyncStorage.getItem("profileData");
+      if (data) {
+        setProfileData(JSON.parse(data));
       }
-      
     } catch (error) {
       console.log("Error loading profile data:", error);
     }
@@ -152,13 +110,12 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea, dynamicStyles.container]}>
-      <ScrollView style={[styles.container, dynamicStyles.container]}>
-        <View style={[styles.header, dynamicStyles.header]}>
-          <Text style={[styles.headerTitle, dynamicStyles.headerTitle]}>
-            My Profile
-          </Text>
-        </View>
+    <ScrollView style={[styles.container, dynamicStyles.container]}>
+      <View style={[styles.header, dynamicStyles.header]}>
+        <Text style={[styles.headerTitle, dynamicStyles.headerTitle]}>
+          My Profile
+        </Text>
+      </View>
 
       <View style={[styles.profileSection, dynamicStyles.profileSection]}>
         <View
@@ -325,17 +282,12 @@ export default function ProfileScreen() {
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutText}>Log Out</Text>
       </TouchableOpacity>
-      </ScrollView>
-    </SafeAreaView>
+    </ScrollView>
   );
 }
 
 // Keep your existing StyleSheet
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: "#f8f8f8", // Light gray background
-  },
   container: {
     flex: 1,
     backgroundColor: "#f8f8f8", // Light gray background

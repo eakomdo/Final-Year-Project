@@ -99,7 +99,7 @@ const AIChatScreen = () => {
         {!item.isUser && (
           <View style={styles.aiHeader}>
             <View style={styles.aiAvatar}>
-              <Ionicons name="medical" size={16} color="#2D8B85" />
+              <Ionicons name="medical" size={16} color={Colors.primary} />
             </View>
             <Text style={styles.aiName}>Dr. JEG</Text>
           </View>
@@ -125,12 +125,12 @@ const AIChatScreen = () => {
       <View style={[styles.messageBubble, styles.aiBubble]}>
         <View style={styles.aiHeader}>
           <View style={styles.aiAvatar}>
-            <Ionicons name="medical" size={16} color="#2D8B85" />
+            <Ionicons name="medical" size={16} color={Colors.primary} />
           </View>
           <Text style={styles.aiName}>Dr. JEG</Text>
         </View>
         <View style={styles.typingContainer}>
-          <ActivityIndicator size="small" color="#2D8B85" />
+          <ActivityIndicator size="small" color={Colors.primary} />
           <Text style={styles.typingText}>Typing...</Text>
         </View>
       </View>
@@ -138,19 +138,18 @@ const AIChatScreen = () => {
   );
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: '#2D8B85' }]}>
-      <View style={[styles.innerContainer, { backgroundColor: '#f8f9fa' }]}>
+    <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => router.back()}
         >
-          <Ionicons name="arrow-back" size={24} color="#ffffff" />
+          <Ionicons name="arrow-back" size={24} color={Colors.textOnPrimary} />
         </TouchableOpacity>
         <View style={styles.headerContent}>
           <View style={styles.headerAvatar}>
-            <Ionicons name="medical" size={24} color="#ffffff" />
+            <Ionicons name="medical" size={24} color={Colors.textOnPrimary} />
           </View>
           <View style={styles.headerText}>
             <Text style={styles.headerTitle}>Dr. JEG</Text>
@@ -183,7 +182,7 @@ const AIChatScreen = () => {
               value={inputText}
               onChangeText={setInputText}
               placeholder="Ask Dr. JEG a health question..."
-              placeholderTextColor="#6c757d"
+              placeholderTextColor={Colors.placeholder}
               multiline
               maxLength={500}
             />
@@ -198,7 +197,7 @@ const AIChatScreen = () => {
               <Ionicons 
                 name="send" 
                 size={20} 
-                color={(!inputText.trim() || isTyping) ? '#6c757d' : '#ffffff'} 
+                color={(!inputText.trim() || isTyping) ? Colors.textTertiary : Colors.textOnPrimary} 
               />
             </TouchableOpacity>
           </View>
@@ -207,7 +206,6 @@ const AIChatScreen = () => {
           </Text>
         </View>
       </KeyboardAvoidingView>
-      </View>
     </SafeAreaView>
   );
 };
@@ -215,22 +213,15 @@ const AIChatScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  innerContainer: {
-    flex: 1,
+    backgroundColor: Colors.background,
   },
   header: {
-    backgroundColor: '#2D8B85', // Enhanced teal color
+    backgroundColor: Colors.primary,
     flexDirection: 'row',
     alignItems: 'center',
     paddingTop: 10,
     paddingBottom: 15,
     paddingHorizontal: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
   },
   backButton: {
     padding: 8,
@@ -256,11 +247,11 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#ffffff',
+    color: Colors.textOnPrimary,
   },
   headerSubtitle: {
     fontSize: 14,
-    color: '#ffffff',
+    color: Colors.textOnPrimary,
     opacity: 0.8,
   },
   headerRight: {
@@ -268,7 +259,6 @@ const styles = StyleSheet.create({
   },
   chatContainer: {
     flex: 1,
-    backgroundColor: '#f8f9fa', // Light background
   },
   messagesList: {
     paddingVertical: 16,
@@ -289,24 +279,14 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   userBubble: {
-    backgroundColor: '#2D8B85', // Teal user messages
+    backgroundColor: Colors.primary,
     borderBottomRightRadius: 4,
-    shadowColor: '#2D8B85',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 2,
   },
   aiBubble: {
-    backgroundColor: '#ffffff', // White AI messages
+    backgroundColor: Colors.backgroundLight,
     borderWidth: 1,
-    borderColor: '#e9ecef',
+    borderColor: Colors.border,
     borderBottomLeftRadius: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
   },
   aiHeader: {
     flexDirection: 'row',
@@ -317,7 +297,7 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#e8f5f4', // Light teal background
+    backgroundColor: Colors.featureIconBg,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 8,
@@ -325,21 +305,21 @@ const styles = StyleSheet.create({
   aiName: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#2D8B85', // Teal color
+    color: Colors.primary,
   },
   messageText: {
     fontSize: 16,
     lineHeight: 22,
   },
   userText: {
-    color: '#ffffff', // White text for user messages
+    color: Colors.textOnPrimary,
   },
   aiText: {
-    color: '#212529', // Dark text for AI messages
+    color: Colors.textPrimary,
   },
   timestamp: {
     fontSize: 12,
-    color: '#6c757d', // Gray timestamp
+    color: Colors.textTertiary,
     marginTop: 4,
     alignSelf: 'flex-end',
   },
@@ -349,7 +329,7 @@ const styles = StyleSheet.create({
   },
   typingText: {
     fontSize: 14,
-    color: '#495057', // Dark gray
+    color: Colors.textSecondary,
     marginLeft: 8,
     fontStyle: 'italic',
   },
@@ -357,23 +337,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderTopWidth: 1,
-    borderTopColor: '#e9ecef', // Light border
-    backgroundColor: '#ffffff', // White background
+    borderTopColor: Colors.border,
+    backgroundColor: Colors.background,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    backgroundColor: '#f8f9fa', // Light background
+    backgroundColor: Colors.backgroundLight,
     borderRadius: 24,
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderWidth: 1.5,
-    borderColor: '#dee2e6', // Light border
+    borderWidth: 1,
+    borderColor: Colors.border,
   },
   textInput: {
     flex: 1,
     fontSize: 16,
-    color: '#212529', // Dark text
+    color: Colors.textPrimary,
     maxHeight: 100,
     paddingVertical: 8,
   },
@@ -381,22 +361,17 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#2D8B85', // Teal button
+    backgroundColor: Colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 8,
-    shadowColor: '#2D8B85',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 3,
   },
   sendButtonDisabled: {
-    backgroundColor: '#dee2e6', // Light gray when disabled
+    backgroundColor: Colors.backgroundGray,
   },
   disclaimer: {
     fontSize: 12,
-    color: '#6c757d', // Gray disclaimer text
+    color: Colors.textTertiary,
     textAlign: 'center',
     marginTop: 8,
     paddingHorizontal: 16,
