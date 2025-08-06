@@ -19,6 +19,20 @@ export const authAPI = {
     updateProfileDetails: (data) => apiClient.patch('/api/v1/auth/profile/details/', data),
     updateBasicProfile: (data) => apiClient.patch('/api/v1/auth/profile/basic/', data),
     updatePersonalProfile: (data) => apiClient.patch('/api/v1/auth/profile/personal/', data),
+    // Profile image upload
+    uploadProfilePicture: (imageUri) => {
+        const formData = new FormData();
+        formData.append('profile_image', {
+            uri: imageUri,
+            type: 'image/jpeg',
+            name: 'profile.jpg',
+        });
+        return apiClient.patch('/api/v1/auth/profile/', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+    },
     // Role management (admin only)
     getRoles: () => apiClient.get('/api/v1/auth/roles/'),
     createRole: (data) => apiClient.post('/api/v1/auth/roles/', data),

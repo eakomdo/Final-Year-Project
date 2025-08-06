@@ -11,7 +11,8 @@ import {
     ActivityIndicator,
     SafeAreaView,
     KeyboardAvoidingView,
-    Platform
+    Platform,
+    Linking
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Picker } from '@react-native-picker/picker';
@@ -66,7 +67,6 @@ const AppointmentsScreen = () => {
         'Pediatrics', 'Psychiatry', 'Radiology', 'Surgery'
     ]);
     
-    // Search debounce timer
     const [searchTimer, setSearchTimer] = useState(null);
 
     // Reminder scheduling states
@@ -77,13 +77,47 @@ const AppointmentsScreen = () => {
     const [showReminderTypePicker, setShowReminderTypePicker] = useState(false);
     const [reminderType, setReminderType] = useState('1hour'); // '1hour', '24hours', 'custom'
 
+    // Edit appointment states
+    const [editModalVisible, setEditModalVisible] = useState(false);
+    const [editingAppointment, setEditingAppointment] = useState(null);
+    const [editAppointmentDate, setEditAppointmentDate] = useState(new Date());
+    const [editAppointmentTime, setEditAppointmentTime] = useState(new Date());
+    const [editChiefComplaint, setEditChiefComplaint] = useState('');
+    const [editNotes, setEditNotes] = useState('');
+    const [editAppointmentType, setEditAppointmentType] = useState('consultation');
+    const [showEditDatePicker, setShowEditDatePicker] = useState(false);
+    const [showEditTimePicker, setShowEditTimePicker] = useState(false);
+    const [showEditAppointmentTypePicker, setShowEditAppointmentTypePicker] = useState(false);
+
     // Utility function to get hospital information from provider object
-    const getProviderHospital = (provider) => {
+    // Utility function to get hospital information from provider object or appointment data
+    const getProviderHospital = (provider, appointment = null) => {
+        // If we have appointment data with direct hospital info, use that first
+        if (appointment) {
+            const appointmentHospitalFields = [
+                appointment.hospital_name,
+                appointment.clinic_name,
+                appointment.hospital,
+                appointment.clinic,
+                appointment.facility_name,
+                appointment.location_name,
+                appointment.healthcare_provider_hospital,
+                appointment.healthcare_provider_clinic
+            ];
+            
+            for (const field of appointmentHospitalFields) {
+                if (field && typeof field === 'string' && field.trim() !== '') {
+                    return field.trim();
+                }
+            }
+        }
+        
+        // If no provider, return default
         if (!provider || typeof provider !== 'object') {
             return 'Hospital not specified';
         }
         
-        // Check multiple possible field names for hospital information
+        // Check multiple possible field names for hospital information in provider
         const hospitalFields = [
             provider.hospital_names,
             provider.hospital_clinic, 
@@ -96,7 +130,8 @@ const AppointmentsScreen = () => {
             provider.hospital_name,
             provider.clinic_name,
             provider.address,
-            provider.full_address
+            provider.full_address,
+            provider.hospital_address
         ];
         
         // Find the first non-empty field
@@ -108,7 +143,8 @@ const AppointmentsScreen = () => {
         
         // If no hospital info found, try to provide a meaningful fallback
         // based on specialization or create a generic hospital name
-        if (provider.specialization && typeof provider.specialization === 'string') {
+        const specializationSource = provider.specialization || appointment?.specialty;
+        if (specializationSource && typeof specializationSource === 'string') {
             const specialtyHospitals = {
                 'Cardiology': 'Heart Institute',
                 'Gynecology': 'Women\'s Health Center',
@@ -116,16 +152,19 @@ const AppointmentsScreen = () => {
                 'Orthopedics': 'Orthopedic Clinic',
                 'Neurology': 'Neurological Center',
                 'Oncology': 'Cancer Treatment Center',
-                'Dermatology': 'Skin Care Clinic'
+                'Dermatology': 'Skin Care Clinic',
+                'General Practice': 'General Medical Center',
+                'Internal Medicine': 'Internal Medicine Clinic',
+                'Emergency Medicine': 'Emergency Care Center'
             };
             
-            const fallbackHospital = specialtyHospitals[provider.specialization];
+            const fallbackHospital = specialtyHospitals[specializationSource];
             if (fallbackHospital) {
                 return fallbackHospital;
             }
         }
         
-        return 'General Hospital';
+        return 'General Medical Center';
     };
 
     // Helper functions to get display labels
@@ -660,6 +699,155 @@ const AppointmentsScreen = () => {
         }
     };
 
+    // Utility function to make phone calls
+    const makePhoneCall = (phoneNumber) => {
+        if (!phoneNumber) {
+            Alert.alert('No Phone Number', 'No phone number available for this appointment');
+            return;
+        }
+        
+        const cleanPhoneNumber = phoneNumber.replace(/[^0-9+]/g, '');
+        const phoneUrl = `tel:${cleanPhoneNumber}`;
+        
+        Linking.canOpenURL(phoneUrl)
+            .then((supported) => {
+                if (!supported) {
+                    Alert.alert('Error', 'Phone calls are not supported on this device');
+                } else {
+                    return Linking.openURL(phoneUrl);
+                }
+            })
+            .catch((err) => {
+                console.error('Error making phone call:', err);
+                Alert.alert('Error', 'Failed to make phone call');
+            });
+    };
+
+    // Filter appointments by status and date
+    const filterAppointments = (appointments) => {
+        const now = new Date();
+        const filtered = appointments.filter((appointment) => {
+            const appointmentDateTime = new Date(appointment.appointment_date);
+            
+            switch (selectedTab) {
+                case 'upcoming':
+                    return appointmentDateTime > now && appointment.status !== 'cancelled';
+                case 'past':
+                    return appointmentDateTime <= now || appointment.status === 'completed';
+                case 'all':
+                default:
+                    return true;
+            }
+        });
+
+        // Sort appointments by date and time
+        return filtered.sort((a, b) => {
+            const dateA = new Date(a.appointment_date);
+            const dateB = new Date(b.appointment_date);
+            
+            if (selectedTab === 'upcoming') {
+                // For upcoming, sort by earliest first
+                return dateA - dateB;
+            } else if (selectedTab === 'past') {
+                // For past, sort by most recent first
+                return dateB - dateA;
+            } else {
+                // For all, sort by most recent first
+                return dateB - dateA;
+            }
+        });
+    };
+
+    // Open edit appointment modal
+    const openEditAppointment = (appointment) => {
+        setEditingAppointment(appointment);
+        
+        const appointmentDateTime = new Date(appointment.appointment_date);
+        setEditAppointmentDate(appointmentDateTime);
+        setEditAppointmentTime(appointmentDateTime);
+        setEditChiefComplaint(appointment.chief_complaint || appointment.reason || '');
+        setEditNotes(appointment.notes || '');
+        setEditAppointmentType(appointment.appointment_type || 'consultation');
+        
+        setEditModalVisible(true);
+    };
+
+    // Handle edit appointment submission
+    const handleEditAppointment = async () => {
+        if (!editingAppointment) return;
+
+        try {
+            console.log('Editing appointment:', editingAppointment.id);
+
+            // Validate required fields
+            if (!editChiefComplaint.trim()) {
+                Alert.alert('Error', 'Please provide the chief complaint');
+                return;
+            }
+
+            // Combine date and time
+            const combinedDateTime = new Date(
+                editAppointmentDate.getFullYear(),
+                editAppointmentDate.getMonth(),
+                editAppointmentDate.getDate(),
+                editAppointmentTime.getHours(),
+                editAppointmentTime.getMinutes()
+            );
+
+            const updateData = {
+                appointment_date: combinedDateTime.toISOString(),
+                appointment_type: editAppointmentType,
+                chief_complaint: editChiefComplaint,
+                notes: editNotes || '',
+            };
+
+            console.log('Updating appointment with data:', updateData);
+
+            // Call API to update appointment
+            const response = await appointmentsAPI.updateAppointment(editingAppointment.id, updateData);
+            console.log('Appointment updated successfully:', response.data);
+
+            // Close modal and reload appointments
+            setEditModalVisible(false);
+            setEditingAppointment(null);
+            loadAppointments();
+            
+            Alert.alert('Success', 'Appointment updated successfully');
+
+        } catch (error) {
+            console.error('Error updating appointment:', error);
+            Alert.alert('Error', 'Failed to update appointment. Please try again.');
+        }
+    };
+
+    // Cancel appointment
+    const handleCancelAppointment = (appointment) => {
+        Alert.alert(
+            'Cancel Appointment',
+            'Are you sure you want to cancel this appointment?',
+            [
+                {
+                    text: 'No',
+                    style: 'cancel',
+                },
+                {
+                    text: 'Yes',
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            await appointmentsAPI.cancelAppointment(appointment.id);
+                            loadAppointments();
+                            Alert.alert('Success', 'Appointment cancelled successfully');
+                        } catch (error) {
+                            console.error('Error cancelling appointment:', error);
+                            Alert.alert('Error', 'Failed to cancel appointment');
+                        }
+                    },
+                },
+            ]
+        );
+    };
+
     const getStatusColor = (status) => {
         switch (status) {
             case 'scheduled': return '#007BFF';
@@ -715,11 +903,7 @@ const AppointmentsScreen = () => {
                 <View style={styles.clinicInfo}>
                     <Ionicons name="location-outline" size={16} color={theme.subText} />
                     <Text style={[styles.clinicText, { color: theme.subText }]}>
-                        {appointment.healthcare_provider 
-                            ? (getProviderHospital(appointment.healthcare_provider) !== 'Hospital not specified' 
-                                ? getProviderHospital(appointment.healthcare_provider) 
-                                : appointment.clinic_name || 'Hospital/Clinic') 
-                            : appointment.clinic_name || appointment.hospital || 'Hospital/Clinic'}
+                        {getProviderHospital(appointment.healthcare_provider, appointment)}
                     </Text>
                 </View>
 
@@ -745,15 +929,24 @@ const AppointmentsScreen = () => {
                                 <Ionicons name="alarm-outline" size={16} color={theme.primary} />
                                 <Text style={[styles.actionText, { color: theme.primary }]}>Set Reminder</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity style={styles.actionButton}>
+                            <TouchableOpacity 
+                                style={styles.actionButton}
+                                onPress={() => makePhoneCall(appointment.healthcare_provider_phone || appointment.doctor_phone)}
+                            >
                                 <Ionicons name="call-outline" size={16} color={theme.primary} />
                                 <Text style={[styles.actionText, { color: theme.primary }]}>Call</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity style={styles.actionButton}>
+                            <TouchableOpacity 
+                                style={styles.actionButton}
+                                onPress={() => openEditAppointment(appointment)}
+                            >
                                 <Ionicons name="create-outline" size={16} color={theme.primary} />
                                 <Text style={[styles.actionText, { color: theme.primary }]}>Edit</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity style={styles.actionButton}>
+                            <TouchableOpacity 
+                                style={styles.actionButton}
+                                onPress={() => handleCancelAppointment(appointment)}
+                            >
                                 <Ionicons name="close-outline" size={16} color="#dc3545" />
                                 <Text style={[styles.actionText, { color: '#dc3545' }]}>Cancel</Text>
                             </TouchableOpacity>
@@ -842,7 +1035,7 @@ const AppointmentsScreen = () => {
                     </View>
                 ) : (
                     <View style={styles.appointmentsContainer}>
-                        {appointments.map((appointment, index) => renderAppointmentCard(appointment, index))}
+                        {filterAppointments(appointments).map((appointment, index) => renderAppointmentCard(appointment, index))}
                     </View>
                 )}
             </ScrollView>
@@ -1375,6 +1568,189 @@ const AppointmentsScreen = () => {
                                 ))}
                             </ScrollView>
                         </View>
+                    </View>
+                </Modal>
+            </Modal>
+
+            {/* Edit Appointment Modal */}
+            <Modal
+                visible={editModalVisible}
+                animationType="slide"
+                presentationStyle="pageSheet"
+            >
+                <KeyboardAvoidingView 
+                    style={{ flex: 1 }} 
+                    behavior={Platform.OS === "ios" ? "padding" : "height"}
+                    keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+                >
+                    <SafeAreaView style={[styles.modalContainer, { backgroundColor: '#f8f9fa' }]}>
+                        <View style={[styles.modalHeader, { backgroundColor: theme.card, borderBottomColor: theme.divider }]}>
+                            <TouchableOpacity onPress={() => setEditModalVisible(false)}>
+                                <Text style={[styles.cancelButton, { color: theme.subText }]}>Cancel</Text>
+                            </TouchableOpacity>
+                            <Text style={[styles.modalTitle, { color: theme.text }]}>Edit Appointment</Text>
+                            <TouchableOpacity onPress={handleEditAppointment}>
+                                <Text style={[styles.saveButton, { color: theme.primary }]}>Update</Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        <ScrollView style={styles.modalContent}>
+                            {/* Appointment Date */}
+                            <View style={styles.formGroup}>
+                                <Text style={[styles.label, { color: theme.text }]}>Appointment Date</Text>
+                                <TouchableOpacity
+                                    style={[styles.dateButton, { 
+                                        borderColor: theme.border, 
+                                        backgroundColor: theme.card 
+                                    }]}
+                                    onPress={() => setShowEditDatePicker(true)}
+                                >
+                                    <Text style={[styles.dateButtonText, { color: theme.text }]}>
+                                        {editAppointmentDate.toLocaleDateString()}
+                                    </Text>
+                                    <Ionicons name="calendar-outline" size={20} color={theme.subText} />
+                                </TouchableOpacity>
+                            </View>
+
+                            {/* Appointment Time */}
+                            <View style={styles.formGroup}>
+                                <Text style={[styles.label, { color: theme.text }]}>Appointment Time</Text>
+                                <TouchableOpacity
+                                    style={[styles.dateButton, { 
+                                        borderColor: theme.border, 
+                                        backgroundColor: theme.card 
+                                    }]}
+                                    onPress={() => setShowEditTimePicker(true)}
+                                >
+                                    <Text style={[styles.dateButtonText, { color: theme.text }]}>
+                                        {editAppointmentTime.toLocaleTimeString('en-US', { 
+                                            hour: '2-digit', 
+                                            minute: '2-digit',
+                                            hour12: true 
+                                        })}
+                                    </Text>
+                                    <Ionicons name="time-outline" size={20} color={theme.subText} />
+                                </TouchableOpacity>
+                            </View>
+
+                            {/* Appointment Type */}
+                            <View style={styles.formGroup}>
+                                <Text style={[styles.label, { color: theme.text }]}>Appointment Type</Text>
+                                <TouchableOpacity
+                                    style={[styles.dateButton, { 
+                                        borderColor: theme.border, 
+                                        backgroundColor: theme.card 
+                                    }]}
+                                    onPress={() => setShowEditAppointmentTypePicker(true)}
+                                >
+                                    <Text style={[styles.dateButtonText, { color: theme.text }]}>
+                                        {getAppointmentTypeLabel(editAppointmentType)}
+                                    </Text>
+                                    <Ionicons name="chevron-down" size={20} color={theme.subText} />
+                                </TouchableOpacity>
+                            </View>
+
+                            {/* Chief Complaint */}
+                            <View style={styles.formGroup}>
+                                <Text style={[styles.label, { color: theme.text }]}>Chief Complaint *</Text>
+                                <TextInput
+                                    style={[styles.textInput, { 
+                                        borderColor: theme.border,
+                                        backgroundColor: theme.card,
+                                        color: theme.text
+                                    }]}
+                                    value={editChiefComplaint}
+                                    onChangeText={setEditChiefComplaint}
+                                    placeholder="Describe your main concern..."
+                                    placeholderTextColor={theme.subText}
+                                    multiline
+                                    numberOfLines={3}
+                                />
+                            </View>
+
+                            {/* Additional Notes */}
+                            <View style={styles.formGroup}>
+                                <Text style={[styles.label, { color: theme.text }]}>Additional Notes (Optional)</Text>
+                                <TextInput
+                                    style={[styles.textInput, { 
+                                        borderColor: theme.border,
+                                        backgroundColor: theme.card,
+                                        color: theme.text
+                                    }]}
+                                    value={editNotes}
+                                    onChangeText={setEditNotes}
+                                    placeholder="Any additional information..."
+                                    placeholderTextColor={theme.subText}
+                                    multiline
+                                    numberOfLines={3}
+                                />
+                            </View>
+                        </ScrollView>
+                    </SafeAreaView>
+                </KeyboardAvoidingView>
+
+                {/* Edit Date Picker */}
+                {showEditDatePicker && (
+                    <DateTimePicker
+                        value={editAppointmentDate}
+                        mode="date"
+                        display="default"
+                        minimumDate={new Date()}
+                        onChange={(event, selectedDate) => {
+                            setShowEditDatePicker(false);
+                            if (selectedDate) {
+                                setEditAppointmentDate(selectedDate);
+                            }
+                        }}
+                    />
+                )}
+
+                {/* Edit Time Picker */}
+                {showEditTimePicker && (
+                    <DateTimePicker
+                        value={editAppointmentTime}
+                        mode="time"
+                        display="default"
+                        onChange={(event, selectedTime) => {
+                            setShowEditTimePicker(false);
+                            if (selectedTime) {
+                                setEditAppointmentTime(selectedTime);
+                            }
+                        }}
+                    />
+                )}
+
+                {/* Edit Appointment Type Picker */}
+                <Modal
+                    visible={showEditAppointmentTypePicker}
+                    animationType="slide"
+                    presentationStyle="pageSheet"
+                >
+                    <View style={[styles.pickerModalContainer, { backgroundColor: theme.card }]}>
+                        <View style={[styles.pickerHeader, { borderBottomColor: theme.divider }]}>
+                            <TouchableOpacity onPress={() => setShowEditAppointmentTypePicker(false)}>
+                                <Text style={[styles.pickerCancel, { color: theme.subText }]}>Cancel</Text>
+                            </TouchableOpacity>
+                            <Text style={[styles.pickerTitle, { color: theme.text }]}>Select Appointment Type</Text>
+                            <View style={{ width: 60 }} />
+                        </View>
+                        <ScrollView style={styles.pickerContent}>
+                            {appointmentTypes.map((type) => (
+                                <TouchableOpacity
+                                    key={type.value}
+                                    style={[styles.pickerOption, editAppointmentType === type.value && { backgroundColor: theme.primary + '20' }]}
+                                    onPress={() => {
+                                        setEditAppointmentType(type.value);
+                                        setShowEditAppointmentTypePicker(false);
+                                    }}
+                                >
+                                    <Text style={[styles.pickerOptionText, { color: theme.text }]}>{type.label}</Text>
+                                    {editAppointmentType === type.value && (
+                                        <Ionicons name="checkmark" size={20} color={theme.primary} />
+                                    )}
+                                </TouchableOpacity>
+                            ))}
+                        </ScrollView>
                     </View>
                 </Modal>
             </Modal>

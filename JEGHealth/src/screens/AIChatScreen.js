@@ -10,11 +10,13 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Colors } from '../constants/colors';
 import { showError } from '../utils/NotificationHelper';
+import ChatHistoryManager from '../utils/ChatHistoryManager';
 
 const AIChatScreen = () => {
   const [messages, setMessages] = useState([
@@ -27,8 +29,69 @@ const AIChatScreen = () => {
   ]);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [currentConversationId, setCurrentConversationId] = useState(null);
   const flatListRef = useRef(null);
   const router = useRouter();
+
+  // Initialize conversation ID
+  useEffect(() => {
+    setCurrentConversationId(Date.now().toString());
+  }, []);
+
+  // Save conversation to history when messages change (and there are user messages)
+  useEffect(() => {
+    const saveConversation = async () => {
+      if (messages.length <= 1 || !currentConversationId) return; // Don't save initial message only
+      
+      const userMessages = messages.filter(msg => msg.isUser);
+      if (userMessages.length === 0) return; // Don't save if no user messages
+      
+      const conversation = {
+        id: currentConversationId,
+        messages: messages,
+        title: ChatHistoryManager.generateConversationTitle(messages),
+        messageCount: messages.length,
+      };
+
+      await ChatHistoryManager.saveConversation(conversation);
+    };
+
+    const debounceTimer = setTimeout(saveConversation, 1000); // Debounce saves
+    return () => clearTimeout(debounceTimer);
+  }, [messages, currentConversationId]);
+
+  // Generate conversation title from first user message
+  const generateConversationTitle = (messages) => {
+    return ChatHistoryManager.generateConversationTitle(messages);
+  };
+
+  // Start a new conversation
+  const startNewConversation = () => {
+    Alert.alert(
+      'New Conversation',
+      'Start a fresh conversation with Dr. JEG?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Start New',
+          onPress: () => {
+            setCurrentConversationId(Date.now().toString());
+            setMessages([
+              {
+                id: Date.now().toString(),
+                text: "Hello! I'm Dr. JEG, your AI health assistant. I'm here to help you with health-related questions, wellness tips, and general medical guidance. How can I assist you today?",
+                isUser: false,
+                timestamp: new Date().toISOString(),
+              },
+            ]);
+          },
+        },
+      ]
+    );
+  };
 
   // Scroll to bottom when new messages are added
   useEffect(() => {
@@ -156,7 +219,20 @@ const AIChatScreen = () => {
             <Text style={styles.headerSubtitle}>AI Health Assistant</Text>
           </View>
         </View>
-        <View style={styles.headerRight} />
+        <View style={styles.headerRight}>
+          <TouchableOpacity
+            style={styles.headerButton}
+            onPress={() => router.push('/chat-history')}
+          >
+            <Ionicons name="time-outline" size={24} color={Colors.textOnPrimary} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.headerButton}
+            onPress={startNewConversation}
+          >
+            <Ionicons name="add" size={24} color={Colors.textOnPrimary} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Messages */}
@@ -255,7 +331,12 @@ const styles = StyleSheet.create({
     opacity: 0.8,
   },
   headerRight: {
-    width: 40,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerButton: {
+    padding: 8,
+    marginLeft: 4,
   },
   chatContainer: {
     flex: 1,

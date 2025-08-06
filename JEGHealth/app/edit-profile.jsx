@@ -229,52 +229,90 @@ export default function EditProfileScreen() {
 
   // Pick an image from the gallery
   const pickImage = async () => {
-    // Request permission
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    try {
+      console.log('Gallery button pressed - requesting permissions...');
+      
+      // Request permission
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-    if (status !== "granted") {
-      showError(
-        "Permission Denied",
-        "We need camera roll permission to change your profile picture"
-      );
-      return;
-    }
+      console.log('Media library permission status:', status);
 
-    // Launch image picker
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaType.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.5,
-    });
+      if (status !== "granted") {
+        showError(
+          "Permission Denied",
+          "We need camera roll permission to change your profile picture"
+        );
+        return;
+      }
 
-    if (!result.canceled && result.assets && result.assets.length > 0) {
-      setProfileImage(result.assets[0].uri);
+      console.log('Launching image picker...');
+
+      // Launch image picker
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaType.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.5,
+      });
+
+      console.log('Image picker result:', result);
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const selectedImageUri = result.assets[0].uri;
+        console.log('Selected image URI:', selectedImageUri);
+        setProfileImage(selectedImageUri);
+        
+        // Store the image URI immediately to fix AsyncStorage sync issues
+        await AsyncStorage.setItem('profile_image_temp', selectedImageUri);
+        showSuccess('Success', 'Profile image updated');
+      }
+    } catch (error) {
+      console.error('Error picking image from gallery:', error);
+      showError('Error', 'Failed to select image from gallery');
     }
   };
 
   // Take a photo with the camera
   const takePhoto = async () => {
-    // Request permission
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    try {
+      console.log('Camera button pressed - requesting permissions...');
+      
+      // Request permission
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
 
-    if (status !== "granted") {
-      showError(
-        "Permission Denied",
-        "We need camera permission to take a profile picture"
-      );
-      return;
-    }
+      console.log('Camera permission status:', status);
 
-    // Launch camera
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.5,
-    });
+      if (status !== "granted") {
+        showError(
+          "Permission Denied",
+          "We need camera permission to take a profile picture"
+        );
+        return;
+      }
 
-    if (!result.canceled && result.assets && result.assets.length > 0) {
-      setProfileImage(result.assets[0].uri);
+      console.log('Launching camera...');
+
+      // Launch camera
+      const result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.5,
+      });
+
+      console.log('Camera result:', result);
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const selectedImageUri = result.assets[0].uri;
+        console.log('Captured image URI:', selectedImageUri);
+        setProfileImage(selectedImageUri);
+        
+        // Store the image URI immediately to fix AsyncStorage sync issues
+        await AsyncStorage.setItem('profile_image_temp', selectedImageUri);
+        showSuccess('Success', 'Profile image captured');
+      }
+    } catch (error) {
+      console.error('Error taking photo:', error);
+      showError('Error', 'Failed to take photo');
     }
   };
 
