@@ -73,10 +73,9 @@ export const getBackendURL = () => {
         `${protocol}://${host}:${port}` : 
         `${protocol}://${host}`;
 
-    // Log the full backend URL for debugging
-    const fullURL = `${baseURL}/api/v1`;
-    console.log('[DEBUG] Backend URL used for requests:', fullURL);
-    return fullURL;
+    // Log the backend URL for debugging - removed /api/v1 since it's added in services
+    console.log('[DEBUG] Backend URL used for requests:', baseURL);
+    return baseURL;
 };
 
 // Network timeout configuration

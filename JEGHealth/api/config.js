@@ -8,6 +8,13 @@ const API_BASE_URL = getBackendURL();
 
 console.log('Using API Base URL:', API_BASE_URL);
 
+// Global auth state handler - will be set by AuthContext
+let globalAuthHandler = null;
+
+const setGlobalAuthHandler = (handler) => {
+    globalAuthHandler = handler;
+};
+
 // Create axios instance with default configuration
 const apiClient = axios.create({
     baseURL: API_BASE_URL,
@@ -45,22 +52,38 @@ apiClient.interceptors.response.use(
             try {
                 const refreshToken = await AsyncStorage.getItem('refresh_token');
                 if (refreshToken) {
-                    const response = await axios.post(`${API_BASE_URL}/auth/token/refresh/`, {
+                    console.log('Attempting to refresh expired token...');
+                    const response = await axios.post(`${API_BASE_URL}/api/v1/auth/token/refresh/`, {
                         refresh: refreshToken
                     });
 
                     const { access } = response.data;
                     await AsyncStorage.setItem('access_token', access);
+                    console.log('Token refreshed successfully');
 
                     // Retry the original request with new token
                     originalRequest.headers.Authorization = `Bearer ${access}`;
                     return apiClient(originalRequest);
                 }
-            } catch (_refreshError) {
-                // Refresh failed, clear tokens and redirect to login
+            } catch (refreshError) {
+                // Refresh failed, clear tokens and trigger logout
+                console.error('Token refresh failed:', refreshError.response?.data || refreshError.message);
                 await AsyncStorage.multiRemove(['access_token', 'refresh_token']);
-                // You might want to trigger a logout action here
+                
+                // Trigger global logout if handler is available
+                if (globalAuthHandler && typeof globalAuthHandler.handleAuthFailure === 'function') {
+                    globalAuthHandler.handleAuthFailure('Session expired. Please login again.');
+                }
+                
                 console.log('Token refresh failed, user needs to log in again');
+            }
+        }
+
+        // For network errors or other issues, check if it's an auth-related error
+        if (error.response?.status === 401 || error.response?.status === 403) {
+            console.log('Authentication failed - status:', error.response?.status);
+            if (globalAuthHandler && typeof globalAuthHandler.handleAuthFailure === 'function') {
+                globalAuthHandler.handleAuthFailure('Authentication failed. Please login again.');
             }
         }
 
@@ -68,5 +91,5 @@ apiClient.interceptors.response.use(
     }
 );
 
-export { API_BASE_URL, apiClient };
+export { API_BASE_URL, apiClient, setGlobalAuthHandler };
 export default apiClient;

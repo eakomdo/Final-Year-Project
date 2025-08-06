@@ -101,23 +101,58 @@ class DjangoAuthService {
         try {
             const token = await AsyncStorage.getItem('access_token');
             if (!token) {
+                console.log('No access token found for getCurrentUser');
                 return null;
             }
 
+            console.log('Making getCurrentUser API call...');
             const response = await authAPI.getCurrentUser();
-            const user = response.data;
-
+            
+            console.log('getCurrentUser full response:', JSON.stringify(response, null, 2));
+            console.log('getCurrentUser response.data:', JSON.stringify(response.data, null, 2));
+            console.log('getCurrentUser response status:', response.status);
+            
+            // Handle different possible response structures
+            let user = response.data;
+            
+            // Some APIs might return data nested under different keys
+            if (!user && response.user) {
+                user = response.user;
+                console.log('Found user data under response.user');
+            } else if (!user && response.data?.user) {
+                user = response.data.user;
+                console.log('Found user data under response.data.user');
+            } else if (!user && response.data?.data) {
+                user = response.data.data;
+                console.log('Found user data under response.data.data');
+            }
+            
+            console.log('Final user object:', JSON.stringify(user, null, 2));
+            console.log('getCurrentUser successful:', user?.email || user?.username || 'No email found');
+            
+            if (!user) {
+                console.error('getCurrentUser returned null/undefined user data after all fallbacks');
+                return null;
+            }
+            
             return {
                 authUser: user,
                 userDocument: user,
                 userProfile: user.profile,
-                role: { name: user.role }
+                role: { name: user.role || user.roles?.[0] }
             };
 
         } catch (error) {
             console.error('Get current user error:', error.message);
-            // If token is invalid, clear it
-            await AsyncStorage.multiRemove(['access_token', 'refresh_token']);
+            console.error('Error status:', error.response?.status);
+            console.error('Error data:', error.response?.data);
+            
+            // Only clear tokens for explicit auth errors
+            if (error.response?.status === 401 || error.response?.status === 403) {
+                console.log('Auth error detected, clearing tokens');
+                await AsyncStorage.multiRemove(['access_token', 'refresh_token']);
+            }
+            
             return null;
         }
     }
@@ -197,6 +232,32 @@ class DjangoAuthService {
             console.error('Token refresh error:', error.message);
             // Clear tokens if refresh fails
             await AsyncStorage.multiRemove(['access_token', 'refresh_token']);
+            throw error;
+        }
+    }
+
+    // Test method to verify API connectivity (for debugging)
+    async testCurrentUserAPI() {
+        try {
+            console.log('=== TESTING CURRENT USER API ===');
+            const token = await AsyncStorage.getItem('access_token');
+            console.log('Token exists:', !!token);
+            console.log('Token preview:', token ? token.substring(0, 20) + '...' : 'None');
+            
+            const response = await authAPI.getCurrentUser();
+            console.log('API Response Status:', response.status);
+            console.log('API Response Headers:', JSON.stringify(response.headers, null, 2));
+            console.log('API Raw Response:', JSON.stringify(response, null, 2));
+            
+            return response;
+        } catch (error) {
+            console.error('Test API Error:', {
+                message: error.message,
+                status: error.response?.status,
+                statusText: error.response?.statusText,
+                data: error.response?.data,
+                headers: error.response?.headers
+            });
             throw error;
         }
     }
