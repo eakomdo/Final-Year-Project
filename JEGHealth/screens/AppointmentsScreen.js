@@ -232,20 +232,24 @@ const AppointmentsScreen = () => {
                 const response = await providersAPI.searchProviders(query);
                 console.log('Provider search response:', response.data);
                 
-                if (response.data && response.data.results) {
-                    // Debug: log the structure of the first provider to see available fields
-                    if (response.data.results.length > 0) {
-                        console.log('Provider data structure:', JSON.stringify(response.data.results[0], null, 2));
-                    }
-                    setAvailableProviders(response.data.results);
-                    setShowDoctorDropdown(response.data.results.length > 0);
+                let providers = [];
+                
+                // Handle different response structures
+                if (response.data && response.data.suggestions && Array.isArray(response.data.suggestions)) {
+                    // Handle Django backend format with suggestions array
+                    providers = response.data.suggestions;
+                } else if (response.data && response.data.results && Array.isArray(response.data.results)) {
+                    // Handle paginated results format
+                    providers = response.data.results;
                 } else if (response.data && Array.isArray(response.data)) {
-                    // Handle case where API returns array directly
-                    if (response.data.length > 0) {
-                        console.log('Provider data structure:', JSON.stringify(response.data[0], null, 2));
-                    }
-                    setAvailableProviders(response.data);
-                    setShowDoctorDropdown(response.data.length > 0);
+                    // Handle direct array format
+                    providers = response.data;
+                }
+                
+                if (providers.length > 0) {
+                    console.log('Provider data structure:', JSON.stringify(providers[0], null, 2));
+                    setAvailableProviders(providers);
+                    setShowDoctorDropdown(true);
                 } else {
                     setAvailableProviders([]);
                     setShowDoctorDropdown(false);
@@ -286,7 +290,7 @@ const AppointmentsScreen = () => {
                             consultation_fee: '150.00'
                         }
                     ].filter(provider => 
-                        provider.full_name.toLowerCase().includes(query.toLowerCase()) ||
+                        (provider.full_name || provider.name || '').toLowerCase().includes(query.toLowerCase()) ||
                         provider.specialization.toLowerCase().includes(query.toLowerCase())
                     );
                     
@@ -305,7 +309,9 @@ const AppointmentsScreen = () => {
 
     const selectProvider = (provider) => {
         setSelectedProvider(provider);
-        setDoctorSearchQuery(provider.full_name);
+        // Handle both 'name' and 'full_name' field formats
+        const providerName = provider.name || provider.full_name || 'Unknown Doctor';
+        setDoctorSearchQuery(providerName);
         setSpecialty(provider.specialization || '');
         setShowDoctorDropdown(false);
     };
@@ -334,8 +340,10 @@ const AppointmentsScreen = () => {
     const loadAppointments = async () => {
         try {
             setLoading(true);
-            if (!user || !user.$id) {
+            // Fix: Use user.id instead of user.$id for Django backend
+            if (!user || !user.id) {
                 console.warn('[loadAppointments] User not authenticated or user ID missing');
+                console.warn('[loadAppointments] User object:', JSON.stringify(user, null, 2));
                 setAppointments([]);
                 return;
             }
@@ -571,7 +579,7 @@ const AppointmentsScreen = () => {
                     console.log('[handleAddAppointment] Non-auth error, trying legacy method...');
                     const legacyData = {
                         patientId: userId,
-                        doctorName: selectedProvider.full_name,
+                        doctorName: selectedProvider.name || selectedProvider.full_name || 'Unknown Doctor',
                         specialty: selectedProvider.specialization || '',
                         clinicName: getProviderHospital(selectedProvider),
                         clinicAddress: selectedProvider.hospital_address || selectedProvider.address || '',
@@ -1127,7 +1135,7 @@ const AppointmentsScreen = () => {
                                             >
                                                 <View style={styles.providerInfo}>
                                                     <Text style={[styles.providerName, { color: theme.text }]}>
-                                                        Dr. {provider.full_name}
+                                                        {provider.name || provider.full_name || 'Unknown Doctor'}
                                                     </Text>
                                                     <Text style={[styles.providerSpecialty, { color: theme.subText }]}>
                                                         {provider.specialization}
@@ -1150,7 +1158,7 @@ const AppointmentsScreen = () => {
                             }]}>
                                 <View style={styles.selectedProviderHeader}>
                                     <Text style={[styles.selectedProviderName, { color: theme.text }]}>
-                                        Dr. {selectedProvider.full_name}
+                                        {selectedProvider.name || selectedProvider.full_name || 'Unknown Doctor'}
                                     </Text>
                                     <TouchableOpacity 
                                         onPress={() => {

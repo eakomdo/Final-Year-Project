@@ -51,52 +51,47 @@ export const AuthProvider = ({ children }) => {
     const normalizeUserData = (userData) => {
         console.log('=== AUTHCONTEXT: NORMALIZING USER DATA ===', JSON.stringify(userData, null, 2));
         
-        if (!userData || !userData.authUser) {
+        if (!userData) {
             console.warn('normalizeUserData: Invalid or missing user data');
             return null;
         }
 
-        const { authUser, userProfile, role } = userData;
+        // Handle already normalized data from DjangoAuthService
+        if (userData.authUser && userData.userProfile && userData.role) {
+            console.log('Data already normalized, using directly');
+            const { authUser, userProfile, role } = userData;
+            
+            // Validate essential fields
+            if (!authUser.id && !authUser.email && !authUser.username) {
+                console.error('normalizeUserData: No valid identifier found');
+                console.error('authUser fields:', Object.keys(authUser));
+                return null;
+            }
 
-        // Validate essential fields
-        if (!authUser.id && !authUser.email && !authUser.username) {
-            console.error('normalizeUserData: No valid identifier found');
-            console.error('authUser fields:', Object.keys(authUser));
-            return null;
+            return {
+                user: authUser,
+                profile: userProfile,
+                role: role
+            };
         }
 
-        // Ensure consistent user object
+        // Handle raw user data (fallback for other scenarios)
+        console.warn('Handling raw user data - this should not happen after login');
         const normalizedUser = {
-            ...authUser,
-            id: authUser.id || authUser.pk || authUser.user_id || authUser.email,
-            email: authUser.email || authUser.username,
-            username: authUser.username || authUser.email,
-            first_name: authUser.first_name || authUser.firstName || '',
-            last_name: authUser.last_name || authUser.lastName || ''
+            ...userData,
+            id: userData.id || userData.pk || userData.user_id || userData.email,
+            email: userData.email || userData.username,
+            username: userData.username || userData.email,
+            first_name: userData.first_name || userData.firstName || '',
+            last_name: userData.last_name || userData.lastName || ''
         };
 
-        // Normalize profile
-        const normalizedProfile = {
-            ...userProfile,
-            contact: userProfile?.contact || userProfile?.phone || '',
-            phone: userProfile?.phone || userProfile?.contact || '',
-            address: userProfile?.address || ''
-        };
-
-        // Normalize role
-        const normalizedRole = {
-            name: role?.name || authUser?.role || 'user',
-            permissions: role?.permissions || authUser?.permissions || {}
-        };
-
-        console.log('Normalized user:', JSON.stringify(normalizedUser, null, 2));
-        console.log('Normalized profile keys:', Object.keys(normalizedProfile));
-        console.log('Normalized role:', normalizedRole);
+        console.log('Normalized user from raw data:', JSON.stringify(normalizedUser, null, 2));
 
         return {
             user: normalizedUser,
-            profile: normalizedProfile,
-            role: normalizedRole
+            profile: {},
+            role: { name: 'user', permissions: {} }
         };
     };
 

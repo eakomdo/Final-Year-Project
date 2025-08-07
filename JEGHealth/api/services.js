@@ -123,20 +123,58 @@ export const appointmentsAPI = {
 
 // Healthcare Providers API
 export const providersAPI = {
-    // List all doctors/providers
+    // List all providers with optional filtering
     getProviders: (params = {}) => apiClient.get('/api/v1/providers/', { params }),
     
-    // Search providers by specialization
-    getProvidersBySpecialization: (specialization) => apiClient.get('/api/v1/providers/', { 
-        params: { specialization } 
-    }),
+    // Create new provider (admin only)
+    createProvider: (data) => apiClient.post('/api/v1/providers/', data),
     
     // Get specific provider details
     getProviderDetails: (providerId) => apiClient.get(`/api/v1/providers/${providerId}/`),
     
-    // Search providers by name (for autocomplete)
-    searchProviders: (query) => apiClient.get('/api/v1/providers/', { 
-        params: { search: query } 
+    // Update provider (admin only)
+    updateProvider: (providerId, data) => apiClient.put(`/api/v1/providers/${providerId}/`, data),
+    
+    // Delete provider (admin only)
+    deleteProvider: (providerId) => apiClient.delete(`/api/v1/providers/${providerId}/`),
+    
+    // Frontend integration endpoints
+    getProviderDropdown: (params = {}) => apiClient.get('/api/v1/providers/dropdown/', { params }),
+    
+    searchProviders: (query) => apiClient.get('/api/v1/providers/search/', { 
+        params: { q: query } 
+    }),
+    
+    getProvidersByHospital: (hospitalId, params = {}) => apiClient.get(`/api/v1/providers/hospital/${hospitalId}/`, { params }),
+    
+    // Legacy methods for backward compatibility
+    getProvidersBySpecialization: (specialization) => apiClient.get('/api/v1/providers/', { 
+        params: { specialization } 
+    }),
+};
+
+// Hospitals API
+export const hospitalsAPI = {
+    // List all hospitals with optional filtering
+    getHospitals: (params = {}) => apiClient.get('/api/v1/hospitals/', { params }),
+    
+    // Create new hospital (admin only)
+    createHospital: (data) => apiClient.post('/api/v1/hospitals/', data),
+    
+    // Get specific hospital details
+    getHospitalDetails: (hospitalId) => apiClient.get(`/api/v1/hospitals/${hospitalId}/`),
+    
+    // Update hospital (admin only)
+    updateHospital: (hospitalId, data) => apiClient.put(`/api/v1/hospitals/${hospitalId}/`, data),
+    
+    // Delete hospital (admin only)
+    deleteHospital: (hospitalId) => apiClient.delete(`/api/v1/hospitals/${hospitalId}/`),
+    
+    // Frontend integration endpoints
+    getHospitalDropdown: (params = {}) => apiClient.get('/api/v1/hospitals/dropdown/', { params }),
+    
+    searchHospitals: (query) => apiClient.get('/api/v1/hospitals/search/', { 
+        params: { q: query } 
     }),
 };
 
@@ -212,6 +250,8 @@ export default {
     auth: authAPI,
     health: healthAPI,
     appointments: appointmentsAPI,
+    providers: providersAPI,
+    hospitals: hospitalsAPI,
     medications: medicationsAPI,
     notifications: notificationsAPI,
     user: userAPI,
