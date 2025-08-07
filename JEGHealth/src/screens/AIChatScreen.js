@@ -17,6 +17,8 @@ import { useRouter } from 'expo-router';
 import { Colors } from '../constants/colors';
 import { showError } from '../utils/NotificationHelper';
 import ChatHistoryManager from '../utils/ChatHistoryManager';
+import { testDrJegAPI, testBasicAPI } from '../utils/testDrJegAPI';
+import { generateConversationId } from '../utils/uuid';
 
 const AIChatScreen = () => {
   const [messages, setMessages] = useState([
@@ -35,7 +37,7 @@ const AIChatScreen = () => {
 
   // Initialize conversation ID
   useEffect(() => {
-    setCurrentConversationId(Date.now().toString());
+    setCurrentConversationId(generateConversationId());
   }, []);
 
   // Save conversation to history when messages change (and there are user messages)
@@ -78,10 +80,10 @@ const AIChatScreen = () => {
         {
           text: 'Start New',
           onPress: () => {
-            setCurrentConversationId(Date.now().toString());
+            setCurrentConversationId(generateConversationId());
             setMessages([
               {
-                id: Date.now().toString(),
+                id: generateConversationId(),
                 text: "Hello! I'm Dr. JEG, your AI health assistant. I'm here to help you with health-related questions, wellness tips, and general medical guidance. How can I assist you today?",
                 isUser: false,
                 timestamp: new Date().toISOString(),
@@ -100,48 +102,94 @@ const AIChatScreen = () => {
     }
   }, [messages]);
 
-  // Simulate AI responses (replace with actual AI service)
+  // Get AI response from Dr. JEG backend
   const getAIResponse = async (userMessage) => {
     try {
+      console.log('=== DR. JEG API CALL ===');
+      console.log('Sending message to Dr. JEG:', userMessage);
+      console.log('Current conversation ID:', currentConversationId);
+      
       // Use the ChatHistoryManager to send message to Dr. JEG API
       const response = await ChatHistoryManager.sendMessage(userMessage, currentConversationId);
+      
+      console.log('Dr. JEG API response:', response);
       
       if (response) {
         // Update current conversation ID if this is a new conversation
         if (!currentConversationId && response.id) {
           setCurrentConversationId(response.id);
+          console.log('Updated conversation ID:', response.id);
         }
         
         // Extract the AI response from the conversation data
         // The API should return the conversation with messages array
         if (response.messages && response.messages.length > 0) {
+          console.log('Found messages in response:', response.messages.length);
           // Get the last message (should be the AI response)
           const lastMessage = response.messages[response.messages.length - 1];
           if (!lastMessage.isUser && lastMessage.text) {
+            console.log('Using AI message from conversation:', lastMessage.text);
             return lastMessage.text;
           }
         }
         
-        // Fallback: check if response has direct message field
-        if (response.response || response.message) {
-          return response.response || response.message;
+        // Check for direct response fields
+        if (response.response) {
+          console.log('Using direct response field:', response.response);
+          return response.response;
         }
         
-        // Fallback response
-        return "I'm here to help with your health questions!";
+        if (response.message) {
+          console.log('Using message field:', response.message);
+          return response.message;
+        }
+        
+        // Check if response has an 'answer' field
+        if (response.answer) {
+          console.log('Using answer field:', response.answer);
+          return response.answer;
+        }
+        
+        console.warn('No recognizable response format found:', Object.keys(response));
+        return "I received your message but couldn't provide a proper response. Please try again.";
       } else {
         throw new Error('No response received from Dr. JEG');
       }
     } catch (error) {
-      console.error('Error calling Dr. JEG API:', error);
+      console.error('=== DR. JEG API ERROR ===');
+      console.error('Error details:', error.message);
+      console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
       
-      // Fallback to mock response if API fails
-      const fallbackResponses = [
-        "I apologize, but I'm having trouble connecting to my services right now. Please try again in a moment.",
-        "I'm experiencing some technical difficulties. For immediate health concerns, please consult with a healthcare professional.",
-      ];
-      
-      return fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
+      // Provide more specific error messages based on the error type
+      if (error.response?.status === 500) {
+        return "I'm experiencing technical difficulties with my AI services. Please try again in a moment.";
+      } else if (error.response?.status === 401 || error.response?.status === 403) {
+        return "I'm having authentication issues. Please make sure you're logged in and try again.";
+      } else if (error.message.includes('Network')) {
+        return "I can't reach my AI services right now. Please check your internet connection and try again.";
+      } else {
+        return "I apologize, but I'm having trouble processing your request right now. Please try again in a moment.";
+      }
+    }
+  };
+
+  // Test Dr. JEG API function
+  const testDrJegConnection = async () => {
+    try {
+      console.log('=== TESTING DR. JEG API CONNECTION ===');
+      const result = await testDrJegAPI();
+      Alert.alert('API Test Success', 'Dr. JEG API is working correctly!', [
+        { text: 'OK' }
+      ]);
+      console.log('✅ Test completed successfully:', result);
+    } catch (error) {
+      console.error('❌ Test failed:', error);
+      Alert.alert(
+        'API Test Failed', 
+        `Dr. JEG API is not working: ${error.message}`,
+        [{ text: 'OK' }]
+      );
     }
   };
 
@@ -149,7 +197,7 @@ const AIChatScreen = () => {
     if (!inputText.trim()) return;
 
     const userMessage = {
-      id: Date.now().toString(),
+      id: generateConversationId(),
       text: inputText.trim(),
       isUser: true,
       timestamp: new Date().toISOString(),
@@ -164,7 +212,7 @@ const AIChatScreen = () => {
       const aiResponse = await getAIResponse(messageText);
       
       const aiMessage = {
-        id: (Date.now() + 1).toString(),
+        id: generateConversationId(),
         text: aiResponse,
         isUser: false,
         timestamp: new Date().toISOString(),
@@ -172,9 +220,8 @@ const AIChatScreen = () => {
 
       setMessages(prev => [...prev, aiMessage]);
       
-      // Save the conversation after successful exchange
-      const updatedMessages = [...messages, userMessage, aiMessage];
-      await saveConversation(updatedMessages);
+      // The useEffect will handle saving the conversation automatically
+      // No need to manually call saveConversation here
       
     } catch (error) {
       console.error('Error getting AI response:', error);
@@ -257,6 +304,14 @@ const AIChatScreen = () => {
           </View>
         </View>
         <View style={styles.headerRight}>
+          {__DEV__ && (
+            <TouchableOpacity
+              style={styles.headerButton}
+              onPress={testDrJegConnection}
+            >
+              <Ionicons name="bug-outline" size={20} color={Colors.textOnPrimary} />
+            </TouchableOpacity>
+          )}
           <TouchableOpacity
             style={styles.headerButton}
             onPress={() => router.push('/chat-history')}
