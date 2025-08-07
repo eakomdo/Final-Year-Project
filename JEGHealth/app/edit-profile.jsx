@@ -231,6 +231,8 @@ export default function EditProfileScreen() {
   const pickImage = async () => {
     try {
       console.log('Gallery button pressed - requesting permissions...');
+      console.log('ImagePicker object:', ImagePicker);
+      console.log('ImagePicker.MediaType:', ImagePicker.MediaType);
       
       // Request permission
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -247,9 +249,13 @@ export default function EditProfileScreen() {
 
       console.log('Launching image picker...');
 
-      // Launch image picker
+      // Launch image picker with defensive MediaType check
+      const mediaType = ImagePicker.MediaType && ImagePicker.MediaType.Images 
+        ? ImagePicker.MediaType.Images 
+        : 'Images'; // Fallback for compatibility
+
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaType.Images,
+        mediaTypes: mediaType,
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.5,
@@ -268,6 +274,7 @@ export default function EditProfileScreen() {
       }
     } catch (error) {
       console.error('Error picking image from gallery:', error);
+      console.error('Error details:', JSON.stringify(error, null, 2));
       showError('Error', 'Failed to select image from gallery');
     }
   };
