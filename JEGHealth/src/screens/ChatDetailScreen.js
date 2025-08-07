@@ -54,7 +54,7 @@ const ChatDetailScreen = () => {
     };
 
     loadConversation();
-  }, [params]);
+  }, [params.conversationData, params.conversationId, router]);
 
   // Format timestamp for messages
   const formatMessageTime = (timestamp) => {

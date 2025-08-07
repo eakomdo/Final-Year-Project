@@ -102,19 +102,47 @@ const AIChatScreen = () => {
 
   // Simulate AI responses (replace with actual AI service)
   const getAIResponse = async (userMessage) => {
-    // This is where you'd integrate with OpenAI, Claude, or your preferred AI service
-    const responses = [
-      "Thank you for your question. Based on what you've shared, I'd recommend consulting with a healthcare professional for personalized advice.",
-      "That's a great health question! Here are some general guidelines that might help...",
-      "I understand your concern. While I can provide general information, it's important to speak with your doctor for specific medical advice.",
-      "Health and wellness are important topics. Let me share some general insights that might be helpful...",
-      "I appreciate you reaching out about your health. Remember, I'm here to provide general information and support.",
-    ];
-
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
-    
-    return responses[Math.floor(Math.random() * responses.length)];
+    try {
+      // Use the ChatHistoryManager to send message to Dr. JEG API
+      const response = await ChatHistoryManager.sendMessage(userMessage, currentConversationId);
+      
+      if (response) {
+        // Update current conversation ID if this is a new conversation
+        if (!currentConversationId && response.id) {
+          setCurrentConversationId(response.id);
+        }
+        
+        // Extract the AI response from the conversation data
+        // The API should return the conversation with messages array
+        if (response.messages && response.messages.length > 0) {
+          // Get the last message (should be the AI response)
+          const lastMessage = response.messages[response.messages.length - 1];
+          if (!lastMessage.isUser && lastMessage.text) {
+            return lastMessage.text;
+          }
+        }
+        
+        // Fallback: check if response has direct message field
+        if (response.response || response.message) {
+          return response.response || response.message;
+        }
+        
+        // Fallback response
+        return "I'm here to help with your health questions!";
+      } else {
+        throw new Error('No response received from Dr. JEG');
+      }
+    } catch (error) {
+      console.error('Error calling Dr. JEG API:', error);
+      
+      // Fallback to mock response if API fails
+      const fallbackResponses = [
+        "I apologize, but I'm having trouble connecting to my services right now. Please try again in a moment.",
+        "I'm experiencing some technical difficulties. For immediate health concerns, please consult with a healthcare professional.",
+      ];
+      
+      return fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
+    }
   };
 
   const sendMessage = async () => {
@@ -127,12 +155,13 @@ const AIChatScreen = () => {
       timestamp: new Date().toISOString(),
     };
 
+    const messageText = inputText.trim();
     setMessages(prev => [...prev, userMessage]);
     setInputText('');
     setIsTyping(true);
 
     try {
-      const aiResponse = await getAIResponse(inputText);
+      const aiResponse = await getAIResponse(messageText);
       
       const aiMessage = {
         id: (Date.now() + 1).toString(),
@@ -142,9 +171,17 @@ const AIChatScreen = () => {
       };
 
       setMessages(prev => [...prev, aiMessage]);
+      
+      // Save the conversation after successful exchange
+      const updatedMessages = [...messages, userMessage, aiMessage];
+      await saveConversation(updatedMessages);
+      
     } catch (error) {
       console.error('Error getting AI response:', error);
       showError('Error', 'Sorry, I encountered an issue. Please try again.');
+      
+      // Remove the user message if AI response failed
+      setMessages(prev => prev.filter(msg => msg.id !== userMessage.id));
     } finally {
       setIsTyping(false);
     }

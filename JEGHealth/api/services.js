@@ -1,5 +1,37 @@
 import { apiClient } from './config';
 
+// Dr. JEG AI Assistant API
+export const drJegAPI = {
+    // Send a message to Dr. JEG (POST /api/v1/dr-jeg/conversation/)
+    sendMessage: (message, conversationId = null) => {
+        const data = { message };
+        if (conversationId) {
+            data.conversation_id = conversationId;
+        }
+        return apiClient.post('/api/v1/dr-jeg/conversation/', data);
+    },
+    
+    // Get list of all conversations (GET /api/v1/dr-jeg/conversations/)
+    getConversations: () => apiClient.get('/api/v1/dr-jeg/conversations/'),
+    
+    // Get specific conversation with messages (GET /api/v1/dr-jeg/conversation/{id}/)
+    getConversation: (conversationId) => apiClient.get(`/api/v1/dr-jeg/conversation/${conversationId}/`),
+    
+    // Delete a specific conversation (DELETE /api/v1/dr-jeg/conversation/{id}/delete/)
+    deleteConversation: (conversationId) => apiClient.delete(`/api/v1/dr-jeg/conversation/${conversationId}/delete/`),
+    
+    // Clear all conversations (DELETE /api/v1/dr-jeg/conversations/clear/)
+    clearAllConversations: () => apiClient.delete('/api/v1/dr-jeg/conversations/clear/', {
+        data: { confirm: true }
+    }),
+    
+    // Get Dr. JEG service status (GET /api/v1/dr-jeg/status/)
+    getStatus: () => apiClient.get('/api/v1/dr-jeg/status/'),
+    
+    // Get analytics data (GET /api/v1/dr-jeg/analytics/)
+    getAnalytics: () => apiClient.get('/api/v1/dr-jeg/analytics/'),
+};
+
 // Auth API calls
 export const authAPI = {
     register: (userData) => apiClient.post('/api/v1/auth/register/', userData),
@@ -188,4 +220,5 @@ export default {
     healthTips: healthTipsAPI,
     documents: documentsAPI,
     device: deviceAPI,
+    drJeg: drJegAPI,
 };

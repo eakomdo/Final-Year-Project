@@ -31,9 +31,17 @@ apiClient.interceptors.request.use(
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
+        
+        // Debug logging for requests
+        console.log(`[API] ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
+        if (config.data && config.url?.includes('login')) {
+            console.log('[API] Login request data:', { email: config.data.email, password: '***' });
+        }
+        
         return config;
     },
     (error) => {
+        console.error('[API] Request interceptor error:', error);
         return Promise.reject(error);
     }
 );
@@ -41,10 +49,23 @@ apiClient.interceptors.request.use(
 // Response interceptor to handle token refresh
 apiClient.interceptors.response.use(
     (response) => {
+        // Log successful responses for debugging
+        if (response.config.url?.includes('login')) {
+            console.log('[API] Login response received successfully');
+        }
         return response;
     },
     async (error) => {
         const originalRequest = error.config;
+
+        // Enhanced error logging
+        if (error.code === 'NETWORK_ERROR' || !error.response) {
+            console.error('[API] Network error - cannot reach backend:', {
+                message: error.message,
+                code: error.code,
+                url: `${originalRequest?.baseURL}${originalRequest?.url}`
+            });
+        }
 
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;

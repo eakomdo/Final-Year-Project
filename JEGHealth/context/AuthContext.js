@@ -47,34 +47,57 @@ export const AuthProvider = ({ children }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-    // Normalize user data
+    // Simplified normalize user data function
     const normalizeUserData = (userData) => {
-        if (!userData) {
-            console.warn('normalizeUserData: No user data provided');
+        console.log('=== AUTHCONTEXT: NORMALIZING USER DATA ===', JSON.stringify(userData, null, 2));
+        
+        if (!userData || !userData.authUser) {
+            console.warn('normalizeUserData: Invalid or missing user data');
             return null;
         }
-        
-        // Handle case where userData is nested under authUser or flat
-        const authUser = userData.authUser || userData;
-        
-        if (!authUser || (!authUser.id && !authUser.$id && !authUser.user_id)) {
-            console.warn('normalizeUserData: Invalid user data structure', JSON.stringify(authUser, null, 2));
+
+        const { authUser, userProfile, role } = userData;
+
+        // Validate essential fields
+        if (!authUser.id && !authUser.email && !authUser.username) {
+            console.error('normalizeUserData: No valid identifier found');
+            console.error('authUser fields:', Object.keys(authUser));
             return null;
         }
-        
+
+        // Ensure consistent user object
         const normalizedUser = {
             ...authUser,
-            id: authUser.id || authUser.$id || authUser.user_id,
-            $id: authUser.$id || authUser.id || authUser.user_id,
-            email: authUser.email || authUser.username
+            id: authUser.id || authUser.pk || authUser.user_id || authUser.email,
+            email: authUser.email || authUser.username,
+            username: authUser.username || authUser.email,
+            first_name: authUser.first_name || authUser.firstName || '',
+            last_name: authUser.last_name || authUser.lastName || ''
         };
-        
-        console.log('Normalized user data:', {
-            original: { id: authUser.id, $id: authUser.$id, user_id: authUser.user_id },
-            normalized: { id: normalizedUser.id, $id: normalizedUser.$id, email: normalizedUser.email }
-        });
-        
-        return normalizedUser;
+
+        // Normalize profile
+        const normalizedProfile = {
+            ...userProfile,
+            contact: userProfile?.contact || userProfile?.phone || '',
+            phone: userProfile?.phone || userProfile?.contact || '',
+            address: userProfile?.address || ''
+        };
+
+        // Normalize role
+        const normalizedRole = {
+            name: role?.name || authUser?.role || 'user',
+            permissions: role?.permissions || authUser?.permissions || {}
+        };
+
+        console.log('Normalized user:', JSON.stringify(normalizedUser, null, 2));
+        console.log('Normalized profile keys:', Object.keys(normalizedProfile));
+        console.log('Normalized role:', normalizedRole);
+
+        return {
+            user: normalizedUser,
+            profile: normalizedProfile,
+            role: normalizedRole
+        };
     };
 
     // Decode JWT to check expiration
@@ -94,11 +117,13 @@ export const AuthProvider = ({ children }) => {
     const refreshAccessToken = async () => {
         try {
             const refreshToken = await AsyncStorage.getItem('refresh_token');
+            console.log('Refresh token exists:', !!refreshToken);
             if (!refreshToken) {
                 console.log('No refresh token found');
                 return false;
             }
             const newAccessToken = await DjangoAuthService.refreshAccessToken();
+            console.log('New access token received:', !!newAccessToken);
             if (newAccessToken) {
                 console.log('Token refreshed successfully');
                 return true;
@@ -106,7 +131,8 @@ export const AuthProvider = ({ children }) => {
             console.log('Token refresh failed: No access token returned');
             return false;
         } catch (error) {
-            console.error('Error refreshing token:', error);
+            console.error('Error refreshing token:', error.message);
+            console.error('Error details:', error.response?.data || error);
             return false;
         }
     };
@@ -114,38 +140,50 @@ export const AuthProvider = ({ children }) => {
     // Validate token with refresh attempt
     const validateToken = async () => {
         try {
+            console.log('=== VALIDATE TOKEN STARTED ===');
             const token = await AsyncStorage.getItem('access_token');
+            console.log('Access token exists:', !!token);
             if (!token) {
                 console.log('No access token found during validation');
                 return false;
             }
+            
             if (isTokenExpired(token)) {
                 console.log('Access token expired, attempting to refresh');
                 const refreshed = await refreshAccessToken();
+                console.log('Token refresh result:', refreshed);
                 if (!refreshed) {
                     console.log('Token refresh failed');
                     return false;
                 }
             }
+            
+            console.log('Making getCurrentUser call for token validation...');
             const userData = await DjangoAuthService.getCurrentUser();
             console.log('getCurrentUser response:', JSON.stringify(userData, null, 2));
-            if (!userData || !userData.authUser) {
-                console.error('No valid user data returned during validation');
+            
+            if (!userData) {
+                console.error('No user data returned during validation');
                 return false;
             }
-            const normalizedUser = normalizeUserData(userData);
-            if (!normalizedUser || !normalizedUser.id) {
-                console.error('User data normalization failed', JSON.stringify(userData, null, 2));
+            
+            const normalizedData = normalizeUserData(userData);
+            if (!normalizedData) {
+                console.error('User data normalization failed');
                 return false;
             }
-            setUser(normalizedUser);
-            setUserProfile(userData.userProfile || null);
-            setUserRole(userData.role || null);
+            
+            setUser(normalizedData.user);
+            setUserProfile(normalizedData.profile);
+            setUserRole(normalizedData.role);
             setIsAuthenticated(true);
-            console.log('Token validation successful, user state updated:', normalizedUser.email);
+            console.log('Token validation successful for user:', normalizedData.user.email || normalizedData.user.username);
             return true;
+            
         } catch (error) {
             console.error('Token validation failed:', error.message);
+            console.error('Error details:', error.response?.data || error);
+            
             if (error.message.includes('401') || error.message.includes('403') || 
                 error.message.includes('Invalid token')) {
                 console.log('Auth error detected, attempting token refresh');
@@ -154,15 +192,15 @@ export const AuthProvider = ({ children }) => {
                     try {
                         const userData = await DjangoAuthService.getCurrentUser();
                         console.log('Retry getCurrentUser response:', JSON.stringify(userData, null, 2));
-                        if (userData && userData.authUser) {
-                            const normalizedUser = normalizeUserData(userData);
-                            if (!normalizedUser || !normalizedUser.id) {
-                                console.error('Retry user data normalization failed', JSON.stringify(userData, null, 2));
+                        if (userData) {
+                            const normalizedData = normalizeUserData(userData);
+                            if (!normalizedData) {
+                                console.error('Retry user data normalization failed');
                                 return false;
                             }
-                            setUser(normalizedUser);
-                            setUserProfile(userData.userProfile || null);
-                            setUserRole(userData.role || null);
+                            setUser(normalizedData.user);
+                            setUserProfile(normalizedData.profile);
+                            setUserRole(normalizedData.role);
                             setIsAuthenticated(true);
                             console.log('Retry after refresh successful');
                             return true;
@@ -254,21 +292,21 @@ export const AuthProvider = ({ children }) => {
             console.log('Starting login process for:', email);
             const loginResponse = await DjangoAuthService.loginUser(email, password);
             console.log('Login response:', JSON.stringify(loginResponse, null, 2));
-            if (loginResponse && loginResponse.success && loginResponse.authUser) {
-                const normalizedUser = normalizeUserData(loginResponse);
-                if (!normalizedUser || !normalizedUser.id) {
+            
+            if (loginResponse && loginResponse.success) {
+                const normalizedData = normalizeUserData(loginResponse);
+                
+                if (!normalizedData) {
+                    console.error('Login user data normalization failed');
                     throw new Error('Invalid user data in login response');
                 }
-                setUser(normalizedUser);
-                setUserProfile(loginResponse.userProfile || null);
-                setUserRole(loginResponse.role || null);
+                
+                setUser(normalizedData.user);
+                setUserProfile(normalizedData.profile);
+                setUserRole(normalizedData.role);
                 setIsAuthenticated(true);
-                console.log('User logged in successfully:', {
-                    email: normalizedUser.email,
-                    id: normalizedUser.id,
-                    $id: normalizedUser.$id
-                });
-                return { success: true, user: normalizedUser };
+                console.log('User logged in successfully:', normalizedData.user.email);
+                return { success: true, user: normalizedData.user };
             }
             throw new Error(loginResponse?.message || 'Login failed - invalid response');
         } catch (error) {
@@ -290,21 +328,21 @@ export const AuthProvider = ({ children }) => {
             console.log('Starting registration process...');
             const result = await DjangoAuthService.registerUser(userData);
             console.log('Registration response:', JSON.stringify(result, null, 2));
-            if (result && result.success && result.authUser) {
-                const normalizedUser = normalizeUserData(result);
-                if (!normalizedUser || !normalizedUser.id) {
+            
+            if (result && result.success) {
+                const normalizedData = normalizeUserData(result);
+                
+                if (!normalizedData) {
+                    console.error('Registration user data normalization failed');
                     throw new Error('Invalid user data in registration response');
                 }
-                setUser(normalizedUser);
-                setUserProfile(result.userProfile || null);
-                setUserRole(result.role || null);
+                
+                setUser(normalizedData.user);
+                setUserProfile(normalizedData.profile);
+                setUserRole(normalizedData.role);
                 setIsAuthenticated(true);
-                console.log('Registration completed successfully:', {
-                    id: normalizedUser.id,
-                    $id: normalizedUser.$id,
-                    email: normalizedUser.email
-                });
-                return { success: true, user: normalizedUser };
+                console.log('Registration completed successfully:', normalizedData.user.email);
+                return { success: true, user: normalizedData.user };
             }
             throw new Error(result?.message || 'Registration failed - invalid response');
         } catch (error) {
@@ -356,7 +394,7 @@ export const AuthProvider = ({ children }) => {
             if (!userProfile) {
                 throw new Error('No user profile found');
             }
-            const userId = user?.id || user?.$id || user?.user_id;
+            const userId = user?.id || user?.email;
             if (!userId) {
                 throw new Error('User ID not found');
             }
@@ -394,11 +432,7 @@ export const AuthProvider = ({ children }) => {
     // Debug: Log user state changes
     useEffect(() => {
         console.log('=== Auth State Update ===');
-        console.log('User:', user ? {
-            id: user.id,
-            $id: user.$id,
-            email: user.email
-        } : null);
+        console.log('User:', user ? { id: user.id, email: user.email } : null);
         console.log('IsAuthenticated:', isAuthenticated);
         console.log('IsLoading:', isLoading);
         console.log('========================');
