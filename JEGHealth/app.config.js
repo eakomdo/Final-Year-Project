@@ -21,6 +21,12 @@ export default {
       infoPlist: {
         NSBluetoothAlwaysUsageDescription:
           "This app uses Bluetooth to connect to health monitoring devices",
+        NSCameraUsageDescription:
+          "This app uses the camera to take profile pictures and medical document photos",
+        NSPhotoLibraryUsageDescription:
+          "This app needs access to your photo library to select profile pictures and medical documents",
+        NSMicrophoneUsageDescription:
+          "This app may use the microphone for voice notes or health consultations",
       },
     },
     android: {
@@ -31,6 +37,11 @@ export default {
       package: "com.jeghealth.app",
       permissions: [
         "android.permission.INTERNET",
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO",
         "android.permission.BLUETOOTH",
         "android.permission.BLUETOOTH_ADMIN",
         "android.permission.BLUETOOTH_CONNECT",
@@ -46,6 +57,13 @@ export default {
     },
     plugins: [
       "expo-router",
+      [
+        "expo-image-picker",
+        {
+          photosPermission: "This app needs access to your photo library to select profile pictures and medical documents",
+          cameraPermission: "This app uses the camera to take profile pictures and medical document photos"
+        }
+      ],
       [
         "expo-splash-screen",
         {
