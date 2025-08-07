@@ -310,23 +310,43 @@ export class ChatHistoryManager {
    */
   static async sendMessageToAPI(message, conversationId = null) {
     try {
-      console.log('Sending message to Dr. JEG API:', { message: message.substring(0, 50) + '...', conversationId });
+      console.log('=== CHAT HISTORY MANAGER ===');
+      console.log('Sending message to Dr. JEG API:', { 
+        message: message.substring(0, 50) + (message.length > 50 ? '...' : ''), 
+        conversationId,
+        endpoint: '/api/v1/dr-jeg/conversation/'
+      });
+      
       const response = await drJegAPI.sendMessage(message, conversationId);
+      
+      console.log('Dr. JEG API raw response:', {
+        status: response.status,
+        statusText: response.statusText,
+        data: response.data
+      });
       
       // The API should return the updated conversation with the new messages
       const conversationData = response.data;
       
       // Cache the updated conversation locally
       if (conversationData) {
+        console.log('Caching conversation data locally...');
         await this.saveConversation(conversationData);
+      } else {
+        console.warn('No conversation data to cache');
       }
       
       return conversationData;
     } catch (error) {
-      console.error('Error sending message to Dr. JEG API:', error);
+      console.error('=== CHAT HISTORY MANAGER ERROR ===');
+      console.error('Error sending message to Dr. JEG API:', error.message);
+      console.error('Error response status:', error.response?.status);
+      console.error('Error response data:', error.response?.data);
+      console.error('Full error:', error);
       throw error;
     }
   }
+  
 
   /**
    * Send a message to Dr. JEG (alias for sendMessageToAPI)
