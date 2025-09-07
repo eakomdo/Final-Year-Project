@@ -13,7 +13,7 @@ const DEVELOPMENT_CONFIG = {
     
     // For physical devices, use your machine's actual IP address
     // Your Mac's IP address on the local network
-    PHYSICAL_DEVICE_HOST: '192.168.1.50', // Your computer's IP address
+    PHYSICAL_DEVICE_HOST: '100.66.134.229', // Your computer's IP address
     
     // For Android emulator, use 10.0.2.2 to reach host machine
     ANDROID_EMULATOR_HOST: '10.0.2.2',
