@@ -501,6 +501,17 @@ const AppointmentsScreen = () => {
                 appointmentTime.getMinutes()
             );
 
+            // Validate that the appointment is in the future
+            const now = new Date();
+            if (combinedDateTime <= now) {
+                Alert.alert('Error', 'Please select a future date and time for your appointment');
+                return;
+            }
+
+            console.log('Combined date time:', combinedDateTime);
+            console.log('Current time:', now);
+            console.log('Is appointment in future:', combinedDateTime > now);
+
             // Prepare appointment data for new API structure
             const appointmentData = {
                 healthcare_provider: selectedProvider.id,
