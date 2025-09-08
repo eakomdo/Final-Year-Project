@@ -31,11 +31,16 @@ const ChatHistoryScreen = () => {
   const loadConversations = async () => {
     try {
       const loadedConversations = await ChatHistoryManager.loadConversations();
-      setConversations(loadedConversations);
-      setFilteredConversations(loadedConversations);
+      // Ensure we have a valid array
+      const validConversations = Array.isArray(loadedConversations) ? loadedConversations : [];
+      setConversations(validConversations);
+      setFilteredConversations(validConversations);
     } catch (error) {
       console.error('Error loading conversations:', error);
       showError('Error', 'Failed to load chat history');
+      // Set empty arrays as fallback
+      setConversations([]);
+      setFilteredConversations([]);
     } finally {
       setLoading(false);
     }
@@ -45,10 +50,12 @@ const ChatHistoryScreen = () => {
   useEffect(() => {
     const performSearch = async () => {
       if (!searchQuery.trim()) {
-        setFilteredConversations(conversations);
+        // Ensure conversations is an array before setting
+        setFilteredConversations(Array.isArray(conversations) ? conversations : []);
       } else {
         const results = await ChatHistoryManager.searchConversations(searchQuery);
-        setFilteredConversations(results);
+        // Ensure results is an array
+        setFilteredConversations(Array.isArray(results) ? results : []);
       }
     };
 

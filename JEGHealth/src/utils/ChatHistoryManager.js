@@ -57,8 +57,11 @@ export class ChatHistoryManager {
       const savedConversations = await AsyncStorage.getItem(CHAT_HISTORY_KEY);
       if (savedConversations) {
         const conversations = JSON.parse(savedConversations);
-        // Sort by most recent first
-        return conversations.sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
+        // Ensure we have a valid array
+        if (Array.isArray(conversations)) {
+          // Sort by most recent first
+          return conversations.sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
+        }
       }
       return [];
     } catch (error) {
@@ -75,7 +78,11 @@ export class ChatHistoryManager {
   static async getConversation(conversationId) {
     try {
       const conversations = await this.loadConversations();
-      return conversations.find(conv => conv.id === conversationId) || null;
+      // Ensure conversations is an array before calling find
+      if (Array.isArray(conversations)) {
+        return conversations.find(conv => conv && conv.id === conversationId) || null;
+      }
+      return null;
     } catch (error) {
       console.error('Error getting conversation:', error);
       return null;
@@ -169,15 +176,19 @@ export class ChatHistoryManager {
       const conversations = await this.loadConversations();
       const query = searchQuery.toLowerCase().trim();
       
-      if (!query) return conversations;
+      if (!query) return conversations || [];
 
       return conversations.filter(conversation => {
+        // Ensure conversation exists and has required properties
+        if (!conversation) return false;
+        
         // Search in title
         const titleMatch = (conversation.title || '').toLowerCase().includes(query);
         
-        // Search in message content
-        const messageMatch = conversation.messages.some(msg => 
-          msg.text.toLowerCase().includes(query)
+        // Search in message content - ensure messages array exists
+        const messages = conversation.messages || [];
+        const messageMatch = messages.some(msg => 
+          msg && msg.text && msg.text.toLowerCase().includes(query)
         );
 
         return titleMatch || messageMatch;
