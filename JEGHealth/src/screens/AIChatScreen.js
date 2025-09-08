@@ -19,6 +19,7 @@ import { showError } from '../utils/NotificationHelper';
 import ChatHistoryManager from '../utils/ChatHistoryManager';
 import { testDrJegAPI, testBasicAPI } from '../utils/testDrJegAPI';
 import { generateConversationId } from '../utils/uuid';
+import { renderAdvancedFormattedText } from '../utils/textFormatter';
 
 const AIChatScreen = () => {
   const [messages, setMessages] = useState([
@@ -234,38 +235,58 @@ const AIChatScreen = () => {
     }
   };
 
-  const renderMessage = ({ item }) => (
-    <View style={[
-      styles.messageContainer,
-      item.isUser ? styles.userMessage : styles.aiMessage
-    ]}>
-      <View style={[
-        styles.messageBubble,
-        item.isUser ? styles.userBubble : styles.aiBubble
-      ]}>
-        {!item.isUser && (
-          <View style={styles.aiHeader}>
-            <View style={styles.aiAvatar}>
-              <Ionicons name="medical" size={16} color={Colors.primary} />
-            </View>
-            <Text style={styles.aiName}>Dr. JEG</Text>
-          </View>
-        )}
-        <Text style={[
-          styles.messageText,
-          item.isUser ? styles.userText : styles.aiText
+  const renderMessage = ({ item, index }) => {
+    // Ensure unique key even if item.id is missing
+    const messageKey = item.id || `message-${index}-${Date.now()}`;
+    
+    return (
+      <View 
+        key={messageKey}
+        style={[
+          styles.messageContainer,
+          item.isUser ? styles.userMessage : styles.aiMessage
+        ]}
+      >
+        <View style={[
+          styles.messageBubble,
+          item.isUser ? styles.userBubble : styles.aiBubble
         ]}>
-          {item.text}
-        </Text>
-        <Text style={styles.timestamp}>
-          {new Date(item.timestamp).toLocaleTimeString([], { 
-            hour: '2-digit', 
-            minute: '2-digit' 
-          })}
-        </Text>
+          {!item.isUser && (
+            <View style={styles.aiHeader}>
+              <View style={styles.aiAvatar}>
+                <Ionicons name="medical" size={16} color={Colors.primary} />
+              </View>
+              <Text style={styles.aiName}>Dr. JEG</Text>
+            </View>
+          )}
+          
+          {/* Use formatted text for AI messages, plain text for user messages */}
+          {item.isUser ? (
+            <Text style={[
+              styles.messageText,
+              styles.userText
+            ]}>
+              {item.text}
+            </Text>
+          ) : (
+            <View style={styles.aiMessageContent}>
+              {renderAdvancedFormattedText(item.text, [
+                styles.messageText,
+                styles.aiText
+              ])}
+            </View>
+          )}
+          
+          <Text style={styles.timestamp}>
+            {new Date(item.timestamp).toLocaleTimeString([], { 
+              hour: '2-digit', 
+              minute: '2-digit' 
+            })}
+          </Text>
+        </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   const renderTypingIndicator = () => (
     <View style={[styles.messageContainer, styles.aiMessage]}>
@@ -336,7 +357,7 @@ const AIChatScreen = () => {
           ref={flatListRef}
           data={messages}
           renderItem={renderMessage}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item, index) => item.id || `message-${index}-${Date.now()}`}
           contentContainerStyle={styles.messagesList}
           showsVerticalScrollIndicator={false}
           ListFooterComponent={isTyping ? renderTypingIndicator : null}
@@ -489,6 +510,10 @@ const styles = StyleSheet.create({
   },
   aiText: {
     color: Colors.textPrimary,
+    lineHeight: 20,
+  },
+  aiMessageContent: {
+    flex: 1,
   },
   timestamp: {
     fontSize: 12,

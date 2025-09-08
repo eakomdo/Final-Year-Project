@@ -310,7 +310,7 @@ const ChatHistoryScreen = () => {
       {/* Conversations List */}
       <FlatList
         data={filteredConversations}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item, index) => item?.id || `conversation-${index}-${Date.now()}`}
         renderItem={renderConversationItem}
         contentContainerStyle={[
           styles.listContainer,
