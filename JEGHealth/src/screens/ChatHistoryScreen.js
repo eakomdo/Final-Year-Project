@@ -169,48 +169,57 @@ const ChatHistoryScreen = () => {
   };
 
   // Render individual conversation item
-  const renderConversationItem = ({ item }) => (
-    <TouchableOpacity 
-      style={[styles.conversationItem, { backgroundColor: theme.card }]}
-      onPress={() => openConversation(item)}
-      activeOpacity={0.7}
-    >
-      <View style={styles.conversationContent}>
-        <View style={styles.conversationHeader}>
-          <Text style={[styles.conversationTitle, { color: theme.text }]} numberOfLines={2}>
-            {item.title || generateConversationTitle(item.messages)}
-          </Text>
-          <TouchableOpacity 
-            style={styles.deleteButton}
-            onPress={() => deleteConversation(item.id)}
-          >
-            <Ionicons name="trash-outline" size={20} color={theme.error} />
-          </TouchableOpacity>
+  const renderConversationItem = ({ item }) => {
+    // Defensive programming: ensure item and its properties exist
+    if (!item) return null;
+    
+    const messages = Array.isArray(item.messages) ? item.messages : [];
+    const messageCount = messages.length;
+    const lastMessage = messageCount > 1 ? messages[messageCount - 1] : null;
+    
+    return (
+      <TouchableOpacity 
+        style={[styles.conversationItem, { backgroundColor: theme.card }]}
+        onPress={() => openConversation(item)}
+        activeOpacity={0.7}
+      >
+        <View style={styles.conversationContent}>
+          <View style={styles.conversationHeader}>
+            <Text style={[styles.conversationTitle, { color: theme.text }]} numberOfLines={2}>
+              {item.title || generateConversationTitle(messages)}
+            </Text>
+            <TouchableOpacity 
+              style={styles.deleteButton}
+              onPress={() => deleteConversation(item.id)}
+            >
+              <Ionicons name="trash-outline" size={20} color={theme.error} />
+            </TouchableOpacity>
+          </View>
+          
+          <View style={styles.conversationMeta}>
+            <Text style={[styles.messageCount, { color: theme.subText }]}>
+              {messageCount} messages
+            </Text>
+            <Text style={[styles.dateText, { color: theme.subText }]}>
+              {formatDate(item.lastUpdated)}
+            </Text>
+          </View>
+          
+          {/* Preview of last message */}
+          {messageCount > 1 && lastMessage && (
+            <Text 
+              style={[styles.lastMessage, { color: theme.subText }]} 
+              numberOfLines={2}
+            >
+              {lastMessage.text || 'No message content'}
+            </Text>
+          )}
         </View>
         
-        <View style={styles.conversationMeta}>
-          <Text style={[styles.messageCount, { color: theme.subText }]}>
-            {item.messages.length} messages
-          </Text>
-          <Text style={[styles.dateText, { color: theme.subText }]}>
-            {formatDate(item.lastUpdated)}
-          </Text>
-        </View>
-        
-        {/* Preview of last message */}
-        {item.messages.length > 1 && (
-          <Text 
-            style={[styles.lastMessage, { color: theme.subText }]} 
-            numberOfLines={2}
-          >
-            {item.messages[item.messages.length - 1].text}
-          </Text>
-        )}
-      </View>
-      
-      <Ionicons name="chevron-forward" size={20} color={theme.subText} />
-    </TouchableOpacity>
-  );
+        <Ionicons name="chevron-forward" size={20} color={theme.subText} />
+      </TouchableOpacity>
+    );
+  };
 
   // Render empty state
   const renderEmptyState = () => (

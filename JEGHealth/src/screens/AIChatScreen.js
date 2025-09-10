@@ -17,9 +17,17 @@ import { useRouter } from 'expo-router';
 import { Colors } from '../constants/colors';
 import { showError } from '../utils/NotificationHelper';
 import ChatHistoryManager from '../utils/ChatHistoryManager';
-import { testDrJegAPI, testBasicAPI } from '../utils/testDrJegAPI';
-import { generateConversationId } from '../utils/uuid';
-import { renderAdvancedFormattedText } from '../utils/textFormatter';
+
+// Simple text formatter for AI messages
+const formatAIMessage = (text) => {
+  if (!text) return text;
+  
+  // Simple formatting for basic markdown-like text
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold markers for now
+    .replace(/\*(.*?)\*/g, '$1') // Remove italic markers for now
+    .trim();
+};
 
 const AIChatScreen = () => {
   const [messages, setMessages] = useState([
@@ -38,12 +46,12 @@ const AIChatScreen = () => {
 
   // Initialize conversation ID
   useEffect(() => {
-    setCurrentConversationId(generateConversationId());
+    setCurrentConversationId(`conv-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
   }, []);
 
   // Save conversation to history when messages change (and there are user messages)
   useEffect(() => {
-    const saveConversation = async () => {
+    const saveConversationData = async () => {
       if (messages.length <= 1 || !currentConversationId) return; // Don't save initial message only
       
       const userMessages = messages.filter(msg => msg.isUser);
@@ -56,10 +64,15 @@ const AIChatScreen = () => {
         messageCount: messages.length,
       };
 
-      await ChatHistoryManager.saveConversation(conversation);
+      try {
+        await ChatHistoryManager.saveConversation(conversation);
+        console.log('Conversation saved successfully');
+      } catch (error) {
+        console.error('Error saving conversation:', error);
+      }
     };
 
-    const debounceTimer = setTimeout(saveConversation, 1000); // Debounce saves
+    const debounceTimer = setTimeout(saveConversationData, 1000); // Debounce saves
     return () => clearTimeout(debounceTimer);
   }, [messages, currentConversationId]);
 
@@ -81,10 +94,10 @@ const AIChatScreen = () => {
         {
           text: 'Start New',
           onPress: () => {
-            setCurrentConversationId(generateConversationId());
+            setCurrentConversationId(`conv-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
             setMessages([
               {
-                id: generateConversationId(),
+                id: `initial-${Date.now()}`,
                 text: "Hello! I'm Dr. JEG, your AI health assistant. I'm here to help you with health-related questions, wellness tips, and general medical guidance. How can I assist you today?",
                 isUser: false,
                 timestamp: new Date().toISOString(),
@@ -103,7 +116,7 @@ const AIChatScreen = () => {
     }
   }, [messages]);
 
-  // Get AI response from Dr. JEG backend
+  // Simulate AI responses (replace with actual AI service)
   const getAIResponse = async (userMessage) => {
     try {
       console.log('=== DR. JEG API CALL ===');
@@ -123,10 +136,8 @@ const AIChatScreen = () => {
         }
         
         // Extract the AI response from the conversation data
-        // The API should return the conversation with messages array
         if (response.messages && response.messages.length > 0) {
           console.log('Found messages in response:', response.messages.length);
-          // Get the last message (should be the AI response)
           const lastMessage = response.messages[response.messages.length - 1];
           if (!lastMessage.isUser && lastMessage.text) {
             console.log('Using AI message from conversation:', lastMessage.text);
@@ -145,52 +156,27 @@ const AIChatScreen = () => {
           return response.message;
         }
         
-        // Check if response has an 'answer' field
+        // Check for answer field
         if (response.answer) {
           console.log('Using answer field:', response.answer);
           return response.answer;
         }
         
-        console.warn('No recognizable response format found:', Object.keys(response));
-        return "I received your message but couldn't provide a proper response. Please try again.";
+        console.log('No valid response text found, using fallback');
+        return "I'm here to help with your health questions!";
       } else {
         throw new Error('No response received from Dr. JEG');
       }
     } catch (error) {
-      console.error('=== DR. JEG API ERROR ===');
-      console.error('Error details:', error.message);
-      console.error('Error response:', error.response?.data);
-      console.error('Error status:', error.response?.status);
+      console.error('Error calling Dr. JEG API:', error);
       
-      // Provide more specific error messages based on the error type
-      if (error.response?.status === 500) {
-        return "I'm experiencing technical difficulties with my AI services. Please try again in a moment.";
-      } else if (error.response?.status === 401 || error.response?.status === 403) {
-        return "I'm having authentication issues. Please make sure you're logged in and try again.";
-      } else if (error.message.includes('Network')) {
-        return "I can't reach my AI services right now. Please check your internet connection and try again.";
-      } else {
-        return "I apologize, but I'm having trouble processing your request right now. Please try again in a moment.";
-      }
-    }
-  };
-
-  // Test Dr. JEG API function
-  const testDrJegConnection = async () => {
-    try {
-      console.log('=== TESTING DR. JEG API CONNECTION ===');
-      const result = await testDrJegAPI();
-      Alert.alert('API Test Success', 'Dr. JEG API is working correctly!', [
-        { text: 'OK' }
-      ]);
-      console.log('✅ Test completed successfully:', result);
-    } catch (error) {
-      console.error('❌ Test failed:', error);
-      Alert.alert(
-        'API Test Failed', 
-        `Dr. JEG API is not working: ${error.message}`,
-        [{ text: 'OK' }]
-      );
+      // Fallback to mock response if API fails
+      const fallbackResponses = [
+        "I apologize, but I'm having trouble connecting to my services right now. Please try again in a moment.",
+        "I'm experiencing some technical difficulties. For immediate health concerns, please consult with a healthcare professional.",
+      ];
+      
+      return fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
     }
   };
 
@@ -198,7 +184,7 @@ const AIChatScreen = () => {
     if (!inputText.trim()) return;
 
     const userMessage = {
-      id: generateConversationId(),
+      id: `user-${Date.now()}`,
       text: inputText.trim(),
       isUser: true,
       timestamp: new Date().toISOString(),
@@ -213,16 +199,13 @@ const AIChatScreen = () => {
       const aiResponse = await getAIResponse(messageText);
       
       const aiMessage = {
-        id: generateConversationId(),
+        id: `ai-${Date.now()}`,
         text: aiResponse,
         isUser: false,
         timestamp: new Date().toISOString(),
       };
 
       setMessages(prev => [...prev, aiMessage]);
-      
-      // The useEffect will handle saving the conversation automatically
-      // No need to manually call saveConversation here
       
     } catch (error) {
       console.error('Error getting AI response:', error);
@@ -235,58 +218,38 @@ const AIChatScreen = () => {
     }
   };
 
-  const renderMessage = ({ item, index }) => {
-    // Ensure unique key even if item.id is missing
-    const messageKey = item.id || `message-${index}-${Date.now()}`;
-    
-    return (
-      <View 
-        key={messageKey}
-        style={[
-          styles.messageContainer,
-          item.isUser ? styles.userMessage : styles.aiMessage
-        ]}
-      >
-        <View style={[
-          styles.messageBubble,
-          item.isUser ? styles.userBubble : styles.aiBubble
+  const renderMessage = ({ item }) => (
+    <View style={[
+      styles.messageContainer,
+      item.isUser ? styles.userMessage : styles.aiMessage
+    ]}>
+      <View style={[
+        styles.messageBubble,
+        item.isUser ? styles.userBubble : styles.aiBubble
+      ]}>
+        {!item.isUser && (
+          <View style={styles.aiHeader}>
+            <View style={styles.aiAvatar}>
+              <Ionicons name="medical" size={16} color={Colors.primary} />
+            </View>
+            <Text style={styles.aiName}>Dr. JEG</Text>
+          </View>
+        )}
+        <Text style={[
+          styles.messageText,
+          item.isUser ? styles.userText : styles.aiText
         ]}>
-          {!item.isUser && (
-            <View style={styles.aiHeader}>
-              <View style={styles.aiAvatar}>
-                <Ionicons name="medical" size={16} color={Colors.primary} />
-              </View>
-              <Text style={styles.aiName}>Dr. JEG</Text>
-            </View>
-          )}
-          
-          {/* Use formatted text for AI messages, plain text for user messages */}
-          {item.isUser ? (
-            <Text style={[
-              styles.messageText,
-              styles.userText
-            ]}>
-              {item.text}
-            </Text>
-          ) : (
-            <View style={styles.aiMessageContent}>
-              {renderAdvancedFormattedText(item.text, [
-                styles.messageText,
-                styles.aiText
-              ])}
-            </View>
-          )}
-          
-          <Text style={styles.timestamp}>
-            {new Date(item.timestamp).toLocaleTimeString([], { 
-              hour: '2-digit', 
-              minute: '2-digit' 
-            })}
-          </Text>
-        </View>
+          {item.isUser ? item.text : formatAIMessage(item.text)}
+        </Text>
+        <Text style={styles.timestamp}>
+          {new Date(item.timestamp).toLocaleTimeString([], { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+          })}
+        </Text>
       </View>
-    );
-  };
+    </View>
+  );
 
   const renderTypingIndicator = () => (
     <View style={[styles.messageContainer, styles.aiMessage]}>
@@ -325,14 +288,6 @@ const AIChatScreen = () => {
           </View>
         </View>
         <View style={styles.headerRight}>
-          {__DEV__ && (
-            <TouchableOpacity
-              style={styles.headerButton}
-              onPress={testDrJegConnection}
-            >
-              <Ionicons name="bug-outline" size={20} color={Colors.textOnPrimary} />
-            </TouchableOpacity>
-          )}
           <TouchableOpacity
             style={styles.headerButton}
             onPress={() => router.push('/chat-history')}
@@ -357,10 +312,13 @@ const AIChatScreen = () => {
           ref={flatListRef}
           data={messages}
           renderItem={renderMessage}
-          keyExtractor={(item, index) => item.id || `message-${index}-${Date.now()}`}
+          keyExtractor={(item, index) => item.id || `message-${index}`}
           contentContainerStyle={styles.messagesList}
           showsVerticalScrollIndicator={false}
           ListFooterComponent={isTyping ? renderTypingIndicator : null}
+          removeClippedSubviews={Platform.OS === 'android'}
+          maxToRenderPerBatch={10}
+          windowSize={10}
         />
 
         {/* Input Area */}
@@ -510,10 +468,6 @@ const styles = StyleSheet.create({
   },
   aiText: {
     color: Colors.textPrimary,
-    lineHeight: 20,
-  },
-  aiMessageContent: {
-    flex: 1,
   },
   timestamp: {
     fontSize: 12,

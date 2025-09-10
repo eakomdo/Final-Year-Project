@@ -18,10 +18,23 @@ export class ChatHistoryManager {
   static async saveConversation(conversation) {
     try {
       const existingHistory = await AsyncStorage.getItem(CHAT_HISTORY_KEY);
-      let conversations = existingHistory ? JSON.parse(existingHistory) : [];
+      let conversations = [];
+      
+      if (existingHistory) {
+        try {
+          conversations = JSON.parse(existingHistory);
+          // Ensure it's an array
+          if (!Array.isArray(conversations)) {
+            conversations = [];
+          }
+        } catch (parseError) {
+          console.warn('Failed to parse existing chat history, starting fresh:', parseError);
+          conversations = [];
+        }
+      }
       
       // Update existing conversation or add new one
-      const existingIndex = conversations.findIndex(conv => conv.id === conversation.id);
+      const existingIndex = conversations.findIndex(conv => conv && conv.id === conversation.id);
       if (existingIndex >= 0) {
         conversations[existingIndex] = {
           ...conversations[existingIndex],
@@ -126,7 +139,12 @@ export class ChatHistoryManager {
    * @returns {string} Generated title
    */
   static generateConversationTitle(messages) {
-    const firstUserMessage = messages.find(msg => msg.isUser);
+    // Defensive programming: ensure messages is a valid array
+    if (!Array.isArray(messages) || messages.length === 0) {
+      return 'New Conversation';
+    }
+    
+    const firstUserMessage = messages.find(msg => msg && msg.isUser);
     if (firstUserMessage) {
       return firstUserMessage.text.length > 50 
         ? firstUserMessage.text.substring(0, 47) + '...'
@@ -142,9 +160,13 @@ export class ChatHistoryManager {
   static async getStats() {
     try {
       const conversations = await this.loadConversations();
-      const totalMessages = conversations.reduce((sum, conv) => sum + conv.messages.length, 0);
+      const totalMessages = conversations.reduce((sum, conv) => {
+        const messages = Array.isArray(conv.messages) ? conv.messages : [];
+        return sum + messages.length;
+      }, 0);
       const totalUserMessages = conversations.reduce((sum, conv) => {
-        return sum + conv.messages.filter(msg => msg.isUser).length;
+        const messages = Array.isArray(conv.messages) ? conv.messages : [];
+        return sum + messages.filter(msg => msg && msg.isUser).length;
       }, 0);
 
       return {

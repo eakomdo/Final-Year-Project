@@ -34,12 +34,24 @@ const ChatDetailScreen = () => {
           // Fallback: load from storage if only ID is provided
           const savedConversations = await AsyncStorage.getItem('chatHistory');
           if (savedConversations) {
-            const conversations = JSON.parse(savedConversations);
-            const foundConversation = conversations.find(conv => conv.id === params.conversationId);
-            if (foundConversation) {
-              setConversation(foundConversation);
-            } else {
-              showError('Error', 'Conversation not found');
+            try {
+              const conversations = JSON.parse(savedConversations);
+              // Ensure conversations is an array
+              if (Array.isArray(conversations)) {
+                const foundConversation = conversations.find(conv => conv && conv.id === params.conversationId);
+                if (foundConversation) {
+                  setConversation(foundConversation);
+                } else {
+                  showError('Error', 'Conversation not found');
+                  router.back();
+                }
+              } else {
+                showError('Error', 'Invalid conversation data');
+                router.back();
+              }
+            } catch (parseError) {
+              console.error('Failed to parse conversation data:', parseError);
+              showError('Error', 'Failed to load conversation');
               router.back();
             }
           }
@@ -83,11 +95,21 @@ const ChatDetailScreen = () => {
             try {
               const savedConversations = await AsyncStorage.getItem('chatHistory');
               if (savedConversations) {
-                const conversations = JSON.parse(savedConversations);
-                const updatedConversations = conversations.filter(conv => conv.id !== conversation.id);
-                await AsyncStorage.setItem('chatHistory', JSON.stringify(updatedConversations));
-                showSuccess('Success', 'Conversation deleted');
-                router.back();
+                try {
+                  const conversations = JSON.parse(savedConversations);
+                  // Ensure conversations is an array before filtering
+                  if (Array.isArray(conversations)) {
+                    const updatedConversations = conversations.filter(conv => conv && conv.id !== conversation.id);
+                    await AsyncStorage.setItem('chatHistory', JSON.stringify(updatedConversations));
+                    showSuccess('Success', 'Conversation deleted');
+                    router.back();
+                  } else {
+                    showError('Error', 'Invalid conversation data');
+                  }
+                } catch (parseError) {
+                  console.error('Failed to parse conversation data for deletion:', parseError);
+                  showError('Error', 'Failed to delete conversation');
+                }
               }
             } catch (error) {
               showError('Error', 'Failed to delete conversation');
@@ -101,8 +123,15 @@ const ChatDetailScreen = () => {
   // Share conversation
   const shareConversation = async () => {
     try {
+      // Ensure conversation and messages exist
+      if (!conversation || !Array.isArray(conversation.messages)) {
+        showError('Error', 'No conversation data to share');
+        return;
+      }
+      
       const conversationText = conversation.messages
-        .map(msg => `${msg.isUser ? 'You' : 'Dr. JEG'}: ${msg.text}`)
+        .map(msg => msg && msg.text ? `${msg.isUser ? 'You' : 'Dr. JEG'}: ${msg.text}` : '')
+        .filter(text => text.length > 0)
         .join('\n\n');
       
       const shareContent = `Dr. JEG Conversation\n\n${conversationText}`;
@@ -138,9 +167,10 @@ const ChatDetailScreen = () => {
   // Render message item
   const renderMessage = ({ item, index }) => {
     const isUser = item.isUser;
+    const messages = Array.isArray(conversation.messages) ? conversation.messages : [];
     const showTimestamp = index === 0 || 
-      (conversation.messages[index - 1] && 
-       new Date(item.timestamp).getTime() - new Date(conversation.messages[index - 1].timestamp).getTime() > 300000); // 5 minutes
+      (messages[index - 1] && 
+       new Date(item.timestamp).getTime() - new Date(messages[index - 1].timestamp).getTime() > 300000); // 5 minutes
 
     return (
       <View style={styles.messageWrapper}>
@@ -252,8 +282,8 @@ const ChatDetailScreen = () => {
       {/* Messages List */}
       <FlatList
         ref={flatListRef}
-        data={conversation.messages}
-        keyExtractor={(item) => item.id}
+        data={Array.isArray(conversation.messages) ? conversation.messages : []}
+        keyExtractor={(item, index) => item?.id || `message-${index}-${Date.now()}`}
         renderItem={renderMessage}
         contentContainerStyle={styles.messagesContainer}
         showsVerticalScrollIndicator={false}
