@@ -10,12 +10,15 @@ export const Colors = {
   backgroundLight: 'rgba(255, 255, 255, 0.9)', // White with opacity for cards
   backgroundCard: 'white', // Pure white for content cards
   backgroundGray: '#F8F9FA', // Light gray for input backgrounds
+  backgroundSecondary: '#F0F0F0', // Secondary background for file previews
+  surface: '#FFFFFF', // Surface color for cards and overlays
   
   // Text Colors
   textPrimary: '#333', // Dark gray for main headings
   textSecondary: '#666', // Medium gray for body text
   textTertiary: '#B0B0B0', // Light gray for placeholders
   textOnPrimary: 'white', // White text on green backgrounds
+  text: '#333', // Alias for textPrimary
   
   // Accent Colors
   success: '#2D8B85', // Same as primary for consistency

@@ -45,7 +45,7 @@ export const testDrJegAPI = async () => {
 export const testBasicAPI = async () => {
   console.log('=== BASIC API TEST ===');
   try {
-    const response = await fetch('http://192.168.1.50:8000/api/v1/dr-jeg/status/');
+    const response = await fetch('http://10.132.43.82:8000/api/v1/dr-jeg/status/');
     const data = await response.text();
     console.log('Direct fetch response:', response.status, data);
     return response.status === 200;

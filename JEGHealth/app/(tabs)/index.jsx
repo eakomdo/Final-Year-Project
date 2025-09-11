@@ -254,7 +254,6 @@ const HomeScreen = () => {
     { icon: "calendar-outline", label: "Appointments", route: "/appointments" },
     { icon: "medical-outline", label: "Medications", route: "/medications" },
     { icon: "analytics-outline", label: "Reports", route: "/reports" },
-    { icon: "flask-outline", label: "Test Appwrite", route: "/appwrite-test" }, // Temporary test button
   ];
 
   const renderStatCard = (stat, index) => (

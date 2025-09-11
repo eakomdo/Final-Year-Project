@@ -11,14 +11,41 @@ export const drJegAPI = {
      * Endpoint: POST /api/v1/dr-jeg/conversation/
      * @param {string} message - The user's message
      * @param {string} conversationId - Optional conversation ID to continue existing conversation
+     * @param {Array} attachments - Optional array of file attachments
      * @returns {Promise} API response with Dr. JEG's reply
      */
-    sendMessage: (message, conversationId = null) => {
-        const data = { message };
-        if (conversationId) {
-            data.conversation_id = conversationId;
+    sendMessage: (message, conversationId = null, attachments = null) => {
+        // If there are attachments, use FormData for multipart upload
+        if (attachments && attachments.length > 0) {
+            const formData = new FormData();
+            formData.append('message', message);
+            
+            if (conversationId) {
+                formData.append('conversation_id', conversationId);
+            }
+            
+            // Add each attachment to the form data
+            attachments.forEach((attachment, index) => {
+                formData.append(`attachments`, {
+                    uri: attachment.uri,
+                    type: attachment.type,
+                    name: attachment.name || `attachment_${index}`,
+                });
+            });
+            
+            return apiClient.post('/api/v1/dr-jeg/conversation/', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+        } else {
+            // Regular JSON request for text-only messages
+            const data = { message };
+            if (conversationId) {
+                data.conversation_id = conversationId;
+            }
+            return apiClient.post('/api/v1/dr-jeg/conversation/', data);
         }
-        return apiClient.post('/api/v1/dr-jeg/conversation/', data);
     },
 
     /**
@@ -66,6 +93,36 @@ export const drJegAPI = {
      * @returns {Promise} API response with analytics
      */
     getAnalytics: () => apiClient.get('/api/v1/dr-jeg/analytics/'),
+
+    /**
+     * Upload a file to Dr. JEG for analysis
+     * Endpoint: POST /api/v1/dr-jeg/upload/
+     * @param {Object} file - File object with uri, type, and name
+     * @param {string} analysisType - Type of analysis requested (e.g., 'medical-report', 'prescription', 'lab-results')
+     * @returns {Promise} API response with file upload result
+     */
+    uploadFile: (file, analysisType = 'general') => {
+        const formData = new FormData();
+        formData.append('file', {
+            uri: file.uri,
+            type: file.type,
+            name: file.name,
+        });
+        formData.append('analysis_type', analysisType);
+        
+        return apiClient.post('/api/v1/dr-jeg/upload/', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+    },
+
+    /**
+     * Get supported file types for upload
+     * Endpoint: GET /api/v1/dr-jeg/supported-files/
+     * @returns {Promise} API response with supported file types
+     */
+    getSupportedFileTypes: () => apiClient.get('/api/v1/dr-jeg/supported-files/'),
 };
 
 export default drJegAPI;

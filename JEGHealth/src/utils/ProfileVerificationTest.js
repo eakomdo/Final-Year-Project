@@ -94,7 +94,7 @@ class ProfileVerificationTest {
                 bloodType: 'A+',
                 height: 175,
                 weight: 70,
-                phoneNumber: '+1234567890',
+                phoneNumber: '+233243567890',
                 emergencyContact: 'Emergency Contact Info',
                 address: '123 Test Street',
                 allergies: '["Peanuts", "Shellfish"]',

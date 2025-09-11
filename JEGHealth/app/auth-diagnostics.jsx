@@ -97,7 +97,7 @@ const DiagnosticsScreen = () => {
         password_confirm: 'TestPass123!',
         first_name: 'Test',
         last_name: 'User',
-        contact: '+1234567890',
+        contact: '+233243567890',
         roleName: 'patient'
       };
       

@@ -140,7 +140,7 @@ export class AppwriteVerification {
         bloodType: 'O+',
         height: 175,
         weight: 70,
-        phoneNumber: '+1234567890',
+        phoneNumber: '+233243567890',
         emergencyContact: 'Jane Doe - +0987654321',
         address: '123 Main St, City, Country',
         allergies: JSON.stringify(['Peanuts', 'Shellfish']),
